@@ -4,20 +4,27 @@
     <meta charset="UTF-8">
     <title>Telegram Mini App</title>
 
-    <!-- ОБЯЗАТЕЛЬНО -->
+    <!-- Обязательно для iOS -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
-    <!-- Telegram SDK -->
+    <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
-        body {
+        html, body {
             margin: 0;
-            padding: 16px;
-            font-family: Arial, sans-serif;
-            background: #ffffff;
-            color: #000000;
+            padding: 0;
+            height: 100%;
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
         }
+
+        body {
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
         pre {
             white-space: pre-wrap;
             word-break: break-word;
@@ -32,14 +39,19 @@
 <script>
     const tg = window.Telegram.WebApp;
 
-    // ОБЯЗАТЕЛЬНО
+    // Инициализация
     tg.ready();
+
+    // КЛЮЧЕВО ДЛЯ iOS (без этого чёрный экран)
+    tg.setBackgroundColor("#ffffff");
+    tg.setHeaderColor("#ffffff");
     tg.expand();
 
+    // Рендер данных
     document.getElementById("data").textContent = JSON.stringify({
         platform: tg.platform,
         version: tg.version,
-        initData: tg.initData,
+        theme: tg.themeParams,
         user: tg.initDataUnsafe?.user
     }, null, 2);
 </script>
