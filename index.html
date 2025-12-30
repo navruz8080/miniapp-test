@@ -21,37 +21,54 @@
         }
 
         body {
-            padding: 16px;
             box-sizing: border-box;
+            padding: 16px;
+        }
+
+        h3 {
+            margin-top: 0;
         }
 
         pre {
             white-space: pre-wrap;
             word-break: break-word;
+            background: #f4f4f4;
+            padding: 12px;
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
 
 <h3>Mini App is working</h3>
+
 <pre id="data">loading...</pre>
 
 <script>
-  const tg = window.Telegram.WebApp;
+    const tg = window.Telegram.WebApp;
 
-  tg.ready();
-  tg.expand();
+    // Инициализация WebApp
+    tg.ready();
+    tg.expand();
 
-  const user = tg.initDataUnsafe?.user;
+    // Данные пользователя из Telegram
+    const user = tg.initDataUnsafe?.user || null;
 
-  document.getElementById("out").textContent = JSON.stringify({
-    user_id: user?.id,
-    first_name: user?.first_name,
-    username: user?.username,
-    platform: tg.platform
-  }, null, 2);
+    // Выводим данные
+    document.getElementById("data").textContent = JSON.stringify(
+        {
+            user_id: user?.id ?? null,
+            first_name: user?.first_name ?? null,
+            last_name: user?.last_name ?? null,
+            username: user?.username ?? null,
+            platform: tg.platform,
+            version: tg.version,
+            theme: tg.themeParams
+        },
+        null,
+        2
+    );
 </script>
-
 
 </body>
 </html>
