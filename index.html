@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <title>Telegram Mini App</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- 🔴 ОБЯЗАТЕЛЬНО -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
     <h3>Mini App is working</h3>
@@ -13,11 +16,10 @@
         if (!window.Telegram || !window.Telegram.WebApp) {
             document.getElementById("data").textContent =
                 "Telegram WebApp NOT detected.\n\n" +
-                "Откройте приложение ТОЛЬКО через кнопку бота.";
+                "Откройте Mini App ТОЛЬКО через кнопку бота.";
         } else {
             const tg = window.Telegram.WebApp;
 
-            // Сообщаем Telegram, что Mini App готов
             tg.ready();
 
             const result = {
