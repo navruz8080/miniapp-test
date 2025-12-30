@@ -37,24 +37,21 @@
 <pre id="data">loading...</pre>
 
 <script>
-    const tg = window.Telegram.WebApp;
+  const tg = window.Telegram.WebApp;
 
-    // Инициализация
-    tg.ready();
+  tg.ready();
+  tg.expand();
 
-    // КЛЮЧЕВО ДЛЯ iOS (без этого чёрный экран)
-    tg.setBackgroundColor("#ffffff");
-    tg.setHeaderColor("#ffffff");
-    tg.expand();
+  const user = tg.initDataUnsafe?.user;
 
-    // Рендер данных
-    document.getElementById("data").textContent = JSON.stringify({
-        platform: tg.platform,
-        version: tg.version,
-        theme: tg.themeParams,
-        user: tg.initDataUnsafe?.user
-    }, null, 2);
+  document.getElementById("out").textContent = JSON.stringify({
+    user_id: user?.id,
+    first_name: user?.first_name,
+    username: user?.username,
+    platform: tg.platform
+  }, null, 2);
 </script>
+
 
 </body>
 </html>
