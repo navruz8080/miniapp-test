@@ -3,18 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <title>Telegram Mini App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
     <h3>Mini App is working</h3>
     <pre id="data">loading...</pre>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        document.getElementById("data").textContent =
-            JSON.stringify({
+        if (!window.Telegram || !window.Telegram.WebApp) {
+            document.getElementById("data").textContent =
+                "Telegram WebApp NOT detected.\n\n" +
+                "Откройте приложение ТОЛЬКО через кнопку бота.";
+        } else {
+            const tg = window.Telegram.WebApp;
+
+            // Сообщаем Telegram, что Mini App готов
+            tg.ready();
+
+            const result = {
                 initData: tg.initData,
-                user: tg.initDataUnsafe?.user
-            }, null, 2);
+                user: tg.initDataUnsafe?.user || null,
+                platform: tg.platform,
+                version: tg.version
+            };
+
+            document.getElementById("data").textContent =
+                JSON.stringify(result, null, 2);
+        }
     </script>
 </body>
 </html>
