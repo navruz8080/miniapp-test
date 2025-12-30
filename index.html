@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Telegram Mini App</title>
+</head>
+<body>
+    <h3>Mini App is working</h3>
+    <pre id="data">loading...</pre>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        document.getElementById("data").textContent =
+            JSON.stringify({
+                initData: tg.initData,
+                user: tg.initDataUnsafe?.user
+            }, null, 2);
+    </script>
+</body>
+</html>
