@@ -5,212 +5,209 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Cargo365Plus</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --accent: #248bed;
-            --bg: #f0f2f5;
-            --card: #ffffff;
-            --text: #1c1c1e;
-            --hint: #8e8e93;
+            --tiffany: #00BFB2;
+            --poizon-black: #050505;
+            --card-bg: #121212;
+            --text-main: #ffffff;
+            --text-gray: #8e8e93;
+            --error: #ff3b30;
         }
 
         body {
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            padding-bottom: 100px; /* Чтобы кнопка не закрывала список */
+            background-color: var(--poizon-black);
+            color: var(--text-main);
+            overflow-x: hidden;
         }
 
-        /* Шапка */
-        .header {
-            background: linear-gradient(135deg, #248bed 0%, #1572de 100%);
-            padding: 30px 20px 40px;
-            color: white;
-            text-align: center;
-            border-bottom-left-radius: 24px;
-            border-bottom-right-radius: 24px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        /* Системные экраны */
+        .screen { display: none; padding: 20px; padding-bottom: 100px; min-height: 100vh; animation: fadeIn 0.3s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Шапка профиля на главной */
+        .header-main {
+            padding: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
         .avatar {
-            width: 70px;
-            height: 70px;
-            background: rgba(255,255,255,0.2);
-            border: 2px solid white;
+            width: 55px; height: 55px;
+            background: var(--tiffany);
+            color: black;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 26px;
-            font-weight: bold;
-            margin: 0 auto 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; font-weight: bold;
         }
 
-        .user-name { font-size: 20px; font-weight: 700; }
-        .user-phone { font-size: 14px; opacity: 0.8; }
-
-        /* Статистика */
-        .stats {
-            display: flex;
-            gap: 12px;
-            margin: -25px 16px 20px;
+        /* Карточки Poizon Style */
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .stat-card {
-            flex: 1;
-            background: var(--card);
-            padding: 16px;
-            border-radius: 16px;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .stat-value { font-size: 22px; font-weight: 800; color: var(--tiffany); }
+        .stat-label { font-size: 11px; color: var(--text-gray); text-transform: uppercase; margin-top: 4px; }
 
-        .stat-value { font-size: 18px; font-weight: 800; color: var(--accent); }
-        .stat-label { font-size: 11px; color: var(--hint); text-transform: uppercase; margin-top: 4px; }
-
-        /* Список посылок */
-        .section-header {
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .section-title { font-size: 16px; font-weight: 700; color: var(--hint); text-transform: uppercase; }
-
-        .package-list { padding: 0 16px; }
-
+        /* Стили посылок */
         .package-item {
-            background: var(--card);
+            background: var(--card-bg);
             padding: 16px;
             border-radius: 16px;
             margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            border-left: 4px solid var(--tiffany);
         }
-
-        .pkg-track { font-weight: 700; font-size: 15px; display: block; }
-        .pkg-desc { font-size: 13px; color: var(--hint); }
-
-        .pkg-status {
-            font-size: 11px;
-            font-weight: 600;
-            padding: 6px 10px;
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
             border-radius: 8px;
-            background: #e3f2fd;
-            color: #1976d2;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(0, 191, 178, 0.1);
+            color: var(--tiffany);
+            margin-bottom: 8px;
         }
 
-        /* Модальное окно */
-        .modal {
-            display: none;
+        /* Нижний бар */
+        .bottom-nav {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
+            bottom: 0; width: 100%; height: 75px;
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(15px);
+            display: flex; justify-content: space-around; align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.08);
             z-index: 1000;
-            align-items: flex-end;
+            padding-bottom: 15px;
         }
-
-        .modal-content {
-            background: white;
-            width: 100%;
-            padding: 24px;
-            border-top-left-radius: 24px;
-            border-top-right-radius: 24px;
-            box-sizing: border-box;
-            animation: slideUp 0.3s ease-out;
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            color: var(--text-gray); font-size: 10px; text-decoration: none; transition: 0.2s;
         }
-
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        input {
-            width: 100%;
-            padding: 14px;
-            margin: 8px 0 16px;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            box-sizing: border-box;
-            font-size: 16px;
-            background: #f9f9f9;
-        }
+        .nav-item.active { color: var(--tiffany); }
+        .nav-item i { font-size: 22px; margin-bottom: 5px; }
 
         /* Кнопки */
-        .main-btn {
-            position: fixed;
-            bottom: 20px; left: 16px; right: 16px;
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 18px;
-            border-radius: 16px;
-            font-size: 16px;
-            font-weight: 700;
-            box-shadow: 0 8px 20px rgba(36, 139, 237, 0.3);
-            cursor: pointer;
+        .btn-add {
+            background: var(--tiffany); color: black; border: none;
+            border-radius: 16px; padding: 16px; width: 100%;
+            font-weight: 800; font-size: 16px; cursor: pointer;
+            margin-top: 10px;
         }
 
-        .save-btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
+        /* Модалка */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 2000; align-items: flex-end;
+        }
+        .modal-content {
+            background: var(--card-bg); width: 100%; padding: 30px 20px;
+            border-top-left-radius: 30px; border-top-right-radius: 30px;
+        }
+        input {
+            width: 100%; padding: 15px; background: #1c1c1e; border: 1px solid #333;
+            border-radius: 12px; color: white; margin: 10px 0 20px; font-size: 16px;
         }
 
-        #loader { text-align: center; margin-top: 100px; color: var(--hint); }
+        #loader { text-align: center; padding-top: 50vh; color: var(--tiffany); font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div id="loader">Загрузка данных...</div>
+<div id="loader">CARGO 365+</div>
 
-<div id="app-content" style="display: none;">
-    <div class="header">
+<div id="screen-home" class="screen">
+    <div class="header-main">
         <div class="avatar" id="avatar-letters">??</div>
-        <div class="user-name" id="user-name">...</div>
-        <div class="user-phone" id="user-phone">...</div>
+        <div>
+            <div id="user-name" style="font-weight: 800; font-size: 20px;">Загрузка...</div>
+            <div id="user-phone" style="color: var(--text-gray); font-size: 14px;">...</div>
+        </div>
     </div>
 
-    <div class="stats">
-        <div class="stat-card">
-            <div class="stat-value" id="bonus-balance">0.0 кг</div>
-            <div class="stat-label">Бонусы</div>
+    <div class="stat-grid">
+        <div class="card">
+            <div class="stat-value" id="bonus-balance">0.0</div>
+            <div class="stat-label">Бонусных кг</div>
         </div>
-        <div class="stat-card">
+        <div class="card">
             <div class="stat-value" id="active-orders">0</div>
             <div class="stat-label">В пути</div>
         </div>
     </div>
 
-    <div class="section-header">
-        <span class="section-title">Мои посылки</span>
-        <span style="color: var(--accent); font-size: 13px;" onclick="loadPackages()">Обновить</span>
-    </div>
-
-    <div class="package-list" id="package-list"></div>
+    <h3 style="margin-left: 5px;">Действия</h3>
+    <button class="btn-add" onclick="openModal()">➕ Добавить трек-номер</button>
 </div>
 
-<button class="main-btn" onclick="openModal()">➕ Добавить трек-номер</button>
+<div id="screen-packages" class="screen">
+    <div style="display:flex; justify-content: space-between; align-items:center;">
+        <h2 style="color: var(--tiffany);">Мои посылки</h2>
+        <i class="fa-solid fa-rotate" onclick="loadPackages()" style="color: var(--tiffany);"></i>
+    </div>
+    <div id="package-list"></div>
+</div>
 
-<div id="trackModal" class="modal" onclick="closeModal(event)">
+<div id="screen-support" class="screen">
+    <h2 style="color: var(--tiffany);">Поддержка</h2>
+    <div class="card">
+        <h4 style="margin-top:0"><i class="fa-solid fa-circle-question"></i> FAQ</h4>
+        <p style="font-size:14px; color:var(--text-gray)">Срок доставки из Иу до Худжанда составляет 10-15 дней с момента отправки.</p>
+    </div>
+    <button class="btn-add" onclick="window.location.href='https://t.me/cargo365plus_support'">
+        <i class="fa-brands fa-telegram"></i> Написать менеджеру
+    </button>
+</div>
+
+<div id="screen-profile" class="screen">
+    <h2 style="color: var(--tiffany);">Настройки</h2>
+    <div class="card">
+        <div style="font-size: 12px; color: var(--text-gray);">Ваш уникальный ID</div>
+        <div id="profile-id" style="font-size: 20px; font-weight: bold; margin-bottom: 15px;">---</div>
+        <div style="font-size: 12px; color: var(--text-gray);">Реферальная ссылка</div>
+        <div style="color: var(--tiffany); font-size: 13px; word-break: break-all;">t.me/cargo365plus_bot?start=ref...</div>
+    </div>
+    <div class="card" onclick="tg.showAlert('Версия 2.0.0 (Poizon Style)')">
+        О приложении <span style="float:right; color:var(--text-gray)">v2.0 ></span>
+    </div>
+</div>
+
+<nav class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('screen-home', this)">
+        <i class="fa-solid fa-house"></i>
+        <span>Главная</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('screen-packages', this)">
+        <i class="fa-solid fa-box-open"></i>
+        <span>Посылки</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('screen-support', this)">
+        <i class="fa-solid fa-headset"></i>
+        <span>Поддержка</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('screen-profile', this)">
+        <i class="fa-solid fa-user-gear"></i>
+        <span>Профиль</span>
+    </div>
+</nav>
+
+<div id="trackModal" class="modal" onclick="closeModal()">
     <div class="modal-content" onclick="event.stopPropagation()">
-        <h3 style="margin-top: 0;">Новая посылка</h3>
-        <label style="font-size: 14px; color: var(--hint);">Трек-номер</label>
-        <input type="text" id="trackInput" placeholder="Например: 994000..." />
-        
-        <label style="font-size: 14px; color: var(--hint);">Описание (необязательно)</label>
-        <input type="text" id="descInput" placeholder="Например: Кроссовки" />
-        
-        <button class="save-btn" onclick="handleSave()">Сохранить трек</button>
-        <button style="background:none; border:none; color:var(--hint); width:100%; margin-top:12px;" onclick="closeModal()">Отмена</button>
+        <h3 style="margin: 0 0 20px 0;">Новый трек</h3>
+        <input type="text" id="trackInput" placeholder="Введите трек-номер" />
+        <input type="text" id="descInput" placeholder="Описание (например, iPhone)" />
+        <button class="btn-add" onclick="handleSave()">Сохранить посылку</button>
     </div>
 </div>
 
@@ -218,96 +215,110 @@
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
+    tg.headerColor = '#050505';
+    tg.backgroundColor = '#050505';
 
     const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
     const userId = tg.initDataUnsafe?.user?.id || 317295540; 
 
-    const headers = {
-        "Content-Type": "application/json",
-        "ngrok-skip-browser-warning": "true"
+    const statusMap = {
+        "AWAITING_IU": "⏳ Ожидается в Иу",
+        "IU_STOCK": "📦 Принят в Иу",
+        "IN_TRANSIT": "✈️ На пути в Худжанд",
+        "READY_FOR_PICKUP": "🎉 Готов к выдаче",
+        "AT_PVZ": "📍 В сортировке (Худжанд)",
+        "ISSUED": "🎁 Получен",
+        "PENDING": "⏳ Обработка",
+        "CANCELED": "❌ Отменён"
     };
+
+    function switchTab(screenId, el) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        el.classList.add('active');
+        tg.HapticFeedback.impactOccurred('light');
+        if(screenId === 'screen-packages') loadPackages();
+    }
 
     async function initApp() {
         try {
-            const dashRes = await fetch(`${API_BASE}/api/dashboard/${userId}`, { headers });
-            const dashData = await dashRes.json();
+            const res = await fetch(`${API_BASE}/api/dashboard/${userId}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
 
-            if (dashData.status === "ok") {
-                document.getElementById("user-name").innerText = dashData.user_info.full_name;
-                document.getElementById("user-phone").innerText = "+" + dashData.user_info.phone;
-                document.getElementById("bonus-balance").innerText = dashData.user_info.bonus_balance + " кг";
-                document.getElementById("active-orders").innerText = dashData.stats.active_orders;
+            if (data.status === "ok") {
+                document.getElementById("user-name").innerText = data.user_info.full_name;
+                document.getElementById("user-phone").innerText = "+" + data.user_info.phone;
+                document.getElementById("bonus-balance").innerText = data.user_info.bonus_balance;
+                document.getElementById("active-orders").innerText = data.stats.active_orders;
+                document.getElementById("profile-id").innerText = userId;
                 
-                const names = dashData.user_info.full_name.split(' ');
+                const names = data.user_info.full_name.split(' ');
                 document.getElementById("avatar-letters").innerText = (names[0]?.[0] || '') + (names[1]?.[0] || '');
 
-                await loadPackages();
                 document.getElementById("loader").style.display = "none";
-                document.getElementById("app-content").style.display = "block";
-            } else {
-                document.getElementById("loader").innerText = "Пожалуйста, зарегистрируйтесь в боте.";
+                document.getElementById("screen-home").classList.add("active");
             }
         } catch (e) {
-            document.getElementById("loader").innerText = "Ошибка API. Проверьте сервер.";
+            document.getElementById("loader").innerText = "Ошибка соединения с API";
         }
     }
 
     async function loadPackages() {
-        const pkgRes = await fetch(`${API_BASE}/api/packages/${userId}`, { headers });
-        const pkgData = await pkgRes.json();
         const listCont = document.getElementById("package-list");
-        listCont.innerHTML = "";
-
-        if (pkgData.packages?.length > 0) {
-            pkgData.packages.forEach(pkg => {
-                listCont.innerHTML += `
-                    <div class="package-item">
-                        <div class="pkg-info">
-                            <span class="pkg-track">${pkg.track}</span>
-                            <span class="pkg-desc">${pkg.description || 'Без описания'}</span>
-                        </div>
-                        <span class="pkg-status">${pkg.status}</span>
-                    </div>
-                `;
+        listCont.innerHTML = "<div style='color:var(--tiffany); text-align:center;'>Загрузка списка...</div>";
+        
+        try {
+            const res = await fetch(`${API_BASE}/api/packages/${userId}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
             });
-        } else {
-            listCont.innerHTML = "<div style='text-align:center; padding:40px; color:var(--hint);'>Нет активных посылок</div>";
+            const data = await res.json();
+            listCont.innerHTML = "";
+
+            if (data.packages?.length > 0) {
+                data.packages.forEach(pkg => {
+                    const statusText = statusMap[pkg.status] || pkg.status;
+                    listCont.innerHTML += `
+                        <div class="package-item">
+                            <div class="status-badge">${statusText}</div>
+                            <div style="font-weight: 800; font-size: 16px;">${pkg.track}</div>
+                            <div style="color: var(--text-gray); font-size: 13px; margin-top:5px;">${pkg.description || 'Без описания'}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                listCont.innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-gray);'>Посылок пока нет</div>";
+            }
+        } catch (e) {
+            listCont.innerHTML = "Ошибка загрузки";
         }
     }
 
-    // Логика модального окна
     function openModal() { document.getElementById("trackModal").style.display = "flex"; }
     function closeModal() { document.getElementById("trackModal").style.display = "none"; }
 
     async function handleSave() {
         const track = document.getElementById("trackInput").value;
         const desc = document.getElementById("descInput").value;
-
-        if (!track) {
-            tg.showAlert("Введите трек-номер!");
-            return;
-        }
+        if (!track) return tg.showAlert("Введите трек-номер!");
 
         try {
             const res = await fetch(`${API_BASE}/api/add_track`, {
                 method: 'POST',
-                headers: headers,
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ user_id: userId, track_number: track, description: desc })
             });
             const result = await res.json();
-            
             if (result.status === "success") {
                 closeModal();
-                document.getElementById("trackInput").value = "";
-                document.getElementById("descInput").value = "";
-                tg.showAlert("Трек добавлен!");
+                tg.showAlert("Трек успешно добавлен!");
                 loadPackages();
             } else {
                 tg.showAlert(result.message);
             }
-        } catch (e) {
-            tg.showAlert("Ошибка при сохранении.");
-        }
+        } catch (e) { tg.showAlert("Ошибка API"); }
     }
 
     initApp();
