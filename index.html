@@ -2,327 +2,233 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Cargo365Plus</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cargo365Plus Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --tiffany: #00BFB2;
-            --poizon-black: #050505;
-            --card-bg: #121212;
-            --text-main: #ffffff;
-            --text-gray: #8e8e93;
-            --error: #ff3b30;
+            --bg-black: #000000; --card-bg: #111111; --tiffany: #1ae2c7;
+            --text-main: #ffffff; --text-gray: #888888;
         }
-
         body {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--poizon-black);
-            color: var(--text-main);
-            overflow-x: hidden;
+            font-family: -apple-system, system-ui, sans-serif;
+            background-color: var(--bg-black); color: var(--text-main);
+            margin: 0; padding: 0 15px 100px 15px; -webkit-tap-highlight-color: transparent;
         }
-
-        /* Системные экраны */
-        .screen { display: none; padding: 20px; padding-bottom: 100px; min-height: 100vh; animation: fadeIn 0.3s ease; }
+        .screen { display: none; animation: fadeIn 0.2s ease; }
         .screen.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Шапка профиля на главной */
-        .header-main {
-            padding: 20px 0;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .avatar {
-            width: 55px; height: 55px;
-            background: var(--tiffany);
-            color: black;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 20px; font-weight: bold;
-        }
-
-        /* Карточки Poizon Style */
         .card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255,255,255,0.05);
+            background: var(--card-bg); border-radius: 16px; padding: 16px;
+            margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05);
         }
-
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .stat-value { font-size: 22px; font-weight: 800; color: var(--tiffany); }
-        .stat-label { font-size: 11px; color: var(--text-gray); text-transform: uppercase; margin-top: 4px; }
-
-        /* Стили посылок */
-        .package-item {
-            background: var(--card-bg);
-            padding: 16px;
-            border-radius: 16px;
-            margin-bottom: 12px;
-            border-left: 4px solid var(--tiffany);
+        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .calc-grid input {
+            background: #1c1c1e; border: 1px solid #333; border-radius: 10px;
+            padding: 12px; color: white; font-size: 14px; outline: none; width: 100%; box-sizing: border-box;
         }
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 700;
-            background: rgba(0, 191, 178, 0.1);
-            color: var(--tiffany);
-            margin-bottom: 8px;
+        .calc-res { 
+            background: rgba(26, 226, 199, 0.1); padding: 15px; border-radius: 12px; 
+            text-align: center; color: var(--tiffany); font-weight: bold; margin-top: 15px; font-size: 20px;
         }
-
-        /* Нижний бар */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0; width: 100%; height: 75px;
-            background: rgba(18, 18, 18, 0.95);
-            backdrop-filter: blur(15px);
-            display: flex; justify-content: space-around; align-items: center;
-            border-top: 1px solid rgba(255,255,255,0.08);
-            z-index: 1000;
-            padding-bottom: 15px;
+        .switcher { display: flex; background: #1c1c1e; padding: 4px; border-radius: 12px; }
+        .sw-btn {
+            flex: 1; padding: 10px; border: none; border-radius: 10px;
+            background: transparent; color: var(--text-gray); font-size: 13px;
         }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center;
-            color: var(--text-gray); font-size: 10px; text-decoration: none; transition: 0.2s;
+        .sw-btn.active { background: var(--tiffany); color: #000; font-weight: bold; }
+        .nav-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(17,17,17,0.98); display: flex; padding: 10px 0 25px 0;
+            border-top: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); z-index: 1000;
         }
+        .nav-item { text-align: center; color: var(--text-gray); text-decoration: none; flex: 1; }
         .nav-item.active { color: var(--tiffany); }
-        .nav-item i { font-size: 22px; margin-bottom: 5px; }
-
-        /* Кнопки */
-        .btn-add {
-            background: var(--tiffany); color: black; border: none;
-            border-radius: 16px; padding: 16px; width: 100%;
-            font-weight: 800; font-size: 16px; cursor: pointer;
-            margin-top: 10px;
+        .nav-item i { font-size: 22px; margin-bottom: 4px; display: block; }
+        .nav-item span { font-size: 10px; }
+        .addr-box { background: #000; padding: 12px; border-radius: 10px; font-size: 12px; position: relative; line-height: 1.4; }
+        select {
+            width: 100%; background: #1c1c1e; color: white; border: 1px solid #333;
+            padding: 12px; border-radius: 10px; margin-top: 5px; appearance: none;
         }
-
-        /* Модалка */
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 2000; align-items: flex-end;
-        }
-        .modal-content {
-            background: var(--card-bg); width: 100%; padding: 30px 20px;
-            border-top-left-radius: 30px; border-top-right-radius: 30px;
-        }
-        input {
-            width: 100%; padding: 15px; background: #1c1c1e; border: 1px solid #333;
-            border-radius: 12px; color: white; margin: 10px 0 20px; font-size: 16px;
-        }
-
-        #loader { text-align: center; padding-top: 50vh; color: var(--tiffany); font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div id="loader">CARGO 365+</div>
-
-<div id="screen-home" class="screen">
-    <div class="header-main">
-        <div class="avatar" id="avatar-letters">??</div>
-        <div>
-            <div id="user-name" style="font-weight: 800; font-size: 20px;">Загрузка...</div>
-            <div id="user-phone" style="color: var(--text-gray); font-size: 14px;">...</div>
+    <div id="screen-home" class="screen active">
+        <div style="margin: 25px 0;">
+            <h1 style="margin:0; font-size: 24px;">Cargo365Plus</h1>
+            <div id="h-sub" style="color: var(--tiffany); font-size: 14px; margin-top: 5px;"></div>
         </div>
-    </div>
 
-    <div class="stat-grid">
+        <div id="opt-calc" class="card" style="display:none;">
+            <h3 style="margin-top:0"><i class="fa-solid fa-calculator"></i> <span class="lang-calc-title">Калькулятор (>100 кг)</span></h3>
+            <div class="calc-grid">
+                <input type="number" id="w" placeholder="Вес (кг)" oninput="calc()">
+                <input type="number" id="l" placeholder="Длина (см)" oninput="calc()">
+                <input type="number" id="wi" placeholder="Ширина (см)" oninput="calc()">
+                <input type="number" id="h" placeholder="Высота (см)" oninput="calc()">
+            </div>
+            <div class="calc-res"><span id="res">0.00</span> $</div>
+        </div>
+
         <div class="card">
-            <div class="stat-value" id="bonus-balance">0.0</div>
-            <div class="stat-label">Бонусных кг</div>
+            <div id="h-bon-label" style="color: var(--text-gray); font-size: 12px;">БОНУСНЫЙ БАЛАНС</div>
+            <div id="h-bon-val" style="font-size: 32px; font-weight: bold; margin-top: 5px;">0 кг</div>
         </div>
-        <div class="card">
-            <div class="stat-value" id="active-orders">0</div>
-            <div class="stat-label">В пути</div>
-        </div>
-    </div>
-
-    <h3 style="margin-left: 5px;">Действия</h3>
-    <button class="btn-add" onclick="openModal()">➕ Добавить трек-номер</button>
-</div>
-
-<div id="screen-packages" class="screen">
-    <div style="display:flex; justify-content: space-between; align-items:center;">
-        <h2 style="color: var(--tiffany);">Мои посылки</h2>
-        <i class="fa-solid fa-rotate" onclick="loadPackages()" style="color: var(--tiffany);"></i>
-    </div>
-    <div id="package-list"></div>
-</div>
-
-<div id="screen-support" class="screen">
-    <h2 style="color: var(--tiffany);">Поддержка</h2>
-    <div class="card">
-        <h4 style="margin-top:0"><i class="fa-solid fa-circle-question"></i> FAQ</h4>
-        <p style="font-size:14px; color:var(--text-gray)">Срок доставки из Иу до Худжанда составляет 10-15 дней с момента отправки.</p>
-    </div>
-    <button class="btn-add" onclick="window.location.href='https://t.me/cargo365plus_support'">
-        <i class="fa-brands fa-telegram"></i> Написать менеджеру
-    </button>
-</div>
-
-<div id="screen-profile" class="screen">
-    <h2 style="color: var(--tiffany);">Настройки</h2>
-    <div class="card">
-        <div style="font-size: 12px; color: var(--text-gray);">Ваш уникальный ID</div>
-        <div id="profile-id" style="font-size: 20px; font-weight: bold; margin-bottom: 15px;">---</div>
-        <div style="font-size: 12px; color: var(--text-gray);">Реферальная ссылка</div>
-        <div style="color: var(--tiffany); font-size: 13px; word-break: break-all;">t.me/cargo365plus_bot?start=ref...</div>
-    </div>
-    <div class="card" onclick="tg.showAlert('Версия 2.0.0 (Poizon Style)')">
-        О приложении <span style="float:right; color:var(--text-gray)">v2.0 ></span>
-    </div>
-</div>
-
-<nav class="bottom-nav">
-    <div class="nav-item active" onclick="switchTab('screen-home', this)">
-        <i class="fa-solid fa-house"></i>
-        <span>Главная</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('screen-packages', this)">
-        <i class="fa-solid fa-box-open"></i>
-        <span>Посылки</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('screen-support', this)">
-        <i class="fa-solid fa-headset"></i>
-        <span>Поддержка</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('screen-profile', this)">
-        <i class="fa-solid fa-user-gear"></i>
-        <span>Профиль</span>
-    </div>
-</nav>
-
-<div id="trackModal" class="modal" onclick="closeModal()">
-    <div class="modal-content" onclick="event.stopPropagation()">
-        <h3 style="margin: 0 0 20px 0;">Новый трек</h3>
-        <input type="text" id="trackInput" placeholder="Введите трек-номер" />
-        <input type="text" id="descInput" placeholder="Описание (например, iPhone)" />
-        <button class="btn-add" onclick="handleSave()">Сохранить посылку</button>
-    </div>
-</div>
-
-<script>
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
-    tg.headerColor = '#050505';
-    tg.backgroundColor = '#050505';
-
-    const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
-    const userId = tg.initDataUnsafe?.user?.id || 317295540; 
-
-    const statusMap = {
-        "AWAITING_IU": "⏳ Ожидается в Иу",
-        "IU_STOCK": "📦 Принят в Иу",
-        "IN_TRANSIT": "✈️ На пути в Худжанд",
-        "READY_FOR_PICKUP": "🎉 Готов к выдаче",
-        "AT_PVZ": "📍 В сортировке (Худжанд)",
-        "ISSUED": "🎁 Получен",
-        "PENDING": "⏳ Обработка",
-        "CANCELED": "❌ Отменён"
-    };
-
-    function switchTab(screenId, el) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        document.getElementById(screenId).classList.add('active');
-        el.classList.add('active');
-        tg.HapticFeedback.impactOccurred('light');
-        if(screenId === 'screen-packages') loadPackages();
-    }
-
-    async function initApp() {
-        try {
-            const res = await fetch(`${API_BASE}/api/dashboard/${userId}`, {
-                headers: { "ngrok-skip-browser-warning": "true" }
-            });
-            const data = await res.json();
-
-            if (data.status === "ok") {
-                document.getElementById("user-name").innerText = data.user_info.full_name;
-                document.getElementById("user-phone").innerText = "+" + data.user_info.phone;
-                document.getElementById("bonus-balance").innerText = data.user_info.bonus_balance;
-                document.getElementById("active-orders").innerText = data.stats.active_orders;
-                document.getElementById("profile-id").innerText = userId;
-                
-                const names = data.user_info.full_name.split(' ');
-                document.getElementById("avatar-letters").innerText = (names[0]?.[0] || '') + (names[1]?.[0] || '');
-
-                document.getElementById("loader").style.display = "none";
-                document.getElementById("screen-home").classList.add("active");
-            }
-        } catch (e) {
-            document.getElementById("loader").innerText = "Ошибка соединения с API";
-        }
-    }
-
-    async function loadPackages() {
-        const listCont = document.getElementById("package-list");
-        listCont.innerHTML = "<div style='color:var(--tiffany); text-align:center;'>Загрузка списка...</div>";
         
-        try {
-            const res = await fetch(`${API_BASE}/api/packages/${userId}`, {
-                headers: { "ngrok-skip-browser-warning": "true" }
-            });
-            const data = await res.json();
-            listCont.innerHTML = "";
+        <div id="h-pvz-card" class="card">
+            <div style="color: var(--text-gray); font-size: 12px;">ВАШ ПУНКТ ВЫДАЧИ (ПВЗ)</div>
+            <div id="h-pvz-val" style="font-weight: 600; margin-top: 8px;"><i class="fa-solid fa-location-dot"></i> --</div>
+        </div>
+    </div>
 
-            if (data.packages?.length > 0) {
-                data.packages.forEach(pkg => {
-                    const statusText = statusMap[pkg.status] || pkg.status;
-                    listCont.innerHTML += `
-                        <div class="package-item">
-                            <div class="status-badge">${statusText}</div>
-                            <div style="font-weight: 800; font-size: 16px;">${pkg.track}</div>
-                            <div style="color: var(--text-gray); font-size: 13px; margin-top:5px;">${pkg.description || 'Без описания'}</div>
-                        </div>
-                    `;
-                });
-            } else {
-                listCont.innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-gray);'>Посылок пока нет</div>";
-            }
-        } catch (e) {
-            listCont.innerHTML = "Ошибка загрузки";
+    <div id="screen-pkgs" class="screen">
+        <h2 id="p-title" style="margin: 25px 0;">Мои заказы</h2>
+        <div id="orders-container"></div>
+    </div>
+
+    <div id="screen-profile" class="screen">
+        <h2 style="margin: 25px 0;">Настройки</h2>
+        
+        <div class="card">
+            <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 10px;">КАТЕГОРИЯ ОБСЛУЖИВАНИЯ</div>
+            <div class="switcher">
+                <button id="cat-less" class="sw-btn" onclick="setCat('less_100')">До 100 кг</button>
+                <button id="cat-more" class="sw-btn" onclick="setCat('more_100')">От 100 кг</button>
+            </div>
+        </div>
+
+        <div id="pr-pvz-card" class="card">
+            <div style="font-size: 12px; color: var(--text-gray);">ВЫБРАТЬ ПУНКТ ВЫДАЧИ</div>
+            <select id="pvz-select" onchange="updatePvz()">
+                <option value="🇹🇯 Душанбе">🇹🇯 Душанбе</option>
+                <option value="🇹🇯 Худжанд">🇹🇯 Худжанд</option>
+            </select>
+        </div>
+
+        <div class="card">
+            <div style="font-size: 12px; color: var(--text-gray); margin-bottom:10px;">АДРЕС СКЛАДА В КИТАЕ (ИУ)</div>
+            <div class="addr-box" onclick="copyAddr()">
+                <span id="cn-addr">浙江省义乌市廿三里街道惠民路708号 988库 / ID: <span class="u-id"></span></span>
+                <i class="fa-regular fa-copy" style="position:absolute; right:10px; top:12px; color:var(--tiffany)"></i>
+            </div>
+        </div>
+    </div>
+
+    <nav class="nav-bar">
+        <a href="javascript:void(0)" class="nav-item active" id="nav-home" onclick="nav('home')">
+            <i class="fa-solid fa-house"></i><span class="l-home">Главная</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" id="nav-pkgs" onclick="nav('pkgs')">
+            <i class="fa-solid fa-box"></i><span class="l-pkgs">Посылки</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" id="nav-profile" onclick="nav('profile')">
+            <i class="fa-solid fa-user-gear"></i><span class="l-prof">Профиль</span>
+        </a>
+    </nav>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        
+        const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
+        const userId = tg.initDataUnsafe?.user?.id || 317295540; 
+        let lang = tg.initDataUnsafe?.user?.language_code || 'ru';
+        if(!['ru','tj','uz'].includes(lang)) lang = 'ru';
+
+        let userData = { category: 'less_100', pvz: 'Не выбран', bonus: 0 };
+
+        const i18n = {
+            ru: { home: "Главная", pkgs: "Посылки", prof: "Профиль", bon: "БОНУСНЫЙ БАЛАНС", opt: "Оптовый клиент", roz: "Розничный клиент" },
+            tj: { home: "Асосӣ", pkgs: "Борҳо", prof: "Танзимот", bon: "БАЛАНСИ БОНУСӢ", opt: "Мизоҷи яклухт", roz: "Мизоҷи чакана" },
+            uz: { home: "Асосий", pkgs: "Юклар", prof: "Созламалар", bon: "БОНУС БАЛАНСИ", opt: "Улгуржи мижоз", roz: "Чакана мижоз" }
+        };
+
+        async function init() {
+            try {
+                const r = await fetch(`${API_BASE}/api/dashboard/${userId}`);
+                const data = await r.json();
+                if(data.status === 'ok') {
+                    userData = {
+                        category: data.user_info.category || 'less_100',
+                        pvz: data.user_info.pvz || 'Не выбран',
+                        bonus: data.user_info.bonus_balance || 0
+                    };
+                    render();
+                }
+            } catch (e) { console.error("API Error", e); }
+            applyLang();
         }
-    }
 
-    function openModal() { document.getElementById("trackModal").style.display = "flex"; }
-    function closeModal() { document.getElementById("trackModal").style.display = "none"; }
+        function render() {
+            const isOpt = userData.category === 'more_100';
+            document.getElementById('opt-calc').style.display = isOpt ? 'block' : 'none';
+            document.getElementById('h-pvz-card').style.display = isOpt ? 'none' : 'block';
+            document.getElementById('pr-pvz-card').style.display = isOpt ? 'none' : 'block';
+            document.getElementById('h-bon-val').innerText = userData.bonus + " кг";
+            document.getElementById('h-pvz-val').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${userData.pvz}`;
+            document.querySelectorAll('.u-id').forEach(el => el.innerText = userId);
+            document.getElementById('cat-less').classList.toggle('active', !isOpt);
+            document.getElementById('cat-more').classList.toggle('active', isOpt);
+            document.getElementById('h-sub').innerText = isOpt ? i18n[lang].opt : i18n[lang].roz;
+        }
 
-    async function handleSave() {
-        const track = document.getElementById("trackInput").value;
-        const desc = document.getElementById("descInput").value;
-        if (!track) return tg.showAlert("Введите трек-номер!");
-
-        try {
-            const res = await fetch(`${API_BASE}/api/add_track`, {
+        async function setCat(cat) {
+            tg.HapticFeedback.selectionChanged();
+            userData.category = cat;
+            render();
+            await fetch(`${API_BASE}/api/update_settings`, {
                 method: 'POST',
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ user_id: userId, track_number: track, description: desc })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ user_id: userId, category: cat })
             });
-            const result = await res.json();
-            if (result.status === "success") {
-                closeModal();
-                tg.showAlert("Трек успешно добавлен!");
-                loadPackages();
-            } else {
-                tg.showAlert(result.message);
-            }
-        } catch (e) { tg.showAlert("Ошибка API"); }
-    }
+        }
 
-    initApp();
-</script>
+        async function updatePvz() {
+            const val = document.getElementById('pvz-select').value;
+            userData.pvz = val;
+            render();
+            await fetch(`${API_BASE}/api/update_settings`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ user_id: userId, pvz: val })
+            });
+        }
 
+        function calc() {
+            const weight = parseFloat(document.getElementById('w').value) || 0;
+            const l = parseFloat(document.getElementById('l').value) || 0;
+            const w = parseFloat(document.getElementById('wi').value) || 0;
+            const h = parseFloat(document.getElementById('h').value) || 0;
+            const vol = (l * w * h) / 1000000;
+            const price = Math.max(weight * 4.5, vol * 180);
+            document.getElementById('res').innerText = price.toFixed(2);
+        }
+
+        function nav(scr) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-' + scr).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('nav-' + scr).classList.add('active');
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        function copyAddr() {
+            navigator.clipboard.writeText(document.getElementById('cn-addr').innerText);
+            tg.showAlert("Адрес скопирован!");
+        }
+
+        function applyLang() {
+            const t = i18n[lang];
+            document.querySelectorAll('.l-home').forEach(el => el.innerText = t.home);
+            document.querySelectorAll('.l-pkgs').forEach(el => el.innerText = t.pkgs);
+            document.querySelectorAll('.l-prof').forEach(el => el.innerText = t.prof);
+            document.getElementById('h-bon-label').innerText = t.bon;
+        }
+
+        init();
+    </script>
 </body>
 </html>
