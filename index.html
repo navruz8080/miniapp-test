@@ -158,46 +158,53 @@
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+    tg.ready();
+    tg.expand();
 
-        // --- НАСТРОЙКА ---
-        // Замени на свою ссылку из ngrok
-        const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
-        const userId = tg.initDataUnsafe?.user?.id || 317295540; // Твой ID для теста
+    // --- НАСТРОЙКА ---
+    const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
+    const userId = tg.initDataUnsafe?.user?.id || 317295540; 
 
-        async function initApp() {
-            try {
-                // 1. Загружаем Dashboard
-                const dashRes = await fetch(`${API_BASE}/api/dashboard/${userId}`);
-                const dashData = await dashRes.json();
+    // Общие заголовки для всех запросов
+    const headers = {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true" // ОБЯЗАТЕЛЬНО для ngrok
+    };
 
-                if (dashData.status === "ok") {
-                    document.getElementById("user-name").innerText = dashData.user_info.full_name;
-                    document.getElementById("user-phone").innerText = "+" + dashData.user_info.phone;
-                    document.getElementById("bonus-balance").innerText = dashData.user_info.bonus_balance + " кг";
-                    document.getElementById("active-orders").innerText = dashData.stats.active_orders;
-                    
-                    // Инициалы для аватарки
-                    const names = dashData.user_info.full_name.split(' ');
-                    document.getElementById("avatar-letters").innerText = (names[0]?.[0] || '') + (names[1]?.[0] || '');
+    async function initApp() {
+        try {
+            console.log("Запрос к:", `${API_BASE}/api/dashboard/${userId}`);
+            const dashRes = await fetch(`${API_BASE}/api/dashboard/${userId}`, { headers });
+            
+            if (!dashRes.ok) throw new Error('Ошибка сервера');
+            
+            const dashData = await dashRes.json();
 
-                    // 2. Загружаем посылки
-                    await loadPackages();
+            if (dashData.status === "ok") {
+                document.getElementById("user-name").innerText = dashData.user_info.full_name;
+                document.getElementById("user-phone").innerText = "+" + dashData.user_info.phone;
+                document.getElementById("bonus-balance").innerText = dashData.user_info.bonus_balance + " кг";
+                document.getElementById("active-orders").innerText = dashData.stats.active_orders;
+                
+                const names = dashData.user_info.full_name.split(' ');
+                document.getElementById("avatar-letters").innerText = (names[0]?.[0] || '') + (names[1]?.[0] || '');
 
-                    document.getElementById("loader").style.display = "none";
-                    document.getElementById("app-content").style.display = "block";
-                } else {
-                    document.getElementById("loader").innerText = "Ошибка: Пользователь не найден в базе.";
-                }
-            } catch (e) {
-                document.getElementById("loader").innerText = "Ошибка подключения к API.";
-                console.error(e);
+                await loadPackages();
+
+                document.getElementById("loader").style.display = "none";
+                document.getElementById("app-content").style.display = "block";
+            } else {
+                document.getElementById("loader").innerText = "Пользователь не найден. Зарегистрируйтесь в боте.";
             }
+        } catch (e) {
+            document.getElementById("loader").innerHTML = `Ошибка подключения к API.<br><small style="font-size:10px; color:gray;">${e.message}</small>`;
+            console.error("Full error:", e);
         }
+    }
 
-        async function loadPackages() {
-            const pkgRes = await fetch(`${API_BASE}/api/packages/${userId}`);
+    async function loadPackages() {
+        try {
+            const pkgRes = await fetch(`${API_BASE}/api/packages/${userId}`, { headers });
             const pkgData = await pkgRes.json();
             const listCont = document.getElementById("package-list");
             listCont.innerHTML = "";
@@ -215,43 +222,45 @@
                     `;
                 });
             } else {
-                listCont.innerHTML = "<div style='text-align:center; color:#999;'>У вас пока нет посылок</div>";
+                listCont.innerHTML = "<div style='text-align:center; color:#999; padding:20px;'>У вас пока нет посылок</div>";
             }
+        } catch (e) {
+            console.error("Ошибка загрузки посылок:", e);
         }
+    }
 
-        function addTrack() {
-            // Используем стандартный Popup Telegram для ввода (опционально) или просто prompt
-            const track = prompt("Введите трек-номер:");
-            if (track) {
-                const desc = prompt("Описание (например: Одежда):");
-                sendTrack(track, desc);
+    async function sendTrack(track, desc) {
+        try {
+            const res = await fetch(`${API_BASE}/api/add_track`, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({
+                    user_id: userId,
+                    track_number: track,
+                    description: desc || "Без описания"
+                })
+            });
+            const result = await res.json();
+            if (result.status === "success") {
+                tg.showAlert("Трек успешно добавлен!");
+                loadPackages();
+            } else {
+                tg.showAlert("Ошибка: " + result.message);
             }
+        } catch (e) {
+            tg.showAlert("Сервер недоступен.");
         }
+    }
 
-        async function sendTrack(track, desc) {
-            try {
-                const res = await fetch(`${API_BASE}/api/add_track`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        track_number: track,
-                        description: desc || "Без описания"
-                    })
-                });
-                const result = await res.json();
-                if (result.status === "success") {
-                    tg.showAlert("Трек успешно добавлен!");
-                    loadPackages(); // Обновляем список
-                } else {
-                    tg.showAlert("Ошибка: " + result.message);
-                }
-            } catch (e) {
-                tg.showAlert("Сервер недоступен.");
-            }
+    function addTrack() {
+        const track = prompt("Введите трек-номер:");
+        if (track) {
+            const desc = prompt("Описание (например: Одежда):");
+            sendTrack(track, desc);
         }
+    }
 
-        initApp();
+    initApp();
     </script>
 </body>
 </html>
