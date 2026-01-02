@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cargo365Plus Mini App</title>
+    <title>Drop - Доставка грузов</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -15,14 +15,39 @@
             font-family: -apple-system, system-ui, sans-serif;
             background-color: var(--bg-black); color: var(--text-main);
             margin: 0; padding: 0 15px 100px 15px; -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
         }
-        .screen { display: none; animation: fadeIn 0.2s ease; }
+
+        /* АНИМАЦИЯ ЗАГРУЗКИ "DROP" */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-black); z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .drop-anim {
+            font-size: 60px; color: var(--tiffany);
+            animation: dropBounce 2s ease-in-out infinite;
+        }
+        @keyframes dropBounce {
+            0% { transform: translateY(-150px) scaleY(1.1); opacity: 0; }
+            30% { transform: translateY(0) scaleY(0.9); opacity: 1; }
+            50% { transform: translateY(-20px) rotate(5deg); }
+            70% { transform: translateY(0) rotate(-5deg); }
+            100% { transform: translateY(0); }
+        }
+        .loading-text { margin-top: 20px; font-weight: bold; letter-spacing: 2px; color: var(--tiffany); }
+
+        /* Экраны */
+        .screen { display: none; animation: fadeIn 0.3s ease; }
         .screen.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
         .card {
             background: var(--card-bg); border-radius: 16px; padding: 16px;
             margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05);
         }
+
+        /* Калькулятор */
         .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .calc-grid input {
             background: #1c1c1e; border: 1px solid #333; border-radius: 10px;
@@ -32,12 +57,15 @@
             background: rgba(26, 226, 199, 0.1); padding: 15px; border-radius: 12px; 
             text-align: center; color: var(--tiffany); font-weight: bold; margin-top: 15px; font-size: 20px;
         }
+
+        /* Кнопки и Навигация */
         .switcher { display: flex; background: #1c1c1e; padding: 4px; border-radius: 12px; }
         .sw-btn {
             flex: 1; padding: 10px; border: none; border-radius: 10px;
             background: transparent; color: var(--text-gray); font-size: 13px;
         }
         .sw-btn.active { background: var(--tiffany); color: #000; font-weight: bold; }
+        
         .nav-bar {
             position: fixed; bottom: 0; left: 0; right: 0;
             background: rgba(17,17,17,0.98); display: flex; padding: 10px 0 25px 0;
@@ -47,7 +75,9 @@
         .nav-item.active { color: var(--tiffany); }
         .nav-item i { font-size: 22px; margin-bottom: 4px; display: block; }
         .nav-item span { font-size: 10px; }
-        .addr-box { background: #000; padding: 12px; border-radius: 10px; font-size: 12px; position: relative; line-height: 1.4; }
+
+        .addr-box { background: #000; padding: 12px; border-radius: 10px; font-size: 13px; line-height: 1.5; color: #ddd; position: relative; }
+        code { background: #333; padding: 2px 6px; border-radius: 4px; color: var(--tiffany); font-family: monospace; }
         select {
             width: 100%; background: #1c1c1e; color: white; border: 1px solid #333;
             padding: 12px; border-radius: 10px; margin-top: 5px; appearance: none;
@@ -56,14 +86,19 @@
 </head>
 <body>
 
-    <div id="screen-home" class="screen active">
+    <div id="loader">
+        <div class="drop-anim"><i class="fa-solid fa-parachute-box"></i></div>
+        <div class="loading-text">DROP</div>
+    </div>
+
+    <div id="screen-home" class="screen">
         <div style="margin: 25px 0;">
-            <h1 style="margin:0; font-size: 24px;">Cargo365Plus</h1>
-            <div id="h-sub" style="color: var(--tiffany); font-size: 14px; margin-top: 5px;"></div>
+            <h1 style="margin:0; font-size: 28px; letter-spacing: -1px;">Drop</h1>
+            <div id="h-sub" style="color: var(--tiffany); font-size: 14px;"></div>
         </div>
 
         <div id="opt-calc" class="card" style="display:none;">
-            <h3 style="margin-top:0"><i class="fa-solid fa-calculator"></i> <span class="lang-calc-title">Калькулятор (>100 кг)</span></h3>
+            <h3 style="margin-top:0"><i class="fa-solid fa-calculator"></i> Калькулятор ОПТ</h3>
             <div class="calc-grid">
                 <input type="number" id="w" placeholder="Вес (кг)" oninput="calc()">
                 <input type="number" id="l" placeholder="Длина (см)" oninput="calc()">
@@ -74,18 +109,18 @@
         </div>
 
         <div class="card">
-            <div id="h-bon-label" style="color: var(--text-gray); font-size: 12px;">БОНУСНЫЙ БАЛАНС</div>
+            <div style="color: var(--text-gray); font-size: 11px; text-transform: uppercase;">Бонусный баланс</div>
             <div id="h-bon-val" style="font-size: 32px; font-weight: bold; margin-top: 5px;">0 кг</div>
         </div>
         
         <div id="h-pvz-card" class="card">
-            <div style="color: var(--text-gray); font-size: 12px;">ВАШ ПУНКТ ВЫДАЧИ (ПВЗ)</div>
+            <div style="color: var(--text-gray); font-size: 11px; text-transform: uppercase;">Пункт выдачи</div>
             <div id="h-pvz-val" style="font-weight: 600; margin-top: 8px;"><i class="fa-solid fa-location-dot"></i> --</div>
         </div>
     </div>
 
     <div id="screen-pkgs" class="screen">
-        <h2 id="p-title" style="margin: 25px 0;">Мои заказы</h2>
+        <h2 style="margin: 25px 0;">Мои заказы</h2>
         <div id="orders-container"></div>
     </div>
 
@@ -93,7 +128,7 @@
         <h2 style="margin: 25px 0;">Настройки</h2>
         
         <div class="card">
-            <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 10px;">КАТЕГОРИЯ ОБСЛУЖИВАНИЯ</div>
+            <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 10px;">КАТЕГОРИЯ ГРУЗА</div>
             <div class="switcher">
                 <button id="cat-less" class="sw-btn" onclick="setCat('less_100')">До 100 кг</button>
                 <button id="cat-more" class="sw-btn" onclick="setCat('more_100')">От 100 кг</button>
@@ -101,31 +136,28 @@
         </div>
 
         <div id="pr-pvz-card" class="card">
-            <div style="font-size: 12px; color: var(--text-gray);">ВЫБРАТЬ ПУНКТ ВЫДАЧИ</div>
-            <select id="pvz-select" onchange="updatePvz()">
-                <option value="🇹🇯 Душанбе">🇹🇯 Душанбе</option>
-                <option value="🇹🇯 Худжанд">🇹🇯 Худжанд</option>
-            </select>
+            <div style="font-size: 12px; color: var(--text-gray);">ВЫБРАТЬ ПВЗ</div>
+            <select id="pvz-select" onchange="updatePvz()"></select>
         </div>
 
         <div class="card">
-            <div style="font-size: 12px; color: var(--text-gray); margin-bottom:10px;">АДРЕС СКЛАДА В КИТАЕ (ИУ)</div>
+            <div style="font-size: 12px; color: var(--text-gray); margin-bottom:10px;">АДРЕС СКЛАДА В КИТАЕ</div>
             <div class="addr-box" onclick="copyAddr()">
-                <span id="cn-addr">浙江省义乌市廿三里街道惠民路708号 988库 / ID: <span class="u-id"></span></span>
-                <i class="fa-regular fa-copy" style="position:absolute; right:10px; top:12px; color:var(--tiffany)"></i>
+                <span id="cn-addr">Загрузка адреса...</span>
+                <i class="fa-regular fa-copy" style="position:absolute; right:15px; top:15px; color:var(--tiffany)"></i>
             </div>
         </div>
     </div>
 
     <nav class="nav-bar">
         <a href="javascript:void(0)" class="nav-item active" id="nav-home" onclick="nav('home')">
-            <i class="fa-solid fa-house"></i><span class="l-home">Главная</span>
+            <i class="fa-solid fa-house"></i><span>Главная</span>
         </a>
         <a href="javascript:void(0)" class="nav-item" id="nav-pkgs" onclick="nav('pkgs')">
-            <i class="fa-solid fa-box"></i><span class="l-pkgs">Посылки</span>
+            <i class="fa-solid fa-box"></i><span>Посылки</span>
         </a>
         <a href="javascript:void(0)" class="nav-item" id="nav-profile" onclick="nav('profile')">
-            <i class="fa-solid fa-user-gear"></i><span class="l-prof">Профиль</span>
+            <i class="fa-solid fa-user-gear"></i><span>Профиль</span>
         </a>
     </nav>
 
@@ -135,16 +167,12 @@
         
         const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
         const userId = tg.initDataUnsafe?.user?.id || 317295540; 
-        let lang = tg.initDataUnsafe?.user?.language_code || 'ru';
-        if(!['ru','tj','uz'].includes(lang)) lang = 'ru';
+        
+        const ADDR_LESS = "义乌市 后宅街道 神舟路 123号 (DROP ROZN)"; // Твой розничный адрес
+        const ADDR_MORE = "义乌市 廿三里街道 惠民路 708号 (DROP OPT)";  // Твой оптовый адрес
+        const PVZ_LIST = ["🇹🇯 Худжанд (19-й мкр)", "🇹🇯 Спитамен (Центр)"];
 
-        let userData = { category: 'less_100', pvz: 'Не выбран', bonus: 0 };
-
-        const i18n = {
-            ru: { home: "Главная", pkgs: "Посылки", prof: "Профиль", bon: "БОНУСНЫЙ БАЛАНС", opt: "Оптовый клиент", roz: "Розничный клиент" },
-            tj: { home: "Асосӣ", pkgs: "Борҳо", prof: "Танзимот", bon: "БАЛАНСИ БОНУСӢ", opt: "Мизоҷи яклухт", roz: "Мизоҷи чакана" },
-            uz: { home: "Асосий", pkgs: "Юклар", prof: "Созламалар", bon: "БОНУС БАЛАНСИ", opt: "Улгуржи мижоз", roz: "Чакана мижоз" }
-        };
+        let userData = { category: 'less_100', pvz: 'Не выбран', bonus: 0, packages: [] };
 
         async function init() {
             try {
@@ -154,25 +182,68 @@
                     userData = {
                         category: data.user_info.category || 'less_100',
                         pvz: data.user_info.pvz || 'Не выбран',
-                        bonus: data.user_info.bonus_balance || 0
+                        bonus: data.user_info.bonus_balance || 0,
+                        packages: data.packages || []
                     };
-                    render();
                 }
-            } catch (e) { console.error("API Error", e); }
-            applyLang();
+            } catch (e) { console.error(e); }
+            
+            setTimeout(() => {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('screen-home').classList.add('active');
+                render();
+            }, 1800);
         }
 
         function render() {
             const isOpt = userData.category === 'more_100';
+            
+            // Калькулятор и ПВЗ
             document.getElementById('opt-calc').style.display = isOpt ? 'block' : 'none';
             document.getElementById('h-pvz-card').style.display = isOpt ? 'none' : 'block';
             document.getElementById('pr-pvz-card').style.display = isOpt ? 'none' : 'block';
+            
+            // Текст и адрес (ID пользователя теперь четко в конце через пробел)
+            const baseAddr = isOpt ? ADDR_MORE : ADDR_LESS;
+            document.getElementById('cn-addr').innerHTML = `${baseAddr} <br><b>ID: ${userId}</b>`;
+            document.getElementById('h-sub').innerText = isOpt ? "Оптовый клиент" : "Розничный клиент";
             document.getElementById('h-bon-val').innerText = userData.bonus + " кг";
             document.getElementById('h-pvz-val').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${userData.pvz}`;
-            document.querySelectorAll('.u-id').forEach(el => el.innerText = userId);
+            
+            // Кнопки категорий
             document.getElementById('cat-less').classList.toggle('active', !isOpt);
             document.getElementById('cat-more').classList.toggle('active', isOpt);
-            document.getElementById('h-sub').innerText = isOpt ? i18n[lang].opt : i18n[lang].roz;
+
+            // Рендер ПВЗ
+            const sel = document.getElementById('pvz-select');
+            sel.innerHTML = '';
+            PVZ_LIST.forEach(p => {
+                let o = document.createElement('option'); o.value = p; o.text = p;
+                if(p === userData.pvz) o.selected = true;
+                sel.add(o);
+            });
+
+            renderOrders();
+        }
+
+        function renderOrders() {
+            const cont = document.getElementById('orders-container');
+            cont.innerHTML = '';
+            if(!userData.packages.length) {
+                cont.innerHTML = '<div class="card" style="text-align:center;color:gray">Нет заказов</div>';
+                return;
+            }
+            userData.packages.forEach(p => {
+                cont.innerHTML += `
+                    <div class="card">
+                        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-gray);margin-bottom:8px">
+                            <span>${p.date || 'Дата неизвестна'}</span>
+                            <span style="color:var(--tiffany)">${p.status_text || 'В пути'}</span>
+                        </div>
+                        <div style="margin-bottom:8px"><b>Трек:</b> <code>${p.track_number}</code></div>
+                        <div style="font-size:13px;opacity:0.8">Вес: ${p.weight}кг | Объем: ${p.volume}м³</div>
+                    </div>`;
+            });
         }
 
         async function setCat(cat) {
@@ -180,8 +251,7 @@
             userData.category = cat;
             render();
             await fetch(`${API_BASE}/api/update_settings`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ user_id: userId, category: cat })
             });
         }
@@ -191,20 +261,18 @@
             userData.pvz = val;
             render();
             await fetch(`${API_BASE}/api/update_settings`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ user_id: userId, pvz: val })
             });
         }
 
         function calc() {
-            const weight = parseFloat(document.getElementById('w').value) || 0;
+            const w = parseFloat(document.getElementById('w').value) || 0;
             const l = parseFloat(document.getElementById('l').value) || 0;
-            const w = parseFloat(document.getElementById('wi').value) || 0;
+            const wi = parseFloat(document.getElementById('wi').value) || 0;
             const h = parseFloat(document.getElementById('h').value) || 0;
-            const vol = (l * w * h) / 1000000;
-            const price = Math.max(weight * 4.5, vol * 180);
-            document.getElementById('res').innerText = price.toFixed(2);
+            const vol = (l * wi * h) / 1000000;
+            document.getElementById('res').innerText = Math.max(w * 4.5, vol * 180).toFixed(2);
         }
 
         function nav(scr) {
@@ -217,15 +285,8 @@
 
         function copyAddr() {
             navigator.clipboard.writeText(document.getElementById('cn-addr').innerText);
-            tg.showAlert("Адрес скопирован!");
-        }
-
-        function applyLang() {
-            const t = i18n[lang];
-            document.querySelectorAll('.l-home').forEach(el => el.innerText = t.home);
-            document.querySelectorAll('.l-pkgs').forEach(el => el.innerText = t.pkgs);
-            document.querySelectorAll('.l-prof').forEach(el => el.innerText = t.prof);
-            document.getElementById('h-bon-label').innerText = t.bon;
+            tg.showScanQrPopup({text: "Адрес скопирован!"}); // Просто красивый хинт
+            setTimeout(() => tg.closeScanQrPopup(), 1000);
         }
 
         init();
