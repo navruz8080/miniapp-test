@@ -3,341 +3,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Drop - Доставка грузов</title>
+    <title>Drop Logistics</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --bg-black: #000000; --card-bg: #111111; --tiffany: #1ae2c7;
-            --text-main: #ffffff; --text-gray: #888888;
-        }
-        body {
-            font-family: -apple-system, system-ui, sans-serif;
-            background-color: var(--bg-black); color: var(--text-main);
-            margin: 0; padding: 0 15px 100px 15px; -webkit-tap-highlight-color: transparent;
-            overflow-x: hidden;
-        }
+        :root { --bg: #000; --card: #111; --tiffany: #1ae2c7; --text: #fff; --gray: #888; --danger: #ff4d4d; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0 15px 120px; -webkit-tap-highlight-color: transparent; }
+        
+        /* Loader */
+        #loader { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .drop-anim { font-size: 60px; color: var(--tiffany); animation: dropBounce 2s ease-in-out infinite; }
+        @keyframes dropBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
 
-        /* LOADING ANIMATION */
-        #loader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-black); z-index: 9999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .drop-anim {
-            font-size: 60px; color: var(--tiffany);
-            animation: dropBounce 2s ease-in-out infinite;
-        }
-        @keyframes dropBounce {
-            0% { transform: translateY(-150px) scaleY(1.1); opacity: 0; }
-            30% { transform: translateY(0) scaleY(0.9); opacity: 1; }
-            50% { transform: translateY(-20px) rotate(5deg); }
-            70% { transform: translateY(0) rotate(-5deg); }
-            100% { transform: translateY(0); }
-        }
-        .loading-text { margin-top: 20px; font-weight: bold; letter-spacing: 2px; color: var(--tiffany); }
-
+        /* Screens */
         .screen { display: none; animation: fadeIn 0.3s ease; }
         .screen.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .card {
-            background: var(--card-bg); border-radius: 16px; padding: 16px;
-            margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .calc-grid input {
-            background: #1c1c1e; border: 1px solid #333; border-radius: 10px;
-            padding: 12px; color: white; font-size: 14px; outline: none; width: 100%; box-sizing: border-box;
-        }
-        .calc-res { 
-            background: rgba(26, 226, 199, 0.1); padding: 15px; border-radius: 12px; 
-            text-align: center; color: var(--tiffany); font-weight: bold; margin-top: 15px; font-size: 20px;
-        }
-
-        .switcher { display: flex; background: #1c1c1e; padding: 4px; border-radius: 12px; }
-        .sw-btn {
-            flex: 1; padding: 10px; border: none; border-radius: 10px;
-            background: transparent; color: var(--text-gray); font-size: 13px;
-        }
-        .sw-btn.active { background: var(--tiffany); color: #000; font-weight: bold; }
+        /* Components */
+        .card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .btn-main { background: var(--tiffany); color: #000; border: none; border-radius: 12px; padding: 15px; width: 100%; font-weight: bold; font-size: 16px; transition: 0.2s; }
+        .btn-main:active { transform: scale(0.98); opacity: 0.9; }
         
-        .nav-bar {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: rgba(17,17,17,0.98); display: flex; padding: 10px 0 25px 0;
-            border-top: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); z-index: 1000;
-        }
-        .nav-item { text-align: center; color: var(--text-gray); text-decoration: none; flex: 1; }
+        input, select { width: 100%; background: #1c1c1e; border: 1px solid #333; border-radius: 12px; padding: 14px; color: #fff; box-sizing: border-box; font-size: 15px; margin-top: 8px; }
+        
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10,10,10,0.9); display: flex; padding: 12px 0 30px; border-top: 1px solid #222; backdrop-filter: blur(15px); z-index: 1000; }
+        .nav-item { flex: 1; text-align: center; color: var(--gray); text-decoration: none; font-size: 11px; transition: 0.2s; }
         .nav-item.active { color: var(--tiffany); }
-        .nav-item i { font-size: 22px; margin-bottom: 4px; display: block; }
-        .nav-item span { font-size: 10px; }
+        .nav-item i { font-size: 22px; display: block; margin-bottom: 5px; }
 
-        .addr-box { 
-            background: #000; padding: 12px; border-radius: 10px; font-size: 13px; 
-            line-height: 1.5; color: #ddd; position: relative; cursor: pointer;
-            border: 1px solid transparent; transition: 0.2s;
-        }
-        .addr-box:active { background: #111; border-color: var(--tiffany); }
-        .copy-icon { position: absolute; right: 12px; top: 12px; color: var(--tiffany); opacity: 0.7; }
+        .status-badge { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .status-AWAITING_IU { background: rgba(136, 136, 136, 0.2); color: var(--gray); }
+        .status-IN_TRANSIT { background: rgba(26, 226, 199, 0.2); color: var(--tiffany); }
+
+        .addr-box { background: #000; padding: 15px; border-radius: 12px; border: 1px dashed #444; margin-top: 10px; position: relative; }
+        .copy-hint { position: absolute; top: -10px; right: 10px; background: var(--tiffany); color: #000; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
         
-        code { background: #333; padding: 2px 6px; border-radius: 4px; color: var(--tiffany); font-family: monospace; }
-        select {
-            width: 100%; background: #1c1c1e; color: white; border: 1px solid #333;
-            padding: 12px; border-radius: 10px; margin-top: 5px; appearance: none;
-        }
+        .switcher { display: flex; background: #1c1c1e; padding: 4px; border-radius: 14px; margin-top: 10px; }
+        .sw-btn { flex: 1; padding: 10px; border: none; border-radius: 11px; background: transparent; color: var(--gray); font-size: 13px; font-weight: 500; }
+        .sw-btn.active { background: var(--tiffany); color: #000; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="loader">
-        <div class="drop-anim"><i class="fa-solid fa-parachute-box"></i></div>
-        <div class="loading-text">DROP</div>
+<div id="loader">
+    <div class="drop-anim"><i class="fa-solid fa-parachute-box"></i></div>
+    <div style="margin-top:20px; color:var(--tiffany); font-weight:bold; letter-spacing:3px;">DROP LOGISTICS</div>
+</div>
+
+<div id="screen-home" class="screen">
+    <div style="padding: 20px 0;">
+        <h1 style="margin:0; font-size: 32px;">Drop</h1>
+        <div id="h-sub" style="color:var(--tiffany); font-size: 14px; font-weight: 500;"></div>
     </div>
-
-    <div id="screen-home" class="screen">
-        <div style="margin: 25px 0;">
-            <h1 style="margin:0; font-size: 28px; letter-spacing: -1px;">Drop</h1>
-            <div id="h-sub" style="color: var(--tiffany); font-size: 14px;"></div>
-        </div>
-
-        <div id="opt-calc" class="card" style="display:none;">
-            <h3 style="margin-top:0"><i class="fa-solid fa-calculator"></i> Калькулятор ОПТ</h3>
-            <div class="calc-grid">
-                <input type="number" id="w" placeholder="Вес (кг)" oninput="calc()">
-                <input type="number" id="l" placeholder="Длина (см)" oninput="calc()">
-                <input type="number" id="wi" placeholder="Ширина (см)" oninput="calc()">
-                <input type="number" id="h" placeholder="Высота (см)" oninput="calc()">
+    
+    <div class="card" onclick="nav('pkgs')">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <div style="color:var(--gray); font-size:11px; letter-spacing:1px;">БОНУСНЫЙ БАЛАНС</div>
+                <div id="h-bon-val" style="font-size:36px; font-weight:bold; margin-top:5px;">0 кг</div>
             </div>
-            <div class="calc-res"><span id="res">0.00</span> $</div>
-        </div>
-
-        <div class="card">
-            <div style="color: var(--text-gray); font-size: 11px; text-transform: uppercase;">Бонусный баланс</div>
-            <div id="h-bon-val" style="font-size: 32px; font-weight: bold; margin-top: 5px;">0 кг</div>
-        </div>
-        
-        <div id="h-pvz-card" class="card">
-            <div style="color: var(--text-gray); font-size: 11px; text-transform: uppercase;">Ваш пункт выдачи</div>
-            <div id="h-pvz-val" style="font-weight: 600; margin-top: 8px;"><i class="fa-solid fa-location-dot"></i> --</div>
+            <i class="fa-solid fa-chevron-right" style="color:#333;"></i>
         </div>
     </div>
 
-    <div id="screen-pkgs" class="screen">
-        <h2 style="margin: 25px 0;">Мои заказы</h2>
-        <div id="orders-container"></div>
+    <div id="opt-calc" class="card" style="display:none;">
+        <h3 style="margin:0 0 15px; font-size:16px;"><i class="fa-solid fa-calculator" style="margin-right:8px;"></i> Калькулятор ОПТ</h3>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <input type="number" id="w" placeholder="Вес (кг)" oninput="calc()">
+            <input type="number" id="l" placeholder="Длина (см)" oninput="calc()">
+            <input type="number" id="wi" placeholder="Ширина (см)" oninput="calc()">
+            <input type="number" id="h" placeholder="Высота (см)" oninput="calc()">
+        </div>
+        <div style="margin-top:20px; text-align:center; color:var(--tiffany); font-size:24px; font-weight:bold;"><span id="res">0.00</span> $</div>
+    </div>
+</div>
+
+<div id="screen-pkgs" class="screen">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin: 25px 0;">
+        <h2 style="margin:0;">Мои посылки</h2>
+        <button onclick="showAddPopup()" style="background:none; border:none; color:var(--tiffany); font-size:24px;"><i class="fa-solid fa-circle-plus"></i></button>
+    </div>
+    <div id="orders-container"></div>
+</div>
+
+<div id="screen-profile" class="screen">
+    <h2 style="margin: 25px 0;">Настройки</h2>
+    
+    <div class="card">
+        <div style="font-size:12px; color:var(--gray);">КАТЕГОРИЯ</div>
+        <div class="switcher">
+            <button id="cat-less" class="sw-btn" onclick="setCat('less_100')">До 100 кг</button>
+            <button id="cat-more" class="sw-btn" onclick="setCat('more_100')">От 100 кг</button>
+        </div>
     </div>
 
-    <div id="screen-profile" class="screen">
-        <h2 style="margin: 25px 0;">Настройки</h2>
-        
-        <div class="card">
-            <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 10px;">КАТЕГОРИЯ ГРУЗА</div>
-            <div class="switcher">
-                <button id="cat-less" class="sw-btn" onclick="setCat('less_100')">До 100 кг</button>
-                <button id="cat-more" class="sw-btn" onclick="setCat('more_100')">От 100 кг</button>
-            </div>
-        </div>
+    <div id="pr-pvz-card" class="card">
+        <div style="font-size:12px; color:var(--gray);">ПУНКТ ВЫДАЧИ</div>
+        <select id="pvz-select" onchange="updatePvz()"></select>
+    </div>
 
-        <div id="pr-pvz-card" class="card">
-            <div style="font-size: 12px; color: var(--text-gray);">ВЫБРАТЬ ПВЗ</div>
-            <select id="pvz-select" onchange="updatePvz()"></select>
-        </div>
-
-        <div class="card">
-            <div id="address-container"></div>
+    <div class="card">
+        <div style="font-size:12px; color:var(--gray);">ЯЗЫК / ЗАБОН</div>
+        <div class="switcher">
+            <button id="lang-ru" class="sw-btn" onclick="setLang('ru')">Русский</button>
+            <button id="lang-tj" class="sw-btn" onclick="setLang('tj')">Тоҷикӣ</button>
         </div>
     </div>
 
-    <nav class="nav-bar">
-        <a href="javascript:void(0)" class="nav-item active" id="nav-home" onclick="nav('home')">
-            <i class="fa-solid fa-house"></i><span>Главная</span>
-        </a>
-        <a href="javascript:void(0)" class="nav-item" id="nav-pkgs" onclick="nav('pkgs')">
-            <i class="fa-solid fa-box"></i><span>Посылки</span>
-        </a>
-        <a href="javascript:void(0)" class="nav-item" id="nav-profile" onclick="nav('profile')">
-            <i class="fa-solid fa-user-gear"></i><span>Профиль</span>
-        </a>
-    </nav>
+    <div class="card" id="address-block"></div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
+    <div class="card" onclick="tg.openLink('https://t.me/your_support_bot')" style="text-align:center; color:var(--tiffany); font-weight:bold;">
+        <i class="fa-solid fa-headset"></i> Связаться с поддержкой
+    </div>
+</div>
+
+<nav class="nav-bar">
+    <a href="javascript:void(0)" class="nav-item active" id="nav-home" onclick="nav('home')"><i class="fa-solid fa-house"></i><span>Главная</span></a>
+    <a href="javascript:void(0)" class="nav-item" id="nav-pkgs" onclick="nav('pkgs')"><i class="fa-solid fa-box"></i><span>Посылки</span></a>
+    <a href="javascript:void(0)" class="nav-item" id="nav-profile" onclick="nav('profile')"><i class="fa-solid fa-user-gear"></i><span>Профиль</span></a>
+</nav>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev";
+    const userId = tg.initDataUnsafe?.user?.id || 317295540;
+    const PVZ_LIST = [{name:"🇹🇯 Худжанд", code:"KH"}, {name:"🇹🇯 Душанбе", code:"DB"}, {name:"🇹🇯 Истаравшан", code:"IS"}];
+    
+    let userData = { category: 'less_100', pvz: PVZ_LIST[0].name, bonus: 0, packages: [], lang: 'ru' };
+
+    async function init() {
         tg.expand();
-        
-        const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
-        const userId = tg.initDataUnsafe?.user?.id || 317295540; 
-        
-        const YIWU_ADDR_BLOCK = "阿吉买买提·买买提\n18967433111\n浙江省金华市义乌市福田街道长春七街52号1楼";
-        const ADDR_MORE = "浙江省金华市义乌市 廿三里街道 惠民路 708号"; 
-        
-        const PVZ_DATA = [
-            { name: "🇹🇯 Худжанд (19-й мкр)", code: "TJ-KH19" },
-            { name: "🇹🇯 Спитамен (Центр)", code: "TJ-SP1" }
-        ];
-
-        let userData = { category: 'less_100', pvz: PVZ_DATA[0].name, bonus: 0, packages: [] };
-
-        async function init() {
-            try {
-                // Добавляем заголовок ngrok, чтобы не было страницы предупреждения
-                const headers = { "ngrok-skip-browser-warning": "69420" };
-
-                // Запрашиваем ДАННЫЕ ПРОФИЛЯ И ПОСЫЛКИ ПАРАЛЛЕЛЬНО
-                const [resDash, resPkgs] = await Promise.all([
-                    fetch(`${API_BASE}/api/dashboard/${userId}`, { headers }),
-                    fetch(`${API_BASE}/api/packages/${userId}`, { headers })
-                ]);
-
-                const dataDash = await resDash.json();
-                const dataPkgs = await resPkgs.json();
-
-                if(dataDash.status === 'ok') {
-                    userData.category = dataDash.user_info.category || 'less_100';
-                    userData.pvz = dataDash.user_info.pvz || PVZ_DATA[0].name;
-                    userData.bonus = dataDash.user_info.bonus_balance || 0;
-                }
-                
-                if(dataPkgs.status === 'ok') {
-                    userData.packages = dataPkgs.packages || [];
-                }
-                
-            } catch (e) { 
-                console.error("Initialization Error:", e);
+        try {
+            const h = { "ngrok-skip-browser-warning": "1" };
+            const [r1, r2] = await Promise.all([
+                fetch(`${API_BASE}/api/dashboard/${userId}`, { headers: h }),
+                fetch(`${API_BASE}/api/packages/${userId}`, { headers: h })
+            ]);
+            const d1 = await r1.json();
+            const d2 = await r2.json();
+            if(d1.status === 'ok') {
+                userData.category = d1.user_info.category;
+                userData.pvz = d1.user_info.pvz;
+                userData.bonus = d1.user_info.bonus_balance;
+                userData.lang = d1.user_info.language;
             }
-            
-            // Плавное скрытие лоадера
-            setTimeout(() => {
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('screen-home').classList.add('active');
-                render();
-            }, 1800);
-        }
+            if(d2.status === 'ok') userData.packages = d2.packages;
+        } catch(e) { console.error(e); }
+        
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('screen-home').classList.add('active');
+        render();
+    }
 
-        function render() {
-            const isOpt = userData.category === 'more_100';
-            
-            // Управление видимостью
-            document.getElementById('opt-calc').style.display = isOpt ? 'block' : 'none';
-            document.getElementById('h-pvz-card').style.display = isOpt ? 'none' : 'block';
-            document.getElementById('pr-pvz-card').style.display = isOpt ? 'none' : 'block';
-            
-            document.getElementById('h-sub').innerText = isOpt ? "Оптовый клиент" : "Розничный клиент";
-            document.getElementById('h-bon-val').innerText = userData.bonus + " кг";
-            document.getElementById('h-pvz-val').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${userData.pvz}`;
-            
-            document.getElementById('cat-less').classList.toggle('active', !isOpt);
-            document.getElementById('cat-more').classList.toggle('active', isOpt);
-
-            // Селект ПВЗ
-            const sel = document.getElementById('pvz-select');
-            sel.innerHTML = '';
-            PVZ_DATA.forEach(p => {
-                let o = document.createElement('option'); o.value = p.name; o.text = p.name;
-                if(p.name === userData.pvz) o.selected = true;
-                sel.add(o);
-            });
-
-            // Адресный блок
-            const addrCont = document.getElementById('address-container');
-            if(!isOpt) {
-                const currentPvz = PVZ_DATA.find(p => p.name === userData.pvz) || PVZ_DATA[0];
-                const userName = `${tg.initDataUnsafe?.user?.first_name || 'Client'} ${tg.initDataUnsafe?.user?.last_name || ''}`.trim();
-                const marking = `С-87 / ${currentPvz.code} / ${userName} / ${userId}`;
-
-                addrCont.innerHTML = `
-                    <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 8px;">1. АДРЕС И ТЕЛЕФОН СКЛАДА (收货地址)</div>
-                    <div class="addr-box" onclick="copyValue('${YIWU_ADDR_BLOCK.replace(/\n/g, '\\n')}')" style="margin-bottom:15px;">
-                        <span style="white-space: pre-wrap;">${YIWU_ADDR_BLOCK}</span>
-                        <i class="fa-regular fa-copy copy-icon"></i>
-                    </div>
-                    <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 8px;">2. МАРКИРОВКА / ПОЛУЧАТЕЛЬ (收货人)</div>
-                    <div class="addr-box" onclick="copyValue('${marking}')" style="border: 1px dashed var(--tiffany);">
-                        <span>${marking}</span>
-                        <i class="fa-regular fa-copy copy-icon"></i>
-                    </div>
-                `;
-            } else {
-                addrCont.innerHTML = `
-                    <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 8px;">АДРЕС СКЛАДА ОПТ</div>
-                    <div class="addr-box" onclick="copyValue('${ADDR_MORE} ID:${userId}')">
-                        <span>${ADDR_MORE} <br><b>ID: ${userId}</b></span>
-                        <i class="fa-regular fa-copy copy-icon"></i>
-                    </div>
-                `;
+    function showAddPopup() {
+        tg.showPopup({
+            title: 'Новая посылка',
+            message: 'Введите трек-номер из личного кабинета маркетплейса',
+            buttons: [{id: 'add', type: 'default', text: 'Добавить'}, {type: 'cancel'}]
+        }, (id) => {
+            if(id === 'add') {
+                // В реальном приложении здесь лучше вызвать prompt или использовать инпут в самом UI
+                // Для простоты пока используем prompt
+                const track = prompt("Введите трек-номер:");
+                if(track) sendTrack(track);
             }
-            renderOrders();
-        }
+        });
+    }
 
-        function renderOrders() {
-            const cont = document.getElementById('orders-container');
-            cont.innerHTML = '';
-            if(!userData.packages || userData.packages.length === 0) {
-                cont.innerHTML = '<div class="card" style="text-align:center;color:gray;padding:40px 10px;">Пока нет активных заказов</div>';
-                return;
-            }
-            userData.packages.forEach(p => {
-                cont.innerHTML += `
-                    <div class="card">
-                        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-gray);margin-bottom:8px">
-                            <span>${p.date || 'Дата'}</span>
-                            <span style="color:var(--tiffany);font-weight:bold;">${p.status_text || 'Обработка'}</span>
-                        </div>
-                        <div style="margin-bottom:8px"><b>Трек:</b> <code>${p.track_number}</code></div>
-                        <div style="font-size:13px;opacity:0.8">
-                            Вес: ${p.weight || 0}кг | Объем: ${p.volume || 0}м³
-                        </div>
-                    </div>`;
+    async function sendTrack(track) {
+        tg.MainButton.setText("СОХРАНЕНИЕ...").show();
+        try {
+            const res = await fetch(`${API_BASE}/api/add_track`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, track_number: track })
             });
-        }
-
-        async function setCat(cat) {
-            tg.HapticFeedback.selectionChanged();
-            userData.category = cat;
-            render();
-            await fetch(`${API_BASE}/api/update_settings`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ user_id: userId, category: cat })
-            });
-        }
-
-        async function updatePvz() {
-            const val = document.getElementById('pvz-select').value;
-            userData.pvz = val;
-            render();
-            await fetch(`${API_BASE}/api/update_settings`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ user_id: userId, pvz: val })
-            });
-        }
-
-        function calc() {
-            const w = parseFloat(document.getElementById('w').value) || 0;
-            const l = parseFloat(document.getElementById('l').value) || 0;
-            const wi = parseFloat(document.getElementById('wi').value) || 0;
-            const h = parseFloat(document.getElementById('h').value) || 0;
-            const vol = (l * wi * h) / 1000000;
-            document.getElementById('res').innerText = Math.max(w * 4.5, vol * 180).toFixed(2);
-        }
-
-        function nav(scr) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('screen-' + scr).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById('nav-' + scr).classList.add('active');
-            tg.HapticFeedback.impactOccurred('light');
-        }
-
-        function copyValue(text) {
-            const cleanText = text.replace(/\\n/g, '\n');
-            navigator.clipboard.writeText(cleanText).then(() => {
+            if(res.ok) {
                 tg.HapticFeedback.notificationOccurred('success');
-                tg.showScanQrPopup({text: "Скопировано!"});
-                setTimeout(() => tg.closeScanQrPopup(), 800);
-            });
-        }
+                init();
+            } else {
+                const err = await res.json();
+                tg.showAlert(err.detail || "Ошибка");
+            }
+        } catch(e) { tg.showAlert("Ошибка связи"); }
+        tg.MainButton.hide();
+    }
 
-        init();
-    </script>
+    function render() {
+        const isOpt = userData.category === 'more_100';
+        document.getElementById('opt-calc').style.display = isOpt ? 'block' : 'none';
+        document.getElementById('h-sub').innerText = isOpt ? "ОПТОВЫЙ КЛИЕНТ" : "РОЗНИЧНЫЙ КЛИЕНТ";
+        document.getElementById('h-bon-val').innerText = userData.bonus + " кг";
+        document.getElementById('cat-less').classList.toggle('active', !isOpt);
+        document.getElementById('cat-more').classList.toggle('active', isOpt);
+        document.getElementById('lang-ru').classList.toggle('active', userData.lang === 'ru');
+        document.getElementById('lang-tj').classList.toggle('active', userData.lang === 'tj');
+
+        const sel = document.getElementById('pvz-select');
+        sel.innerHTML = PVZ_LIST.map(p => `<option value="${p.name}" ${p.name===userData.pvz?'selected':''}>${p.name}</option>`).join('');
+
+        const addr = document.getElementById('address-block');
+        const code = PVZ_LIST.find(p => p.name === userData.pvz)?.code || 'KH';
+        const marking = isOpt ? `ID: ${userId} / OPT` : `C-87 / ${code} / ${userId}`;
+        
+        addr.innerHTML = `
+            <div style="font-size:11px;color:var(--gray);margin-bottom:10px;">ДАННЫЕ ДЛЯ ЗАКАЗА</div>
+            <div class="addr-box" onclick="copy('${marking}')">
+                <span class="copy-hint">МАРКИРОВКА</span>
+                <b style="color:var(--tiffany); font-size:16px;">${marking}</b>
+            </div>
+            <div class="addr-box" onclick="copy('浙江省金华市义乌市福田街道长春七街52号1楼')">
+                <span class="copy-hint">АДРЕС СКЛАДА</span>
+                <span style="font-size:13px;">浙江省金华市义乌市福田街道...</span>
+            </div>
+        `;
+
+        const cont = document.getElementById('orders-container');
+        cont.innerHTML = userData.packages.length ? userData.packages.map(p => `
+            <div class="card" onclick="tg.showAlert('Описание: ${p.description}\\nВес: ${p.weight}кг')">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div>
+                        <div style="font-weight:bold; font-size:16px; margin-bottom:4px;">${p.track}</div>
+                        <div class="status-badge status-${p.status_code}">${p.status_text}</div>
+                    </div>
+                    <div style="text-align:right; font-size:12px; color:var(--gray);">${p.date}</div>
+                </div>
+            </div>`).join('') : '<div style="text-align:center; padding:50px; color:var(--gray);">Нет активных посылок</div>';
+    }
+
+    async function setCat(c) { userData.category = c; render(); updateApi({category: c}); tg.HapticFeedback.selectionChanged(); }
+    async function setLang(l) { userData.lang = l; render(); updateApi({language: l}); tg.HapticFeedback.selectionChanged(); }
+    async function updatePvz() { userData.pvz = document.getElementById('pvz-select').value; render(); updateApi({pvz: userData.pvz}); }
+    async function updateApi(params) { await fetch(`${API_BASE}/api/update_settings`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({user_id:userId, ...params}) }); }
+    
+    function calc() {
+        const w = parseFloat(document.getElementById('w').value)||0, l = parseFloat(document.getElementById('l').value)||0, wi = parseFloat(document.getElementById('wi').value)||0, h = parseFloat(document.getElementById('h').value)||0;
+        document.getElementById('res').innerText = Math.max(w*4.5, (l*wi*h/1000000)*180).toFixed(2);
+    }
+
+    function nav(s) {
+        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+        document.getElementById('screen-'+s).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById('nav-'+s).classList.add('active');
+        tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function copy(t) {
+        navigator.clipboard.writeText(t);
+        tg.HapticFeedback.notificationOccurred('success');
+        tg.showScanQrPopup({text: "Скопировано в буфер"});
+        setTimeout(() => tg.closeScanQrPopup(), 600);
+    }
+
+    init();
+</script>
 </body>
 </html>
