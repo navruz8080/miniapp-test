@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Drop - Доставка грузов</title>
+    <title>Drop - Доставка</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -18,11 +18,12 @@
             overflow-x: hidden;
         }
 
-        /* LOADING ANIMATION */
+        /* LOADING */
         #loader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-black); z-index: 9999;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.3s ease;
         }
         .drop-anim {
             font-size: 60px; color: var(--tiffany);
@@ -35,7 +36,6 @@
             70% { transform: translateY(0) rotate(-5deg); }
             100% { transform: translateY(0); }
         }
-        .loading-text { margin-top: 20px; font-weight: bold; letter-spacing: 2px; color: var(--tiffany); }
 
         .screen { display: none; animation: fadeIn 0.3s ease; }
         .screen.active { display: block; }
@@ -82,9 +82,17 @@
         .copy-icon { position: absolute; right: 12px; top: 12px; color: var(--tiffany); opacity: 0.7; }
         
         code { background: #333; padding: 2px 6px; border-radius: 4px; color: var(--tiffany); font-family: monospace; }
-        select {
-            width: 100%; background: #1c1c1e; color: white; border: 1px solid #333;
-            padding: 12px; border-radius: 10px; margin-top: 5px; appearance: none;
+        
+        /* Статусы */
+        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .st-gray { background: #333; color: #aaa; }
+        .st-blue { background: rgba(0, 122, 255, 0.2); color: #4facfe; }
+        .st-green { background: rgba(26, 226, 199, 0.2); color: var(--tiffany); }
+        .st-red { background: rgba(255, 59, 48, 0.2); color: #ff3b30; }
+
+        .refresh-btn {
+            position: absolute; top: 20px; right: 20px; 
+            color: var(--tiffany); font-size: 20px; cursor: pointer; z-index: 10001;
         }
     </style>
 </head>
@@ -92,17 +100,31 @@
 
     <div id="loader">
         <div class="drop-anim"><i class="fa-solid fa-parachute-box"></i></div>
-        <div class="loading-text">DROP</div>
+        <div style="margin-top: 20px; color: var(--tiffany); font-weight: bold;">DROP LOGISTICS</div>
+        <div id="error-log" style="color: red; margin-top: 20px; font-size: 12px; text-align: center; padding: 0 20px;"></div>
     </div>
+
+    <div class="refresh-btn" onclick="location.reload()"><i class="fa-solid fa-rotate-right"></i></div>
 
     <div id="screen-home" class="screen">
         <div style="margin: 25px 0;">
             <h1 style="margin:0; font-size: 28px; letter-spacing: -1px;">Drop</h1>
-            <div id="h-sub" style="color: var(--tiffany); font-size: 14px;"></div>
+            <div id="h-sub" style="color: var(--tiffany); font-size: 14px;">Загрузка...</div>
+        </div>
+
+        <div class="card">
+            <div style="color: var(--text-gray); font-size: 11px; text-transform: uppercase;">Бонусный баланс</div>
+            <div id="h-bon-val" style="font-size: 32px; font-weight: bold; margin-top: 5px;">-- кг</div>
+            <div style="font-size: 10px; color: #555; margin-top: 5px;" id="user-id-display">ID: --</div>
+        </div>
+        
+        <div id="h-pvz-card" class="card">
+            <div style="color: var(--text-gray); font-size: 11px; text-transform: uppercase;">Пункт выдачи</div>
+            <div id="h-pvz-val" style="font-weight: 600; margin-top: 8px;">--</div>
         </div>
 
         <div id="opt-calc" class="card" style="display:none;">
-            <h3 style="margin-top:0"><i class="fa-solid fa-calculator"></i> Калькулятор ОПТ</h3>
+            <h3 style="margin-top:0"><i class="fa-solid fa-calculator"></i> Калькулятор</h3>
             <div class="calc-grid">
                 <input type="number" id="w" placeholder="Вес (кг)" oninput="calc()">
                 <input type="number" id="l" placeholder="Длина (см)" oninput="calc()">
@@ -111,21 +133,13 @@
             </div>
             <div class="calc-res"><span id="res">0.00</span> $</div>
         </div>
-
-        <div class="card">
-            <div style="color: var(--text-gray); font-size: 11px; text-transform: uppercase;">Бонусный баланс</div>
-            <div id="h-bon-val" style="font-size: 32px; font-weight: bold; margin-top: 5px;">0 кг</div>
-        </div>
-        
-        <div id="h-pvz-card" class="card">
-            <div style="color: var(--text-gray); font-size: 11px; text-transform: uppercase;">Ваш пункт выдачи</div>
-            <div id="h-pvz-val" style="font-weight: 600; margin-top: 8px;"><i class="fa-solid fa-location-dot"></i> --</div>
-        </div>
     </div>
 
     <div id="screen-pkgs" class="screen">
         <h2 style="margin: 25px 0;">Мои заказы</h2>
-        <div id="orders-container"></div>
+        <div id="orders-container">
+            <div style="text-align: center; color: gray; margin-top: 50px;">Загрузка...</div>
+        </div>
     </div>
 
     <div id="screen-profile" class="screen">
@@ -134,19 +148,17 @@
         <div class="card">
             <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 10px;">КАТЕГОРИЯ ГРУЗА</div>
             <div class="switcher">
-                <button id="cat-less" class="sw-btn" onclick="setCat('less_100')">До 100 кг</button>
-                <button id="cat-more" class="sw-btn" onclick="setCat('more_100')">От 100 кг</button>
+                <button id="cat-less" class="sw-btn" onclick="setCat('less_100')">Розница</button>
+                <button id="cat-more" class="sw-btn" onclick="setCat('more_100')">Опт</button>
             </div>
         </div>
 
-        <div id="pr-pvz-card" class="card">
-            <div style="font-size: 12px; color: var(--text-gray);">ВЫБРАТЬ ПВЗ</div>
-            <select id="pvz-select" onchange="updatePvz()"></select>
-        </div>
-
         <div class="card">
-            <div id="address-container">
-                </div>
+            <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 8px;">АДРЕС СКЛАДА (КИТАЙ)</div>
+            <div class="addr-box" onclick="copyValue('浙江省金华市义乌市福田街道长春七街52号1楼')">
+                <span style="white-space: pre-wrap;">浙江省金华市义乌市福田街道长春七街52号1楼</span>
+                <i class="fa-regular fa-copy copy-icon"></i>
+            </div>
         </div>
     </div>
 
@@ -165,142 +177,131 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        
+
+        // ⚠️⚠️⚠️ ВНИМАНИЕ: ВСТАВЬТЕ СЮДА НОВУЮ ССЫЛКУ NGROK ⚠️⚠️⚠️
         const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
+        
+        // Берем ID из Telegram или используем тестовый, если открыто в браузере
         const userId = tg.initDataUnsafe?.user?.id || 317295540; 
         
-        // ДАННЫЕ СКЛАДА И ПВЗ
-        const YIWU_ADDR_BLOCK = "阿吉买买提·买买提\n18967433111\n浙江省金华市义乌市福田街道长春七街52号1楼";
-        const ADDR_MORE = "浙江省金华市义乌市 廿三里街道 惠民路 708号"; 
-        
-        const PVZ_DATA = [
-            { name: "🇹🇯 Худжанд (19-й мкр)", code: "TJ-KH19" },
-            { name: "🇹🇯 Спитамен (Центр)", code: "TJ-SP1" }
-        ];
-
-        let userData = { category: 'less_100', pvz: PVZ_DATA[0].name, bonus: 0, packages: [] };
+        let userData = { category: 'less_100', pvz: 'Загрузка...', bonus: 0, packages: [] };
 
         async function init() {
+            document.getElementById('user-id-display').innerText = `ID: ${userId}`;
+
             try {
-                const r = await fetch(`${API_BASE}/api/dashboard/${userId}`);
-                const data = await r.json();
-                if(data.status === 'ok') {
-                    userData = {
-                        category: data.user_info.category || 'less_100',
-                        pvz: data.user_info.pvz || PVZ_DATA[0].name,
-                        bonus: data.user_info.bonus_balance || 0,
-                        packages: data.packages || []
-                    };
+                // 1. Делаем запрос к API
+                const response = await fetch(`${API_BASE}/api/dashboard/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'ngrok-skip-browser-warning': 'true', // Важно для ngrok
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                // 2. Если ошибка сети (не 200 OK)
+                if (!response.ok) {
+                    throw new Error(`Ошибка сервера: ${response.status}`);
                 }
-            } catch (e) { console.error(e); }
-            
-            setTimeout(() => {
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('screen-home').classList.add('active');
+
+                const data = await response.json();
+
+                // 3. Если API вернул ошибку логики
+                if(data.status !== 'ok') {
+                    throw new Error(data.message || 'Ошибка данных');
+                }
+
+                // 4. Успех! Обновляем данные
+                userData = {
+                    category: data.user_info.category,
+                    pvz: data.user_info.pvz,
+                    bonus: data.user_info.bonus_balance,
+                    packages: data.packages || []
+                };
+
                 render();
-            }, 1800);
+                
+                // Убираем загрузчик
+                setTimeout(() => {
+                    document.getElementById('loader').style.opacity = '0';
+                    setTimeout(() => document.getElementById('loader').style.display = 'none', 300);
+                    document.getElementById('screen-home').classList.add('active');
+                }, 500);
+
+            } catch (e) {
+                // 🚨 РЕЖИМ ПАНИКИ: Показываем ошибку на экране 🚨
+                console.error(e);
+                document.getElementById('error-log').innerHTML = 
+                    `СБОЙ ЗАГРУЗКИ:<br>${e.message}<br><br>Проверьте ссылку Ngrok!`;
+                tg.showAlert(`Ошибка связи: ${e.message}`);
+            }
         }
 
         function render() {
-            const isOpt = userData.category === 'more_100';
-            
-            // Видимость блоков
-            document.getElementById('opt-calc').style.display = isOpt ? 'block' : 'none';
-            document.getElementById('h-pvz-card').style.display = isOpt ? 'none' : 'block';
-            document.getElementById('pr-pvz-card').style.display = isOpt ? 'none' : 'block';
-            
-            // Тексты
-            document.getElementById('h-sub').innerText = isOpt ? "Оптовый клиент" : "Розничный клиент";
+            // Заполняем главную
+            document.getElementById('h-sub').innerText = userData.category === 'more_100' ? "Оптовый клиент" : "Розничный клиент";
             document.getElementById('h-bon-val').innerText = userData.bonus + " кг";
             document.getElementById('h-pvz-val').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${userData.pvz}`;
             
-            // Переключатель категорий
+            // Переключатели
+            const isOpt = userData.category === 'more_100';
             document.getElementById('cat-less').classList.toggle('active', !isOpt);
             document.getElementById('cat-more').classList.toggle('active', isOpt);
+            document.getElementById('opt-calc').style.display = isOpt ? 'block' : 'none';
 
-            // Рендер ПВЗ селекта
-            const sel = document.getElementById('pvz-select');
-            sel.innerHTML = '';
-            PVZ_DATA.forEach(p => {
-                let o = document.createElement('option'); o.value = p.name; o.text = p.name;
-                if(p.name === userData.pvz) o.selected = true;
-                sel.add(o);
-            });
-
-            // РЕНДЕР АДРЕСНОГО БЛОКА
-            const addrCont = document.getElementById('address-container');
-            if(!isOpt) {
-                const currentPvz = PVZ_DATA.find(p => p.name === userData.pvz) || PVZ_DATA[0];
-                const userName = `${tg.initDataUnsafe?.user?.first_name || 'Client'} ${tg.initDataUnsafe?.user?.last_name || ''}`.trim();
-                const userPhone = tg.initDataUnsafe?.user?.username || userId;
-                
-                // Строка маркировки
-                const marking = `С-87 / ${currentPvz.code} / ${userName} / ${userPhone}`;
-
-                addrCont.innerHTML = `
-                    <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 8px;">1. АДРЕС И ТЕЛЕФОН СКЛАДА (收货地址)</div>
-                    <div class="addr-box" onclick="copyValue('${YIWU_ADDR_BLOCK.replace(/\n/g, '\\n')}')" style="margin-bottom:15px;">
-                        <span style="white-space: pre-wrap;">${YIWU_ADDR_BLOCK}</span>
-                        <i class="fa-regular fa-copy copy-icon"></i>
-                    </div>
-
-                    <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 8px;">2. МАРКИРОВКА / ПОЛУЧАТЕЛЬ (收货人)</div>
-                    <div class="addr-box" onclick="copyValue('${marking}')" style="border: 1px dashed var(--tiffany);">
-                        <span>${marking}</span>
-                        <i class="fa-regular fa-copy copy-icon"></i>
-                    </div>
-                `;
-            } else {
-                addrCont.innerHTML = `
-                    <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 8px;">АДРЕС СКЛАДА ОПТ</div>
-                    <div class="addr-box" onclick="copyValue('${ADDR_MORE} ID:${userId}')">
-                        <span>${ADDR_MORE} <br><b>ID: ${userId}</b></span>
-                        <i class="fa-regular fa-copy copy-icon"></i>
-                    </div>
-                `;
-            }
-
+            // Рендер посылок
             renderOrders();
         }
 
         function renderOrders() {
             const cont = document.getElementById('orders-container');
             cont.innerHTML = '';
+            
             if(!userData.packages.length) {
-                cont.innerHTML = '<div class="card" style="text-align:center;color:gray;padding:40px 10px;">Пока нет активных заказов</div>';
+                cont.innerHTML = '<div style="text-align:center;color:gray;padding:40px;">Пока нет активных заказов</div>';
                 return;
             }
+
             userData.packages.forEach(p => {
+                // Определяем цвет статуса
+                let badgeClass = 'st-blue';
+                if(p.status_text.includes('Ожидает')) badgeClass = 'st-gray';
+                if(p.status_text.includes('Прибыл') || p.status_text.includes('Выдан')) badgeClass = 'st-green';
+                if(p.status_text.includes('Отмен')) badgeClass = 'st-red';
+
                 cont.innerHTML += `
                     <div class="card">
-                        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-gray);margin-bottom:8px">
-                            <span>${p.date || 'Дата'}</span>
-                            <span style="color:var(--tiffany);font-weight:bold;">${p.status_text || 'В пути'}</span>
+                        <div style="display:flex;justify-content:space-between;margin-bottom:8px;align-items:center;">
+                            <span style="font-size:12px;color:#666;">${p.date}</span>
+                            <span class="status-badge ${badgeClass}">${p.status_text}</span>
                         </div>
-                        <div style="margin-bottom:8px"><b>Трек:</b> <code>${p.track_number}</code></div>
-                        <div style="font-size:13px;opacity:0.8">Вес: ${p.weight}кг | Объем: ${p.volume}м³</div>
+                        <div style="margin-bottom:6px; font-weight:bold; font-size:15px;">
+                            ${p.description || 'Посылка'}
+                        </div>
+                        <div style="margin-bottom:8px; font-family:monospace; color:var(--tiffany); background:#222; padding:4px 8px; border-radius:4px; display:inline-block;">
+                            ${p.track_number}
+                        </div>
+                        <div style="font-size:13px;opacity:0.7; margin-top:5px; border-top:1px solid #222; padding-top:5px;">
+                            Вес: ${p.weight} кг &nbsp;|&nbsp; Объем: ${p.volume} м³
+                        </div>
                     </div>`;
             });
         }
 
         async function setCat(cat) {
             tg.HapticFeedback.selectionChanged();
+            // Оптимистичное обновление UI
             userData.category = cat;
             render();
-            await fetch(`${API_BASE}/api/update_settings`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ user_id: userId, category: cat })
-            });
-        }
-
-        async function updatePvz() {
-            const val = document.getElementById('pvz-select').value;
-            userData.pvz = val;
-            render();
-            await fetch(`${API_BASE}/api/update_settings`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ user_id: userId, pvz: val })
-            });
+            
+            // Отправка на сервер
+            try {
+                await fetch(`${API_BASE}/api/update_settings`, {
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ user_id: userId, category: cat })
+                });
+            } catch(e) { console.error(e); }
         }
 
         function calc() {
@@ -315,20 +316,22 @@
         function nav(scr) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('screen-' + scr).classList.add('active');
+            
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById('nav-' + scr).classList.add('active');
+            
             tg.HapticFeedback.impactOccurred('light');
         }
 
         function copyValue(text) {
-            const cleanText = text.replace(/\\n/g, '\n');
-            navigator.clipboard.writeText(cleanText).then(() => {
+            navigator.clipboard.writeText(text).then(() => {
                 tg.HapticFeedback.notificationOccurred('success');
-                tg.showScanQrPopup({text: "Скопировано!"});
-                setTimeout(() => tg.closeScanQrPopup(), 800);
+            }).catch(() => {
+                tg.showAlert("Не удалось скопировать");
             });
         }
 
+        // Запуск
         init();
     </script>
 </body>
