@@ -145,8 +145,7 @@
         </div>
 
         <div class="card">
-            <div id="address-container">
-                </div>
+            <div id="address-container"></div>
         </div>
     </div>
 
@@ -169,7 +168,6 @@
         const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
         const userId = tg.initDataUnsafe?.user?.id || 317295540; 
         
-        // ДАННЫЕ СКЛАДА И ПВЗ
         const YIWU_ADDR_BLOCK = "阿吉买买提·买买提\n18967433111\n浙江省金华市义乌市福田街道长春七街52号1楼";
         const ADDR_MORE = "浙江省金华市义乌市 廿三里街道 惠民路 708号"; 
         
@@ -182,18 +180,33 @@
 
         async function init() {
             try {
-                const r = await fetch(`${API_BASE}/api/dashboard/${userId}`);
-                const data = await r.json();
-                if(data.status === 'ok') {
-                    userData = {
-                        category: data.user_info.category || 'less_100',
-                        pvz: data.user_info.pvz || PVZ_DATA[0].name,
-                        bonus: data.user_info.bonus_balance || 0,
-                        packages: data.packages || []
-                    };
+                // Добавляем заголовок ngrok, чтобы не было страницы предупреждения
+                const headers = { "ngrok-skip-browser-warning": "69420" };
+
+                // Запрашиваем ДАННЫЕ ПРОФИЛЯ И ПОСЫЛКИ ПАРАЛЛЕЛЬНО
+                const [resDash, resPkgs] = await Promise.all([
+                    fetch(`${API_BASE}/api/dashboard/${userId}`, { headers }),
+                    fetch(`${API_BASE}/api/packages/${userId}`, { headers })
+                ]);
+
+                const dataDash = await resDash.json();
+                const dataPkgs = await resPkgs.json();
+
+                if(dataDash.status === 'ok') {
+                    userData.category = dataDash.user_info.category || 'less_100';
+                    userData.pvz = dataDash.user_info.pvz || PVZ_DATA[0].name;
+                    userData.bonus = dataDash.user_info.bonus_balance || 0;
                 }
-            } catch (e) { console.error(e); }
+                
+                if(dataPkgs.status === 'ok') {
+                    userData.packages = dataPkgs.packages || [];
+                }
+                
+            } catch (e) { 
+                console.error("Initialization Error:", e);
+            }
             
+            // Плавное скрытие лоадера
             setTimeout(() => {
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('screen-home').classList.add('active');
@@ -204,21 +217,19 @@
         function render() {
             const isOpt = userData.category === 'more_100';
             
-            // Видимость блоков
+            // Управление видимостью
             document.getElementById('opt-calc').style.display = isOpt ? 'block' : 'none';
             document.getElementById('h-pvz-card').style.display = isOpt ? 'none' : 'block';
             document.getElementById('pr-pvz-card').style.display = isOpt ? 'none' : 'block';
             
-            // Тексты
             document.getElementById('h-sub').innerText = isOpt ? "Оптовый клиент" : "Розничный клиент";
             document.getElementById('h-bon-val').innerText = userData.bonus + " кг";
             document.getElementById('h-pvz-val').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${userData.pvz}`;
             
-            // Переключатель категорий
             document.getElementById('cat-less').classList.toggle('active', !isOpt);
             document.getElementById('cat-more').classList.toggle('active', isOpt);
 
-            // Рендер ПВЗ селекта
+            // Селект ПВЗ
             const sel = document.getElementById('pvz-select');
             sel.innerHTML = '';
             PVZ_DATA.forEach(p => {
@@ -227,15 +238,12 @@
                 sel.add(o);
             });
 
-            // РЕНДЕР АДРЕСНОГО БЛОКА
+            // Адресный блок
             const addrCont = document.getElementById('address-container');
             if(!isOpt) {
                 const currentPvz = PVZ_DATA.find(p => p.name === userData.pvz) || PVZ_DATA[0];
                 const userName = `${tg.initDataUnsafe?.user?.first_name || 'Client'} ${tg.initDataUnsafe?.user?.last_name || ''}`.trim();
-                const userPhone = tg.initDataUnsafe?.user?.username || userId;
-                
-                // Строка маркировки
-                const marking = `С-87 / ${currentPvz.code} / ${userName} / ${userPhone}`;
+                const marking = `С-87 / ${currentPvz.code} / ${userName} / ${userId}`;
 
                 addrCont.innerHTML = `
                     <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 8px;">1. АДРЕС И ТЕЛЕФОН СКЛАДА (收货地址)</div>
@@ -243,7 +251,6 @@
                         <span style="white-space: pre-wrap;">${YIWU_ADDR_BLOCK}</span>
                         <i class="fa-regular fa-copy copy-icon"></i>
                     </div>
-
                     <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 8px;">2. МАРКИРОВКА / ПОЛУЧАТЕЛЬ (收货人)</div>
                     <div class="addr-box" onclick="copyValue('${marking}')" style="border: 1px dashed var(--tiffany);">
                         <span>${marking}</span>
@@ -259,14 +266,13 @@
                     </div>
                 `;
             }
-
             renderOrders();
         }
 
         function renderOrders() {
             const cont = document.getElementById('orders-container');
             cont.innerHTML = '';
-            if(!userData.packages.length) {
+            if(!userData.packages || userData.packages.length === 0) {
                 cont.innerHTML = '<div class="card" style="text-align:center;color:gray;padding:40px 10px;">Пока нет активных заказов</div>';
                 return;
             }
@@ -275,10 +281,12 @@
                     <div class="card">
                         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-gray);margin-bottom:8px">
                             <span>${p.date || 'Дата'}</span>
-                            <span style="color:var(--tiffany);font-weight:bold;">${p.status_text || 'В пути'}</span>
+                            <span style="color:var(--tiffany);font-weight:bold;">${p.status_text || 'Обработка'}</span>
                         </div>
                         <div style="margin-bottom:8px"><b>Трек:</b> <code>${p.track_number}</code></div>
-                        <div style="font-size:13px;opacity:0.8">Вес: ${p.weight}кг | Объем: ${p.volume}м³</div>
+                        <div style="font-size:13px;opacity:0.8">
+                            Вес: ${p.weight || 0}кг | Объем: ${p.volume || 0}м³
+                        </div>
                     </div>`;
             });
         }
@@ -332,4 +340,4 @@
         init();
     </script>
 </body>
-</html>
+</html>ы
