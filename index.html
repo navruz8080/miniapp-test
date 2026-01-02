@@ -18,7 +18,7 @@
             overflow-x: hidden;
         }
 
-        /* АНИМАЦИЯ ЗАГРУЗКИ "DROP" */
+        /* LOADING ANIMATION */
         #loader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-black); z-index: 9999;
@@ -37,7 +37,6 @@
         }
         .loading-text { margin-top: 20px; font-weight: bold; letter-spacing: 2px; color: var(--tiffany); }
 
-        /* Экраны */
         .screen { display: none; animation: fadeIn 0.3s ease; }
         .screen.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -47,7 +46,6 @@
             margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05);
         }
 
-        /* Калькулятор */
         .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .calc-grid input {
             background: #1c1c1e; border: 1px solid #333; border-radius: 10px;
@@ -58,7 +56,6 @@
             text-align: center; color: var(--tiffany); font-weight: bold; margin-top: 15px; font-size: 20px;
         }
 
-        /* Кнопки и Навигация */
         .switcher { display: flex; background: #1c1c1e; padding: 4px; border-radius: 12px; }
         .sw-btn {
             flex: 1; padding: 10px; border: none; border-radius: 10px;
@@ -76,7 +73,14 @@
         .nav-item i { font-size: 22px; margin-bottom: 4px; display: block; }
         .nav-item span { font-size: 10px; }
 
-        .addr-box { background: #000; padding: 12px; border-radius: 10px; font-size: 13px; line-height: 1.5; color: #ddd; position: relative; }
+        .addr-box { 
+            background: #000; padding: 12px; border-radius: 10px; font-size: 13px; 
+            line-height: 1.5; color: #ddd; position: relative; cursor: pointer;
+            border: 1px solid transparent; transition: 0.2s;
+        }
+        .addr-box:active { background: #111; border-color: var(--tiffany); }
+        .copy-icon { position: absolute; right: 12px; top: 12px; color: var(--tiffany); opacity: 0.7; }
+        
         code { background: #333; padding: 2px 6px; border-radius: 4px; color: var(--tiffany); font-family: monospace; }
         select {
             width: 100%; background: #1c1c1e; color: white; border: 1px solid #333;
@@ -114,7 +118,7 @@
         </div>
         
         <div id="h-pvz-card" class="card">
-            <div style="color: var(--text-gray); font-size: 11px; text-transform: uppercase;">Пункт выдачи</div>
+            <div style="color: var(--text-gray); font-size: 11px; text-transform: uppercase;">Ваш пункт выдачи</div>
             <div id="h-pvz-val" style="font-weight: 600; margin-top: 8px;"><i class="fa-solid fa-location-dot"></i> --</div>
         </div>
     </div>
@@ -141,11 +145,8 @@
         </div>
 
         <div class="card">
-            <div style="font-size: 12px; color: var(--text-gray); margin-bottom:10px;">АДРЕС СКЛАДА В КИТАЕ</div>
-            <div class="addr-box" onclick="copyAddr()">
-                <span id="cn-addr">Загрузка адреса...</span>
-                <i class="fa-regular fa-copy" style="position:absolute; right:15px; top:15px; color:var(--tiffany)"></i>
-            </div>
+            <div id="address-container">
+                </div>
         </div>
     </div>
 
@@ -168,11 +169,16 @@
         const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
         const userId = tg.initDataUnsafe?.user?.id || 317295540; 
         
-        const ADDR_LESS = "义乌市 后宅街道 神舟路 123号 (DROP ROZN)"; // Твой розничный адрес
-        const ADDR_MORE = "义乌市 廿三里街道 惠民路 708号 (DROP OPT)";  // Твой оптовый адрес
-        const PVZ_LIST = ["🇹🇯 Худжанд (19-й мкр)", "🇹🇯 Спитамен (Центр)"];
+        // ДАННЫЕ СКЛАДА И ПВЗ
+        const YIWU_ADDR_BLOCK = "阿吉买买提·买买提\n18967433111\n浙江省金华市义乌市福田街道长春七街52号1楼";
+        const ADDR_MORE = "浙江省金华市义乌市 廿三里街道 惠民路 708号"; 
+        
+        const PVZ_DATA = [
+            { name: "🇹🇯 Худжанд (19-й мкр)", code: "TJ-KH19" },
+            { name: "🇹🇯 Спитамен (Центр)", code: "TJ-SP1" }
+        ];
 
-        let userData = { category: 'less_100', pvz: 'Не выбран', bonus: 0, packages: [] };
+        let userData = { category: 'less_100', pvz: PVZ_DATA[0].name, bonus: 0, packages: [] };
 
         async function init() {
             try {
@@ -181,7 +187,7 @@
                 if(data.status === 'ok') {
                     userData = {
                         category: data.user_info.category || 'less_100',
-                        pvz: data.user_info.pvz || 'Не выбран',
+                        pvz: data.user_info.pvz || PVZ_DATA[0].name,
                         bonus: data.user_info.bonus_balance || 0,
                         packages: data.packages || []
                     };
@@ -198,30 +204,61 @@
         function render() {
             const isOpt = userData.category === 'more_100';
             
-            // Калькулятор и ПВЗ
+            // Видимость блоков
             document.getElementById('opt-calc').style.display = isOpt ? 'block' : 'none';
             document.getElementById('h-pvz-card').style.display = isOpt ? 'none' : 'block';
             document.getElementById('pr-pvz-card').style.display = isOpt ? 'none' : 'block';
             
-            // Текст и адрес (ID пользователя теперь четко в конце через пробел)
-            const baseAddr = isOpt ? ADDR_MORE : ADDR_LESS;
-            document.getElementById('cn-addr').innerHTML = `${baseAddr} <br><b>ID: ${userId}</b>`;
+            // Тексты
             document.getElementById('h-sub').innerText = isOpt ? "Оптовый клиент" : "Розничный клиент";
             document.getElementById('h-bon-val').innerText = userData.bonus + " кг";
             document.getElementById('h-pvz-val').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${userData.pvz}`;
             
-            // Кнопки категорий
+            // Переключатель категорий
             document.getElementById('cat-less').classList.toggle('active', !isOpt);
             document.getElementById('cat-more').classList.toggle('active', isOpt);
 
-            // Рендер ПВЗ
+            // Рендер ПВЗ селекта
             const sel = document.getElementById('pvz-select');
             sel.innerHTML = '';
-            PVZ_LIST.forEach(p => {
-                let o = document.createElement('option'); o.value = p; o.text = p;
-                if(p === userData.pvz) o.selected = true;
+            PVZ_DATA.forEach(p => {
+                let o = document.createElement('option'); o.value = p.name; o.text = p.name;
+                if(p.name === userData.pvz) o.selected = true;
                 sel.add(o);
             });
+
+            // РЕНДЕР АДРЕСНОГО БЛОКА
+            const addrCont = document.getElementById('address-container');
+            if(!isOpt) {
+                const currentPvz = PVZ_DATA.find(p => p.name === userData.pvz) || PVZ_DATA[0];
+                const userName = `${tg.initDataUnsafe?.user?.first_name || 'Client'} ${tg.initDataUnsafe?.user?.last_name || ''}`.trim();
+                const userPhone = tg.initDataUnsafe?.user?.username || userId;
+                
+                // Строка маркировки
+                const marking = `С-87 / ${currentPvz.code} / ${userName} / ${userPhone}`;
+
+                addrCont.innerHTML = `
+                    <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 8px;">1. АДРЕС И ТЕЛЕФОН СКЛАДА (收货地址)</div>
+                    <div class="addr-box" onclick="copyValue('${YIWU_ADDR_BLOCK.replace(/\n/g, '\\n')}')" style="margin-bottom:15px;">
+                        <span style="white-space: pre-wrap;">${YIWU_ADDR_BLOCK}</span>
+                        <i class="fa-regular fa-copy copy-icon"></i>
+                    </div>
+
+                    <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 8px;">2. МАРКИРОВКА / ПОЛУЧАТЕЛЬ (收货人)</div>
+                    <div class="addr-box" onclick="copyValue('${marking}')" style="border: 1px dashed var(--tiffany);">
+                        <span>${marking}</span>
+                        <i class="fa-regular fa-copy copy-icon"></i>
+                    </div>
+                `;
+            } else {
+                addrCont.innerHTML = `
+                    <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 8px;">АДРЕС СКЛАДА ОПТ</div>
+                    <div class="addr-box" onclick="copyValue('${ADDR_MORE} ID:${userId}')">
+                        <span>${ADDR_MORE} <br><b>ID: ${userId}</b></span>
+                        <i class="fa-regular fa-copy copy-icon"></i>
+                    </div>
+                `;
+            }
 
             renderOrders();
         }
@@ -230,15 +267,15 @@
             const cont = document.getElementById('orders-container');
             cont.innerHTML = '';
             if(!userData.packages.length) {
-                cont.innerHTML = '<div class="card" style="text-align:center;color:gray">Нет заказов</div>';
+                cont.innerHTML = '<div class="card" style="text-align:center;color:gray;padding:40px 10px;">Пока нет активных заказов</div>';
                 return;
             }
             userData.packages.forEach(p => {
                 cont.innerHTML += `
                     <div class="card">
                         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-gray);margin-bottom:8px">
-                            <span>${p.date || 'Дата неизвестна'}</span>
-                            <span style="color:var(--tiffany)">${p.status_text || 'В пути'}</span>
+                            <span>${p.date || 'Дата'}</span>
+                            <span style="color:var(--tiffany);font-weight:bold;">${p.status_text || 'В пути'}</span>
                         </div>
                         <div style="margin-bottom:8px"><b>Трек:</b> <code>${p.track_number}</code></div>
                         <div style="font-size:13px;opacity:0.8">Вес: ${p.weight}кг | Объем: ${p.volume}м³</div>
@@ -283,10 +320,13 @@
             tg.HapticFeedback.impactOccurred('light');
         }
 
-        function copyAddr() {
-            navigator.clipboard.writeText(document.getElementById('cn-addr').innerText);
-            tg.showScanQrPopup({text: "Адрес скопирован!"}); // Просто красивый хинт
-            setTimeout(() => tg.closeScanQrPopup(), 1000);
+        function copyValue(text) {
+            const cleanText = text.replace(/\\n/g, '\n');
+            navigator.clipboard.writeText(cleanText).then(() => {
+                tg.HapticFeedback.notificationOccurred('success');
+                tg.showScanQrPopup({text: "Скопировано!"});
+                setTimeout(() => tg.closeScanQrPopup(), 800);
+            });
         }
 
         init();
