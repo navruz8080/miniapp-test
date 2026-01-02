@@ -94,6 +94,12 @@
             position: absolute; top: 20px; right: 20px; 
             color: var(--tiffany); font-size: 20px; cursor: pointer; z-index: 10001;
         }
+
+        /* Select для Опта */
+        select.city-select {
+            width: 100%; background: #1c1c1e; color: white; border: 1px solid #333;
+            padding: 12px; border-radius: 10px; margin-top: 5px; appearance: none; outline: none;
+        }
     </style>
 </head>
 <body>
@@ -124,7 +130,7 @@
         </div>
 
         <div id="opt-calc" class="card" style="display:none;">
-            <h3 style="margin-top:0"><i class="fa-solid fa-calculator"></i> Калькулятор</h3>
+            <h3 style="margin-top:0"><i class="fa-solid fa-calculator"></i> Калькулятор ОПТ</h3>
             <div class="calc-grid">
                 <input type="number" id="w" placeholder="Вес (кг)" oninput="calc()">
                 <input type="number" id="l" placeholder="Длина (см)" oninput="calc()">
@@ -143,21 +149,58 @@
     </div>
 
     <div id="screen-profile" class="screen">
-        <h2 style="margin: 25px 0;">Настройки</h2>
+        <h2 style="margin: 25px 0;">Профиль и Адреса</h2>
         
         <div class="card">
-            <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 10px;">КАТЕГОРИЯ ГРУЗА</div>
+            <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 10px;">ТИП ГРУЗА</div>
             <div class="switcher">
-                <button id="cat-less" class="sw-btn" onclick="setCat('less_100')">Розница</button>
-                <button id="cat-more" class="sw-btn" onclick="setCat('more_100')">Опт</button>
+                <button id="cat-less" class="sw-btn" onclick="setCat('less_100')">Розница (до 100 кг)</button>
+                <button id="cat-more" class="sw-btn" onclick="setCat('more_100')">Опт (от 100 кг)</button>
             </div>
         </div>
 
-        <div class="card">
-            <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 8px;">АДРЕС СКЛАДА (КИТАЙ)</div>
-            <div class="addr-box" onclick="copyValue('浙江省金华市义乌市福田街道长春七街52号1楼')">
-                <span style="white-space: pre-wrap;">浙江省金华市义乌市福田街道长春七街52号1楼</span>
-                <i class="fa-regular fa-copy copy-icon"></i>
+        <div id="retail-block" style="display: none;">
+            <div class="card" style="border: 1px solid var(--tiffany);">
+                <div style="font-size: 11px; color: var(--tiffany); margin-bottom: 8px; font-weight: bold;">
+                    <i class="fa-solid fa-tag"></i> ВАША МАРКИРОВКА (C-87)
+                </div>
+                <div style="font-size: 13px; color: #ccc; margin-bottom: 10px; line-height: 1.4;">
+                    Укажите этот код как "Получателя" или наклейте на груз:
+                </div>
+                <div class="addr-box" onclick="copyMarking()">
+                    <span id="marking-text" style="font-weight: bold; font-size: 15px; color: white;">Загрузка...</span>
+                    <i class="fa-regular fa-copy copy-icon"></i>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 8px;">АДРЕС СКЛАДА (ИУ - РОЗНИЦА)</div>
+                <div class="addr-box" onclick="copyValue(YIWU_RETAIL_ADDR)">
+                    <span style="white-space: pre-wrap;" id="yiwu-retail-text">--</span>
+                    <i class="fa-regular fa-copy copy-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <div id="wholesale-block" style="display: none;">
+            <div class="card">
+                <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 8px;">ГОРОД ОТПРАВЛЕНИЯ (КИТАЙ)</div>
+                <select id="origin-city-select" class="city-select" onchange="renderWholesaleAddress()">
+                    <option value="yiwu">Иу (Yiwu)</option>
+                    <option value="guangzhou">Гуанчжоу (Guangzhou)</option>
+                    <option value="urumqi">Урумчи (Urumqi)</option>
+                </select>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 8px;">АДРЕС ОПТОВОГО СКЛАДА</div>
+                <div class="addr-box" onclick="copyWholesaleAddr()">
+                    <span style="white-space: pre-wrap;" id="wholesale-addr-text">--</span>
+                    <i class="fa-regular fa-copy copy-icon"></i>
+                </div>
+                <div style="margin-top: 10px; font-size: 11px; color: #666; line-height: 1.4;">
+                    * Для оптовых грузов маркировка формируется индивидуально менеджером. Укажите ваш ID: <b id="user-id-opt" style="color:white"></b>
+                </div>
             </div>
         </div>
     </div>
@@ -178,9 +221,18 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // ⚠️⚠️⚠️ ВНИМАНИЕ: ВСТАВЬТЕ СЮДА НОВУЮ ССЫЛКУ NGROK ⚠️⚠️⚠️
+        // ⚠️⚠️⚠️ ВНИМАНИЕ: ВСТАВЬТЕ СЮДА ВАШУ ССЫЛКУ NGROK ⚠️⚠️⚠️
         const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
         
+        // --- ДАННЫЕ АДРЕСОВ (Заполните реальными данными!) ---
+        const YIWU_RETAIL_ADDR = "阿吉买买提·买买提\n18967433111\n浙江省金华市义乌市福田街道长春七街52号1楼";
+
+        const WHOLESALE_WAREHOUSES = {
+            "yiwu": "АДРЕС СКЛАДА ИУ (ОПТ):\nZhejiang Province, Yiwu City, ...",
+            "guangzhou": "АДРЕС СКЛАДА ГУАНЧЖОУ:\nGuangdong Province, Guangzhou, ...",
+            "urumqi": "АДРЕС СКЛАДА УРУМЧИ:\nXinjiang, Urumqi, ..."
+        };
+
         // Берем ID из Telegram или используем тестовый, если открыто в браузере
         const userId = tg.initDataUnsafe?.user?.id || 317295540; 
         
@@ -194,22 +246,14 @@
                 const response = await fetch(`${API_BASE}/api/dashboard/${userId}`, {
                     method: 'GET',
                     headers: {
-                        'ngrok-skip-browser-warning': 'true', // Важно для ngrok
+                        'ngrok-skip-browser-warning': 'true', 
                         'Content-Type': 'application/json'
                     }
                 });
 
-                // 2. Если ошибка сети (не 200 OK)
-                if (!response.ok) {
-                    throw new Error(`Ошибка сервера: ${response.status}`);
-                }
-
+                if (!response.ok) throw new Error(`Ошибка сервера: ${response.status}`);
                 const data = await response.json();
-
-                // 3. Если API вернул ошибку логики
-                if(data.status !== 'ok') {
-                    throw new Error(data.message || 'Ошибка данных');
-                }
+                if(data.status !== 'ok') throw new Error(data.message || 'Ошибка данных');
 
                 // 4. Успех! Обновляем данные
                 userData = {
@@ -229,7 +273,6 @@
                 }, 500);
 
             } catch (e) {
-                // 🚨 РЕЖИМ ПАНИКИ: Показываем ошибку на экране 🚨
                 console.error(e);
                 document.getElementById('error-log').innerHTML = 
                     `СБОЙ ЗАГРУЗКИ:<br>${e.message}<br><br>Проверьте ссылку Ngrok!`;
@@ -249,8 +292,62 @@
             document.getElementById('cat-more').classList.toggle('active', isOpt);
             document.getElementById('opt-calc').style.display = isOpt ? 'block' : 'none';
 
+            // !!! РЕНДЕР ПРОФИЛЯ !!!
+            renderProfile(isOpt);
+
             // Рендер посылок
             renderOrders();
+        }
+
+        function renderProfile(isOpt) {
+            const retailBlock = document.getElementById('retail-block');
+            const wholesaleBlock = document.getElementById('wholesale-block');
+
+            if (!isOpt) {
+                // --- РОЗНИЦА ---
+                retailBlock.style.display = 'block';
+                wholesaleBlock.style.display = 'none';
+
+                // Адрес Иу
+                document.getElementById('yiwu-retail-text').innerText = YIWU_RETAIL_ADDR;
+
+                // Маркировка C-87
+                const pvzCode = getPvzCode(userData.pvz);
+                const tgUser = tg.initDataUnsafe?.user || {};
+                // Берем Имя, убираем спецсимволы
+                const safeName = (tgUser.first_name || "Client").replace(/[\/\\]/g, ''); 
+                // Используем ID как самый надежный идентификатор (или телефон, если он есть в базе, но ID лучше)
+                const safeId = userId; 
+
+                // Формируем: C-87 / PVZ / NAME / ID
+                const marking = `C-87 / ${pvzCode} / ${safeName} / ${safeId}`;
+                document.getElementById('marking-text').innerText = marking;
+
+            } else {
+                // --- ОПТ ---
+                retailBlock.style.display = 'none';
+                wholesaleBlock.style.display = 'block';
+                
+                document.getElementById('user-id-opt').innerText = userId;
+                renderWholesaleAddress(); // Обновить адрес
+            }
+        }
+
+        function getPvzCode(pvzName) {
+            if (!pvzName) return "TJ";
+            // Логика кодов городов
+            if (pvzName.includes("Худжанд")) return "KH";
+            if (pvzName.includes("Душанбе")) return "DU";
+            if (pvzName.includes("Спитамен")) return "SP";
+            if (pvzName.includes("Истаравшан")) return "IST";
+            if (pvzName.includes("Канибадам")) return "KB";
+            return "TJ";
+        }
+
+        function renderWholesaleAddress() {
+            const city = document.getElementById('origin-city-select').value;
+            const addr = WHOLESALE_WAREHOUSES[city] || "Адрес не найден";
+            document.getElementById('wholesale-addr-text').innerText = addr;
         }
 
         function renderOrders() {
@@ -263,7 +360,6 @@
             }
 
             userData.packages.forEach(p => {
-                // Определяем цвет статуса
                 let badgeClass = 'st-blue';
                 if(p.status_text.includes('Ожидает')) badgeClass = 'st-gray';
                 if(p.status_text.includes('Прибыл') || p.status_text.includes('Выдан')) badgeClass = 'st-green';
@@ -290,11 +386,8 @@
 
         async function setCat(cat) {
             tg.HapticFeedback.selectionChanged();
-            // Оптимистичное обновление UI
             userData.category = cat;
             render();
-            
-            // Отправка на сервер
             try {
                 await fetch(`${API_BASE}/api/update_settings`, {
                     method: 'POST', 
@@ -316,11 +409,19 @@
         function nav(scr) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('screen-' + scr).classList.add('active');
-            
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById('nav-' + scr).classList.add('active');
-            
             tg.HapticFeedback.impactOccurred('light');
+        }
+
+        function copyMarking() {
+            const text = document.getElementById('marking-text').innerText;
+            copyValue(text);
+        }
+
+        function copyWholesaleAddr() {
+            const text = document.getElementById('wholesale-addr-text').innerText;
+            copyValue(text);
         }
 
         function copyValue(text) {
@@ -331,7 +432,6 @@
             });
         }
 
-        // Запуск
         init();
     </script>
 </body>
