@@ -1,195 +1,335 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Drop</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Drop - Доставка грузов</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-black: #000000; --card-bg: #111111; --tiffany: #1ae2c7;
+            --text-main: #ffffff; --text-gray: #888888;
+        }
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background-color: var(--bg-black); color: var(--text-main);
+            margin: 0; padding: 0 15px 100px 15px; -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
 
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        /* LOADING ANIMATION */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-black); z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .drop-anim {
+            font-size: 60px; color: var(--tiffany);
+            animation: dropBounce 2s ease-in-out infinite;
+        }
+        @keyframes dropBounce {
+            0% { transform: translateY(-150px) scaleY(1.1); opacity: 0; }
+            30% { transform: translateY(0) scaleY(0.9); opacity: 1; }
+            50% { transform: translateY(-20px) rotate(5deg); }
+            70% { transform: translateY(0) rotate(-5deg); }
+            100% { transform: translateY(0); }
+        }
+        .loading-text { margin-top: 20px; font-weight: bold; letter-spacing: 2px; color: var(--tiffany); }
 
-<style>
-:root {
-    --bg-black:#000;--card-bg:#111;--tiffany:#1ae2c7;
-    --text-main:#fff;--text-gray:#888;
-}
-body{
-    font-family:-apple-system,system-ui,sans-serif;
-    background:var(--bg-black);color:var(--text-main);
-    margin:0;padding:0 15px 100px;
-}
-.card{
-    background:var(--card-bg);border-radius:16px;
-    padding:16px;margin-bottom:12px;
-}
-.screen{display:none;}
-.screen.active{display:block;}
-.nav-bar{
-    position:fixed;bottom:0;left:0;right:0;
-    background:#111;display:flex;padding:10px 0 25px;
-}
-.nav-item{flex:1;text-align:center;color:var(--text-gray);}
-.nav-item.active{color:var(--tiffany);}
-input,select{
-    width:100%;background:#1c1c1e;color:#fff;
-    border:1px solid #333;border-radius:10px;
-    padding:12px;margin-top:8px;
-}
-button{
-    background:var(--tiffany);border:none;border-radius:10px;
-    padding:12px;font-weight:bold;
-}
-code{color:var(--tiffany);}
-</style>
+        .screen { display: none; animation: fadeIn 0.3s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .card {
+            background: var(--card-bg); border-radius: 16px; padding: 16px;
+            margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .calc-grid input {
+            background: #1c1c1e; border: 1px solid #333; border-radius: 10px;
+            padding: 12px; color: white; font-size: 14px; outline: none; width: 100%; box-sizing: border-box;
+        }
+        .calc-res { 
+            background: rgba(26, 226, 199, 0.1); padding: 15px; border-radius: 12px; 
+            text-align: center; color: var(--tiffany); font-weight: bold; margin-top: 15px; font-size: 20px;
+        }
+
+        .switcher { display: flex; background: #1c1c1e; padding: 4px; border-radius: 12px; }
+        .sw-btn {
+            flex: 1; padding: 10px; border: none; border-radius: 10px;
+            background: transparent; color: var(--text-gray); font-size: 13px;
+        }
+        .sw-btn.active { background: var(--tiffany); color: #000; font-weight: bold; }
+        
+        .nav-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(17,17,17,0.98); display: flex; padding: 10px 0 25px 0;
+            border-top: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); z-index: 1000;
+        }
+        .nav-item { text-align: center; color: var(--text-gray); text-decoration: none; flex: 1; }
+        .nav-item.active { color: var(--tiffany); }
+        .nav-item i { font-size: 22px; margin-bottom: 4px; display: block; }
+        .nav-item span { font-size: 10px; }
+
+        .addr-box { 
+            background: #000; padding: 12px; border-radius: 10px; font-size: 13px; 
+            line-height: 1.5; color: #ddd; position: relative; cursor: pointer;
+            border: 1px solid transparent; transition: 0.2s;
+        }
+        .addr-box:active { background: #111; border-color: var(--tiffany); }
+        .copy-icon { position: absolute; right: 12px; top: 12px; color: var(--tiffany); opacity: 0.7; }
+        
+        code { background: #333; padding: 2px 6px; border-radius: 4px; color: var(--tiffany); font-family: monospace; }
+        select {
+            width: 100%; background: #1c1c1e; color: white; border: 1px solid #333;
+            padding: 12px; border-radius: 10px; margin-top: 5px; appearance: none;
+        }
+    </style>
 </head>
-
 <body>
 
-<div id="screen-home" class="screen active">
-    <h2>Drop</h2>
-    <div class="card">
-        <div style="color:var(--text-gray)">Бонус</div>
-        <div id="bonus" style="font-size:28px">0 кг</div>
+    <div id="loader">
+        <div class="drop-anim"><i class="fa-solid fa-parachute-box"></i></div>
+        <div class="loading-text">DROP</div>
     </div>
-</div>
 
-<div id="screen-pkgs" class="screen">
-    <h2>Мои посылки</h2>
-    <div id="orders"></div>
+    <div id="screen-home" class="screen">
+        <div style="margin: 25px 0;">
+            <h1 style="margin:0; font-size: 28px; letter-spacing: -1px;">Drop</h1>
+            <div id="h-sub" style="color: var(--tiffany); font-size: 14px;"></div>
+        </div>
 
-    <div class="card">
-        <input id="track-input" placeholder="Трек номер">
-        <input id="desc-input" placeholder="Описание (необязательно)">
-        <button onclick="addTrack()">Добавить</button>
-    </div>
-</div>
+        <div id="opt-calc" class="card" style="display:none;">
+            <h3 style="margin-top:0"><i class="fa-solid fa-calculator"></i> Калькулятор ОПТ</h3>
+            <div class="calc-grid">
+                <input type="number" id="w" placeholder="Вес (кг)" oninput="calc()">
+                <input type="number" id="l" placeholder="Длина (см)" oninput="calc()">
+                <input type="number" id="wi" placeholder="Ширина (см)" oninput="calc()">
+                <input type="number" id="h" placeholder="Высота (см)" oninput="calc()">
+            </div>
+            <div class="calc-res"><span id="res">0.00</span> $</div>
+        </div>
 
-<div id="screen-profile" class="screen">
-    <h2>Профиль</h2>
-    <div class="card">
-        <div>Категория</div>
-        <button onclick="setCat('less_100')">До 100 кг</button>
-        <button onclick="setCat('more_100')">От 100 кг</button>
-    </div>
-    <div class="card">
-        <select id="pvz" onchange="updatePvz()"></select>
-    </div>
-</div>
-
-<nav class="nav-bar">
-    <div class="nav-item active" onclick="nav('home')">🏠</div>
-    <div class="nav-item" onclick="nav('pkgs')">📦</div>
-    <div class="nav-item" onclick="nav('profile')">⚙️</div>
-</nav>
-
-<script>
-const tg = window.Telegram.WebApp;
-tg.expand();
-
-const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
-const userId = tg.initDataUnsafe?.user?.id || 317295540; 
-
-let userData = { packages: [] };
-
-async function init(){
-    const r = await fetch(`${API_BASE}/api/dashboard/${userId}`);
-    const d = await r.json();
-    if(d.status === 'ok'){
-        userData = d;
-        render();
-    }
-}
-init();
-
-function render(){
-    document.getElementById('bonus').innerText =
-        (userData.user_info?.bonus_balance || 0) + " кг";
-
-    renderOrders();
-
-    const pvzSel = document.getElementById('pvz');
-    pvzSel.innerHTML = '';
-    (userData.pvz_list || []).forEach(p=>{
-        const o = document.createElement('option');
-        o.value = p; o.text = p;
-        pvzSel.add(o);
-    });
-}
-
-function renderOrders(){
-    const c = document.getElementById('orders');
-    c.innerHTML = '';
-    if(!userData.packages.length){
-        c.innerHTML = '<div class="card">Нет заказов</div>';
-        return;
-    }
-    userData.packages.forEach(p=>{
-        c.innerHTML += `
         <div class="card">
-            <div><b>${p.track_number}</b></div>
-            <div>${p.status_text}</div>
-        </div>`;
-    });
-}
+            <div style="color: var(--text-gray); font-size: 11px; text-transform: uppercase;">Бонусный баланс</div>
+            <div id="h-bon-val" style="font-size: 32px; font-weight: bold; margin-top: 5px;">0 кг</div>
+        </div>
+        
+        <div id="h-pvz-card" class="card">
+            <div style="color: var(--text-gray); font-size: 11px; text-transform: uppercase;">Ваш пункт выдачи</div>
+            <div id="h-pvz-val" style="font-weight: 600; margin-top: 8px;"><i class="fa-solid fa-location-dot"></i> --</div>
+        </div>
+    </div>
 
-async function addTrack(){
-    const track = document.getElementById('track-input').value.trim();
-    const desc = document.getElementById('desc-input').value.trim();
+    <div id="screen-pkgs" class="screen">
+        <h2 style="margin: 25px 0;">Мои заказы</h2>
+        <div id="orders-container"></div>
+    </div>
 
-    if(!track){
-        tg.showAlert("Введите трек номер");
-        return;
-    }
+    <div id="screen-profile" class="screen">
+        <h2 style="margin: 25px 0;">Настройки</h2>
+        
+        <div class="card">
+            <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 10px;">КАТЕГОРИЯ ГРУЗА</div>
+            <div class="switcher">
+                <button id="cat-less" class="sw-btn" onclick="setCat('less_100')">До 100 кг</button>
+                <button id="cat-more" class="sw-btn" onclick="setCat('more_100')">От 100 кг</button>
+            </div>
+        </div>
 
-    const r = await fetch(`${API_BASE}/api/packages`,{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-            user_id:userId,
-            track_number:track,
-            description:desc
-        })
-    });
+        <div id="pr-pvz-card" class="card">
+            <div style="font-size: 12px; color: var(--text-gray);">ВЫБРАТЬ ПВЗ</div>
+            <select id="pvz-select" onchange="updatePvz()"></select>
+        </div>
 
-    const d = await r.json();
+        <div class="card">
+            <div id="address-container">
+                </div>
+        </div>
+    </div>
 
-    if(d.status === 'exists'){
-        tg.showAlert("Этот трек уже добавлен");
-        return;
-    }
+    <nav class="nav-bar">
+        <a href="javascript:void(0)" class="nav-item active" id="nav-home" onclick="nav('home')">
+            <i class="fa-solid fa-house"></i><span>Главная</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" id="nav-pkgs" onclick="nav('pkgs')">
+            <i class="fa-solid fa-box"></i><span>Посылки</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" id="nav-profile" onclick="nav('profile')">
+            <i class="fa-solid fa-user-gear"></i><span>Профиль</span>
+        </a>
+    </nav>
 
-    if(d.status === 'ok'){
-        document.getElementById('track-input').value='';
-        document.getElementById('desc-input').value='';
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        
+        const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
+        const userId = tg.initDataUnsafe?.user?.id || 317295540; 
+        
+        // ДАННЫЕ СКЛАДА И ПВЗ
+        const YIWU_ADDR_BLOCK = "阿吉买买提·买买提\n18967433111\n浙江省金华市义乌市福田街道长春七街52号1楼";
+        const ADDR_MORE = "浙江省金华市义乌市 廿三里街道 惠民路 708号"; 
+        
+        const PVZ_DATA = [
+            { name: "🇹🇯 Худжанд (19-й мкр)", code: "TJ-KH19" },
+            { name: "🇹🇯 Спитамен (Центр)", code: "TJ-SP1" }
+        ];
+
+        let userData = { category: 'less_100', pvz: PVZ_DATA[0].name, bonus: 0, packages: [] };
+
+        async function init() {
+            try {
+                const r = await fetch(`${API_BASE}/api/dashboard/${userId}`);
+                const data = await r.json();
+                if(data.status === 'ok') {
+                    userData = {
+                        category: data.user_info.category || 'less_100',
+                        pvz: data.user_info.pvz || PVZ_DATA[0].name,
+                        bonus: data.user_info.bonus_balance || 0,
+                        packages: data.packages || []
+                    };
+                }
+            } catch (e) { console.error(e); }
+            
+            setTimeout(() => {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('screen-home').classList.add('active');
+                render();
+            }, 1800);
+        }
+
+        function render() {
+            const isOpt = userData.category === 'more_100';
+            
+            // Видимость блоков
+            document.getElementById('opt-calc').style.display = isOpt ? 'block' : 'none';
+            document.getElementById('h-pvz-card').style.display = isOpt ? 'none' : 'block';
+            document.getElementById('pr-pvz-card').style.display = isOpt ? 'none' : 'block';
+            
+            // Тексты
+            document.getElementById('h-sub').innerText = isOpt ? "Оптовый клиент" : "Розничный клиент";
+            document.getElementById('h-bon-val').innerText = userData.bonus + " кг";
+            document.getElementById('h-pvz-val').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${userData.pvz}`;
+            
+            // Переключатель категорий
+            document.getElementById('cat-less').classList.toggle('active', !isOpt);
+            document.getElementById('cat-more').classList.toggle('active', isOpt);
+
+            // Рендер ПВЗ селекта
+            const sel = document.getElementById('pvz-select');
+            sel.innerHTML = '';
+            PVZ_DATA.forEach(p => {
+                let o = document.createElement('option'); o.value = p.name; o.text = p.name;
+                if(p.name === userData.pvz) o.selected = true;
+                sel.add(o);
+            });
+
+            // РЕНДЕР АДРЕСНОГО БЛОКА
+            const addrCont = document.getElementById('address-container');
+            if(!isOpt) {
+                const currentPvz = PVZ_DATA.find(p => p.name === userData.pvz) || PVZ_DATA[0];
+                const userName = `${tg.initDataUnsafe?.user?.first_name || 'Client'} ${tg.initDataUnsafe?.user?.last_name || ''}`.trim();
+                const userPhone = tg.initDataUnsafe?.user?.username || userId;
+                
+                // Строка маркировки
+                const marking = `С-87 / ${currentPvz.code} / ${userName} / ${userPhone}`;
+
+                addrCont.innerHTML = `
+                    <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 8px;">1. АДРЕС И ТЕЛЕФОН СКЛАДА (收货地址)</div>
+                    <div class="addr-box" onclick="copyValue('${YIWU_ADDR_BLOCK.replace(/\n/g, '\\n')}')" style="margin-bottom:15px;">
+                        <span style="white-space: pre-wrap;">${YIWU_ADDR_BLOCK}</span>
+                        <i class="fa-regular fa-copy copy-icon"></i>
+                    </div>
+
+                    <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 8px;">2. МАРКИРОВКА / ПОЛУЧАТЕЛЬ (收货人)</div>
+                    <div class="addr-box" onclick="copyValue('${marking}')" style="border: 1px dashed var(--tiffany);">
+                        <span>${marking}</span>
+                        <i class="fa-regular fa-copy copy-icon"></i>
+                    </div>
+                `;
+            } else {
+                addrCont.innerHTML = `
+                    <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 8px;">АДРЕС СКЛАДА ОПТ</div>
+                    <div class="addr-box" onclick="copyValue('${ADDR_MORE} ID:${userId}')">
+                        <span>${ADDR_MORE} <br><b>ID: ${userId}</b></span>
+                        <i class="fa-regular fa-copy copy-icon"></i>
+                    </div>
+                `;
+            }
+
+            renderOrders();
+        }
+
+        function renderOrders() {
+            const cont = document.getElementById('orders-container');
+            cont.innerHTML = '';
+            if(!userData.packages.length) {
+                cont.innerHTML = '<div class="card" style="text-align:center;color:gray;padding:40px 10px;">Пока нет активных заказов</div>';
+                return;
+            }
+            userData.packages.forEach(p => {
+                cont.innerHTML += `
+                    <div class="card">
+                        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-gray);margin-bottom:8px">
+                            <span>${p.date || 'Дата'}</span>
+                            <span style="color:var(--tiffany);font-weight:bold;">${p.status_text || 'В пути'}</span>
+                        </div>
+                        <div style="margin-bottom:8px"><b>Трек:</b> <code>${p.track_number}</code></div>
+                        <div style="font-size:13px;opacity:0.8">Вес: ${p.weight}кг | Объем: ${p.volume}м³</div>
+                    </div>`;
+            });
+        }
+
+        async function setCat(cat) {
+            tg.HapticFeedback.selectionChanged();
+            userData.category = cat;
+            render();
+            await fetch(`${API_BASE}/api/update_settings`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ user_id: userId, category: cat })
+            });
+        }
+
+        async function updatePvz() {
+            const val = document.getElementById('pvz-select').value;
+            userData.pvz = val;
+            render();
+            await fetch(`${API_BASE}/api/update_settings`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ user_id: userId, pvz: val })
+            });
+        }
+
+        function calc() {
+            const w = parseFloat(document.getElementById('w').value) || 0;
+            const l = parseFloat(document.getElementById('l').value) || 0;
+            const wi = parseFloat(document.getElementById('wi').value) || 0;
+            const h = parseFloat(document.getElementById('h').value) || 0;
+            const vol = (l * wi * h) / 1000000;
+            document.getElementById('res').innerText = Math.max(w * 4.5, vol * 180).toFixed(2);
+        }
+
+        function nav(scr) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-' + scr).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('nav-' + scr).classList.add('active');
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        function copyValue(text) {
+            const cleanText = text.replace(/\\n/g, '\n');
+            navigator.clipboard.writeText(cleanText).then(() => {
+                tg.HapticFeedback.notificationOccurred('success');
+                tg.showScanQrPopup({text: "Скопировано!"});
+                setTimeout(() => tg.closeScanQrPopup(), 800);
+            });
+        }
+
         init();
-    }
-}
-
-async function setCat(cat){
-    await fetch(`${API_BASE}/api/update_settings`,{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({user_id:userId,category:cat})
-    });
-    init();
-}
-
-async function updatePvz(){
-    const val = document.getElementById('pvz').value;
-    await fetch(`${API_BASE}/api/update_settings`,{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({user_id:userId,pvz:val})
-    });
-    init();
-}
-
-function nav(s){
-    document.querySelectorAll('.screen').forEach(e=>e.classList.remove('active'));
-    document.getElementById('screen-'+s).classList.add('active');
-    document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
-}
-</script>
-
+    </script>
 </body>
 </html>
