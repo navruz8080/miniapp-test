@@ -6,156 +6,200 @@
     <title>Drop Logistics</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg-black: #000000; --card-bg: #111111; --tiffany: #1ae2c7; --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; --text-main: #ffffff; --text-gray: #888888; }
-        body { font-family: -apple-system, system-ui, sans-serif; background-color: var(--bg-black); color: var(--text-main); margin: 0; padding: 0 0 100px 0; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+        :root { 
+            --bg-dark: #0b0f19; 
+            --card-glass: rgba(30, 36, 50, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --neon: #23F7DD; /* xPortal Cyan */
+            --neon-glow: rgba(35, 247, 221, 0.3);
+            --text-main: #ffffff; 
+            --text-gray: #8a93a0;
+            --danger: #ff4b55;
+            --gold: #F7B500;
+        }
         
-        /* ОБЩИЕ СТИЛИ */
-        .container { padding: 0 15px; }
-        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-black); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s ease; }
-        .drop-anim { font-size: 60px; color: var(--tiffany); animation: dropBounce 2s ease-in-out infinite; }
-        @keyframes dropBounce { 0% { transform: translateY(-150px) scaleY(1.1); opacity: 0; } 30% { transform: translateY(0) scaleY(0.9); opacity: 1; } 100% { transform: translateY(0); } }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-dark); 
+            background-image: radial-gradient(circle at 50% 0%, rgba(35, 247, 221, 0.15) 0%, transparent 50%);
+            color: var(--text-main); 
+            margin: 0; padding: 0 0 110px 0; 
+            -webkit-tap-highlight-color: transparent; 
+            overflow-x: hidden; 
+            min-height: 100vh;
+        }
+        
+        /* SCROLLBAR HIDE */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
 
-        .screen { display: none; animation: fadeIn 0.3s ease; }
+        /* --- LOADER --- */
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease; }
+        .logo-circle {
+            width: 80px; height: 80px; border-radius: 50%;
+            border: 2px solid var(--neon);
+            box-shadow: 0 0 30px var(--neon-glow);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; color: var(--neon);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 var(--neon-glow); } 70% { box-shadow: 0 0 30px 10px rgba(35, 247, 221, 0); } 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
+
+        /* --- LAYOUT --- */
+        .container { padding: 0 20px; }
+        .screen { display: none; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .screen.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .card { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
-        .card-border { border: 1px solid var(--tiffany); }
-        
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(17,17,17,0.98); display: flex; padding: 10px 0 25px 0; border-top: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); z-index: 1000; }
-        .nav-item { text-align: center; color: var(--text-gray); text-decoration: none; flex: 1; }
-        .nav-item.active { color: var(--tiffany); }
-        .nav-item i { font-size: 22px; margin-bottom: 4px; display: block; }
-        .nav-item span { font-size: 10px; }
-
-        /* --- СТИЛИ ПРОФИЛЯ (СОЦИАЛЬНАЯ СЕТЬ) --- */
-        .profile-header {
-            background: linear-gradient(180deg, rgba(26,226,199,0.15) 0%, rgba(0,0,0,0) 100%);
-            padding: 30px 15px 20px 15px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            margin-bottom: 20px;
-        }
-
-        .avatar-container {
+        /* --- CARDS (GLASSMORPHISM) --- */
+        .card { 
+            background: var(--card-glass); 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px; 
+            padding: 20px; 
+            margin-bottom: 16px; 
             position: relative;
-            width: 90px;
-            height: 90px;
-            margin: 0 auto 15px auto;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
         
-        .avatar-img {
-            width: 100%; height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #333; /* Базовый цвет рамки */
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        /* Neon Border Accent */
+        .card-accent { border: 1px solid var(--neon); box-shadow: 0 0 15px rgba(35, 247, 221, 0.15); }
+
+        /* --- TYPOGRAPHY --- */
+        h1 { font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -0.5px; }
+        h2 { font-size: 20px; font-weight: 700; margin: 0; }
+        .text-neon { color: var(--neon); }
+        .text-dim { color: var(--text-gray); font-size: 13px; font-weight: 500; }
+
+        /* --- HEADER --- */
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin: 20px 0 30px 0; }
+        .refresh-btn { width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; color: var(--neon); cursor: pointer; border: 1px solid var(--card-border); }
+
+        /* --- INPUTS & FORMS --- */
+        input, select { 
+            background: rgba(0,0,0,0.3); 
+            border: 1px solid var(--card-border); 
+            color: white; 
+            padding: 16px; 
+            border-radius: 16px; 
+            width: 100%; 
+            box-sizing: border-box; 
+            outline: none; 
+            font-size: 15px; 
+            font-family: 'Inter', sans-serif;
+            transition: 0.3s;
         }
+        input:focus, select:focus { border-color: var(--neon); box-shadow: 0 0 10px var(--neon-glow); }
+
+        /* --- BUTTONS --- */
+        .btn-main {
+            background: var(--neon);
+            color: #000;
+            width: 100%;
+            padding: 16px;
+            border-radius: 16px;
+            border: none;
+            font-weight: 800;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px var(--neon-glow);
+            transition: transform 0.2s;
+        }
+        .btn-main:active { transform: scale(0.97); }
+
+        /* --- SWITCHER --- */
+        .switcher { display: flex; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 18px; margin-bottom: 20px; }
+        .sw-btn { flex: 1; padding: 12px; border: none; border-radius: 14px; background: transparent; color: var(--text-gray); font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.3s; }
+        .sw-btn.active { background: rgba(35, 247, 221, 0.15); color: var(--neon); border: 1px solid rgba(35, 247, 221, 0.2); }
+
+        /* --- BOTTOM NAV (FLOATING) --- */
+        .nav-bar { 
+            position: fixed; bottom: 20px; left: 20px; right: 20px; 
+            background: rgba(20, 25, 35, 0.85); 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px; 
+            display: flex; padding: 15px 0; 
+            z-index: 1000; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        .nav-item { flex: 1; text-align: center; color: var(--text-gray); text-decoration: none; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .nav-item i { font-size: 20px; margin-bottom: 4px; }
+        .nav-item span { font-size: 10px; font-weight: 600; }
+        .nav-item.active { color: var(--neon); transform: translateY(-2px); text-shadow: 0 0 10px var(--neon-glow); }
+
+        /* --- PROFILE SPECIFIC --- */
+        .profile-hero { text-align: center; margin-bottom: 30px; }
+        .avatar-box { 
+            width: 100px; height: 100px; margin: 0 auto 15px; position: relative; 
+            border-radius: 50%; padding: 4px;
+            background: linear-gradient(135deg, var(--card-border), var(--neon));
+        }
+        .avatar-img { width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--bg-dark); object-fit: cover; }
+        .rank-badge { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); background: #000; border: 1px solid var(--neon); color: var(--neon); font-size: 10px; padding: 4px 10px; border-radius: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
         
-        /* Рамки уровней */
-        .lvl-bronze { border-color: var(--bronze); box-shadow: 0 0 10px rgba(205, 127, 50, 0.3); }
-        .lvl-silver { border-color: var(--silver); box-shadow: 0 0 10px rgba(192, 192, 192, 0.3); }
-        .lvl-gold { border-color: var(--gold); box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
-        .lvl-vip { border-color: var(--tiffany); box-shadow: 0 0 20px rgba(26, 226, 199, 0.5); }
+        .balance-hero { font-size: 42px; font-weight: 800; color: white; margin-bottom: 5px; letter-spacing: -1px; }
+        .balance-label { color: var(--text-gray); font-size: 14px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
 
-        .level-badge {
-            position: absolute;
-            bottom: -5px; right: -5px;
-            background: #222;
-            color: white;
-            font-size: 10px;
-            padding: 4px 8px;
-            border-radius: 10px;
-            border: 1px solid #444;
-            font-weight: bold;
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .stat-box { background: rgba(255,255,255,0.03); border-radius: 18px; padding: 15px; text-align: center; }
+
+        /* --- PARCELS --- */
+        .parcel-item { 
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
         }
+        .parcel-item:last-child { border-bottom: none; }
+        .parcel-icon { width: 40px; height: 40px; border-radius: 12px; background: rgba(35, 247, 221, 0.1); color: var(--neon); display: flex; align-items: center; justify-content: center; font-size: 18px; margin-right: 15px; }
+        .status-pill { padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .st-active { background: rgba(35, 247, 221, 0.15); color: var(--neon); }
+        .st-wait { background: rgba(255, 255, 255, 0.1); color: #aaa; }
 
-        .user-name { font-size: 20px; font-weight: bold; color: white; margin-bottom: 5px; }
-        .user-id { font-size: 12px; color: var(--text-gray); margin-bottom: 15px; }
+        /* --- MODAL --- */
+        .fab { position: fixed; bottom: 100px; right: 20px; width: 60px; height: 60px; background: var(--neon); border-radius: 20px; display: flex; align-items: center; justify-content: center; color: black; font-size: 24px; box-shadow: 0 0 20px var(--neon-glow); cursor: pointer; z-index: 900; transition: transform 0.2s; transform: rotate(45deg); }
+        .fab i { transform: rotate(-45deg); } /* Icon fix */
+        .fab:active { transform: scale(0.95) rotate(45deg); }
 
-        .marking-pill {
-            display: inline-flex;
-            align-items: center;
-            background: rgba(26, 226, 199, 0.1);
-            border: 1px solid var(--tiffany);
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: none; align-items: flex-end; backdrop-filter: blur(10px); }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.3s; }
+        .modal-box { background: #151a25; width: 100%; border-radius: 30px 30px 0 0; padding: 30px 20px 50px 20px; border-top: 1px solid var(--neon); position: relative; animation: slideUpModal 0.3s; }
+        @keyframes slideUpModal { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        /* COPY ADDRESS STYLES */
+        .addr-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 20px;
-            padding: 8px 16px;
-            color: var(--tiffany);
-            font-family: monospace;
-            font-size: 14px;
-            font-weight: bold;
+            padding: 20px;
+            position: relative;
             cursor: pointer;
             transition: 0.2s;
         }
-        .marking-pill:active { background: var(--tiffany); color: black; }
-        .marking-pill i { margin-left: 8px; font-size: 12px; }
+        .addr-card:active { border-color: var(--neon); background: rgba(35, 247, 221, 0.05); }
+        .addr-card .label { font-size: 10px; color: var(--neon); font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+        .addr-card .text { font-family: monospace; font-size: 13px; line-height: 1.6; color: #ddd; }
+        .addr-card .icon { position: absolute; right: 20px; top: 20px; color: var(--neon); opacity: 0.5; }
 
-        .stats-row {
-            display: flex;
-            justify-content: space-around;
-            margin: 20px 0;
-            padding: 15px;
-            background: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .stat-item { text-align: center; }
-        .stat-val { font-size: 18px; font-weight: bold; color: white; }
-        .stat-label { font-size: 10px; color: var(--text-gray); text-transform: uppercase; margin-top: 4px; }
-
-        .section-title { font-size: 13px; color: var(--text-gray); margin: 20px 0 10px 5px; font-weight: 600; text-transform: uppercase; }
-
-        /* Стили калькулятора и форм */
-        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .calc-grid input, select { background: #1c1c1e; border: 1px solid #333; border-radius: 10px; padding: 12px; color: white; font-size: 14px; outline: none; width: 100%; box-sizing: border-box; }
-        .calc-res { background: rgba(26, 226, 199, 0.1); padding: 15px; border-radius: 12px; text-align: center; color: var(--tiffany); font-weight: bold; margin-top: 15px; font-size: 20px; }
-        .switcher { display: flex; background: #1c1c1e; padding: 4px; border-radius: 12px; }
-        .sw-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; background: transparent; color: var(--text-gray); font-size: 13px; }
-        .sw-btn.active { background: var(--tiffany); color: #000; font-weight: bold; }
-
-        .addr-box { background: #000; padding: 12px; border-radius: 10px; font-size: 13px; line-height: 1.5; color: #ddd; position: relative; cursor: pointer; border: 1px solid #333; transition: 0.2s; }
-        .addr-box:active { border-color: var(--tiffany); }
-        .copy-icon { position: absolute; right: 12px; top: 12px; color: var(--tiffany); opacity: 0.7; }
-        
-        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
-        .st-gray { background: #333; color: #aaa; }
-        .st-green { background: rgba(26, 226, 199, 0.2); color: var(--tiffany); }
-        .st-blue { background: rgba(0, 122, 255, 0.2); color: #4facfe; }
-        .st-red { background: rgba(255, 59, 48, 0.2); color: #ff3b30; }
-
-        .refresh-btn { position: absolute; top: 20px; right: 20px; color: var(--tiffany); font-size: 20px; cursor: pointer; z-index: 10001; }
-
-        /* Модальное окно */
-        .fab { position: fixed; bottom: 90px; right: 20px; width: 56px; height: 56px; background: var(--tiffany); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black; font-size: 24px; box-shadow: 0 4px 12px rgba(26, 226, 199, 0.4); cursor: pointer; z-index: 900; transition: transform 0.2s; }
-        .fab:active { transform: scale(0.9); }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
-        .modal-box { background: #1c1c1e; width: 85%; max-width: 320px; padding: 20px; border-radius: 16px; border: 1px solid #333; position: relative; }
-        .modal-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; text-align: center; }
-        .modal-input { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; outline: none; font-size: 14px; }
-        .modal-btn { width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .btn-primary { background: var(--tiffany); color: black; }
-        .btn-secondary { background: transparent; color: #888; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <div id="loader">
-        <div class="drop-anim"><i class="fa-solid fa-parachute-box"></i></div>
-        <div style="margin-top: 20px; color: var(--tiffany); font-weight: bold;">DROP LOGISTICS</div>
-        <div id="error-log" style="color: red; margin-top: 20px; font-size: 12px; text-align: center; padding: 0 20px;"></div>
+        <div class="logo-circle"><i class="fa-solid fa-box"></i></div>
+        <div style="margin-top: 20px; color: white; font-weight: 600; font-size: 18px; letter-spacing: 2px;">DROP</div>
+        <div id="error-log" style="color: #ff4b55; margin-top: 20px; font-size: 12px; text-align: center; opacity: 0.7;"></div>
     </div>
-
-    <div class="refresh-btn" onclick="location.reload()"><i class="fa-solid fa-rotate-right"></i></div>
 
     <div id="add-modal" class="modal-overlay">
         <div class="modal-box">
-            <div class="modal-title">Добавить трек</div>
-            <input type="text" id="new-track" class="modal-input" placeholder="Трек-номер">
-            <input type="text" id="new-desc" class="modal-input" placeholder="Описание (напр. Кроссовки)">
-            <button class="modal-btn btn-primary" onclick="submitTrack()">Добавить</button>
-            <button class="modal-btn btn-secondary" onclick="closeModal()">Отмена</button>
+            <h2 style="margin-bottom: 20px; text-align: center;">Новая посылка</h2>
+            <input type="text" id="new-track" placeholder="Трек-номер (напр. YT12345)" style="margin-bottom: 12px;">
+            <input type="text" id="new-desc" placeholder="Описание (напр. Часы)" style="margin-bottom: 25px;">
+            <button class="btn-main" onclick="submitTrack()">ДОБАВИТЬ ТРЕК</button>
+            <div style="text-align: center; margin-top: 20px; color: var(--text-gray); font-size: 14px;" onclick="closeModal()">Отмена</div>
         </div>
     </div>
 
@@ -164,141 +208,151 @@
     </div>
 
     <div id="screen-home" class="screen">
-        <div class="container" style="margin-top: 25px;">
-            <h1 style="margin:0; font-size: 28px;">Калькулятор</h1>
-            <div style="color: var(--text-gray); font-size: 14px; margin-bottom: 20px;">Рассчитайте стоимость доставки</div>
-
-            <div class="card">
-                <div class="switcher">
-                    <button id="cat-less" class="sw-btn active" onclick="setCat('less_100')">Розница</button>
-                    <button id="cat-more" class="sw-btn" onclick="setCat('more_100')">Опт (>100кг)</button>
-                </div>
+        <div class="container">
+            <div class="header-row">
+                <h1>Калькулятор</h1>
+                <div class="refresh-btn" onclick="location.reload()"><i class="fa-solid fa-arrows-rotate"></i></div>
             </div>
 
-            <div id="calc-block" class="card" style="border: 1px solid var(--tiffany);">
-                <div id="calc-route-box" style="margin-bottom: 10px; display: none;">
-                    <label style="font-size: 12px; color: #888;">Маршрут</label>
+            <div class="switcher">
+                <button id="cat-less" class="sw-btn active" onclick="setCat('less_100')">Розница</button>
+                <button id="cat-more" class="sw-btn" onclick="setCat('more_100')">Опт (>100кг)</button>
+            </div>
+
+            <div class="card card-accent">
+                <div id="calc-route-box" style="margin-bottom: 15px; display: none;">
+                    <div class="text-dim" style="margin-bottom: 5px;">Маршрут доставки</div>
                     <select id="calc-route"><option>Загрузка...</option></select>
                 </div>
 
-                <div class="calc-grid">
-                    <input type="number" id="c-l" placeholder="Дл (см)" class="opt-only" style="display:none">
-                    <input type="number" id="c-w" placeholder="Шир (см)" class="opt-only" style="display:none">
-                    <input type="number" id="c-h" placeholder="Выс (см)" class="opt-only" style="display:none">
-                    <input type="number" id="c-weight" placeholder="Вес (кг)" style="border: 1px solid #333;">
-                    <input type="number" id="c-qty" placeholder="Кол-во" value="1">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="opt-only" style="display:none">
+                        <input type="number" id="c-l" placeholder="Длина">
+                    </div>
+                    <div class="opt-only" style="display:none">
+                        <input type="number" id="c-w" placeholder="Ширина">
+                    </div>
+                    <div class="opt-only" style="display:none">
+                        <input type="number" id="c-h" placeholder="Высота">
+                    </div>
+                    
+                    <div style="grid-column: span 2;">
+                        <input type="number" id="c-weight" placeholder="Вес 1 места (кг)" style="border-color: var(--card-border);">
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <input type="number" id="c-qty" placeholder="Количество мест" value="1">
+                    </div>
                 </div>
 
-                <div id="retail-info" style="font-size: 11px; color: #888; margin-top: 10px; line-height: 1.4;">
-                    Тарифы:<br>• до 0.5 кг — <b>13с</b><br>• 0.5-1 кг — <b>23с</b><br>• 1-50 кг — <b>23с/кг</b><br>• 50-99 кг — <b>20с/кг</b>
+                <div id="retail-info" style="margin-top: 15px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; font-size: 12px; color: var(--text-gray); line-height: 1.6;">
+                    <div style="display:flex; justify-content:space-between;"><span>до 0.5 кг</span> <span class="text-neon">13 TJS</span></div>
+                    <div style="display:flex; justify-content:space-between;"><span>0.5 - 1 кг</span> <span class="text-neon">23 TJS</span></div>
+                    <div style="display:flex; justify-content:space-between;"><span>1 - 50 кг</span> <span class="text-neon">23 TJS/кг</span></div>
+                    <div style="display:flex; justify-content:space-between;"><span>> 50 кг</span> <span class="text-neon">20 TJS/кг</span></div>
                 </div>
 
-                <button onclick="calculateServer()" style="width: 100%; background: var(--tiffany); border: none; padding: 12px; border-radius: 10px; font-weight: bold; margin-top: 15px; cursor: pointer;">Рассчитать</button>
-
-                <div id="calc-result-box" class="calc-res" style="display: none; margin-top: 15px;">
-                    <span id="res-price">0.00</span> <span id="res-currency"></span>
+                <div id="calc-result-box" style="display: none; margin-top: 20px; text-align: center;">
+                    <div class="text-dim">Итоговая стоимость</div>
+                    <div style="font-size: 32px; font-weight: 800; color: var(--neon); text-shadow: 0 0 20px var(--neon-glow);">
+                        <span id="res-price">0.00</span> <span id="res-currency" style="font-size: 16px;">USD</span>
+                    </div>
                 </div>
+
+                <button class="btn-main" style="margin-top: 20px;" onclick="calculateServer()">РАССЧИТАТЬ</button>
             </div>
         </div>
     </div>
 
     <div id="screen-pkgs" class="screen">
-        <div class="container" style="margin-top: 25px;">
-            <h1 style="margin:0; font-size: 28px;">Мои заказы</h1>
-            <div id="orders-container" style="margin-top: 20px;">
-                <div style="text-align: center; color: gray; margin-top: 50px;">Загрузка...</div>
+        <div class="container">
+            <div class="header-row">
+                <h1>Мои посылки</h1>
+                <div class="refresh-btn" onclick="init()"><i class="fa-solid fa-sync"></i></div>
+            </div>
+
+            <div id="orders-container" class="card" style="min-height: 200px;">
+                <div style="text-align: center; color: var(--text-gray); padding-top: 60px;">Загрузка...</div>
             </div>
         </div>
     </div>
 
     <div id="screen-profile" class="screen">
-        
-        <div class="profile-header">
-            <div class="avatar-container">
-                <img id="user-avatar" src="" class="avatar-img lvl-bronze" alt="Avatar">
-                <div id="level-badge" class="level-badge">Start</div>
-            </div>
-            <div id="user-name" class="user-name">Загрузка...</div>
-            <div id="user-id" class="user-id">ID: ...</div>
+        <div class="container" style="padding-top: 20px;">
             
-            <div class="marking-pill" onclick="copyMarking()">
-                <span id="marking-text">C-87 / ...</span>
-                <i class="fa-regular fa-copy"></i>
+            <div class="profile-hero">
+                <div class="avatar-box">
+                    <img id="user-avatar" src="" class="avatar-img" alt="Avatar">
+                    <div id="level-badge" class="rank-badge">START</div>
+                </div>
+                <div id="user-name" style="font-size: 18px; font-weight: 700; margin-bottom: 2px;">Name</div>
+                <div id="user-id" class="text-dim">ID: ...</div>
             </div>
-        </div>
 
-        <div class="container">
-            <div class="stats-row">
-                <div class="stat-item">
-                    <div id="stat-orders" class="stat-val">0</div>
-                    <div class="stat-label">Заказов</div>
+            <div class="stat-grid">
+                <div class="stat-box">
+                    <div class="text-dim">Бонусы (КГ)</div>
+                    <div id="stat-weight" style="font-size: 24px; font-weight: 800; color: white;">0.0</div>
                 </div>
-                <div class="stat-item">
-                    <div id="stat-weight" class="stat-val">0</div>
-                    <div class="stat-label">Вес (кг)</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-val" style="color: var(--tiffany);">Rank</div>
-                    <div id="stat-rank" class="stat-label">Бронза</div>
+                <div class="stat-box">
+                    <div class="text-dim">Всего заказов</div>
+                    <div id="stat-orders" style="font-size: 24px; font-weight: 800; color: white;">0</div>
                 </div>
             </div>
 
-            <div class="section-title">Мои адреса в Китае</div>
-            
+            <h2 style="margin-bottom: 15px; font-size: 16px; color: var(--text-gray); text-transform: uppercase; letter-spacing: 1px;">Адреса складов</h2>
+
             <div id="retail-block">
-                <div class="card" style="border-left: 3px solid var(--tiffany);">
-                    <div style="font-size: 11px; color: var(--tiffany); margin-bottom: 5px; font-weight: bold;">
-                        <i class="fa-solid fa-warehouse"></i> СКЛАД ИУ (РОЗНИЦА)
-                    </div>
-                    <div class="addr-box" onclick="copyRetailAddr()">
-                        <span style="white-space: pre-wrap;" id="yiwu-retail-text">Загрузка...</span>
-                        <i class="fa-regular fa-copy copy-icon"></i>
-                    </div>
+                <div class="addr-card" onclick="copyRetailAddr()">
+                    <div class="label">🇨🇳 ИУ (РОЗНИЦА)</div>
+                    <div class="text" id="yiwu-retail-text">Загрузка...</div>
+                    <div class="icon"><i class="fa-regular fa-copy"></i></div>
+                </div>
+                <div style="height: 10px;"></div>
+                <div class="addr-card" style="border-color: var(--neon);" onclick="copyMarking()">
+                    <div class="label" style="color:white">🔖 ВАШ КОД (МАРКИРОВКА)</div>
+                    <div class="text" id="marking-text" style="font-size: 16px; font-weight: bold; color: var(--neon);">C-87...</div>
+                    <div class="icon"><i class="fa-regular fa-copy"></i></div>
                 </div>
             </div>
 
-            <div id="wholesale-block" style="display:none;">
-                <div class="card" style="border-left: 3px solid var(--gold);">
-                    <div style="font-size: 11px; color: var(--gold); margin-bottom: 5px; font-weight: bold;">
-                        <i class="fa-solid fa-truck-fast"></i> ОПТОВЫЙ СКЛАД
-                    </div>
-                    <div style="margin-bottom: 8px;">
-                        <select id="origin-city-select" style="padding: 8px; font-size: 12px;" onchange="renderWholesaleAddress()">
-                            <option value="yiwu">Иу (Yiwu)</option>
-                            <option value="urumqi">Урумчи (Urumqi)</option>
-                            <option value="guangzhou">Гуанчжоу</option>
-                        </select>
-                    </div>
-                    <div class="addr-box" onclick="copyWholesaleAddr()">
-                        <span style="white-space: pre-wrap;" id="wholesale-addr-text">--</span>
-                        <i class="fa-regular fa-copy copy-icon"></i>
-                    </div>
+            <div id="wholesale-block" style="display: none;">
+                <div style="margin-bottom: 10px;">
+                    <select id="origin-city-select" onchange="renderWholesaleAddress()">
+                        <option value="yiwu">🇨🇳 Иу (Yiwu)</option>
+                        <option value="urumqi">🇨🇳 Урумчи (Urumqi)</option>
+                        <option value="guangzhou">🇨🇳 Гуанчжоу</option>
+                    </select>
+                </div>
+                <div class="addr-card" onclick="copyWholesaleAddr()">
+                    <div class="label">🚛 АДРЕС ДЛЯ ОПТА</div>
+                    <div class="text" id="wholesale-addr-text">--</div>
+                    <div class="icon"><i class="fa-regular fa-copy"></i></div>
                 </div>
             </div>
 
-            <div style="text-align: center; margin-top: 10px;">
-                <span style="font-size: 12px; color: #555; text-decoration: underline;" onclick="toggleAddressType()">
+            <div style="text-align: center; margin-top: 15px; margin-bottom: 40px;">
+                <span class="text-neon" style="font-size: 12px; font-weight: 600; cursor: pointer; border-bottom: 1px dashed var(--neon);" onclick="toggleAddressType()">
                     Показать адрес для <span id="addr-switch-text">Опта</span>
                 </span>
             </div>
             
-            <div class="section-title">Мои настройки</div>
-            <div class="card">
-                <div style="font-size: 12px; color: var(--text-gray);">Текущий ПВЗ</div>
-                <div id="profile-pvz" style="font-size: 16px; font-weight: bold; margin-top: 4px;">--</div>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div class="text-dim">Ваш ПВЗ</div>
+                <div id="profile-pvz" style="color: white; margin-top: 5px;">...</div>
             </div>
+
         </div>
     </div>
 
     <nav class="nav-bar">
         <a href="javascript:void(0)" class="nav-item active" id="nav-home" onclick="nav('home')">
-            <i class="fa-solid fa-calculator"></i><span>Главная</span>
+            <i class="fa-solid fa-calculator"></i><span>Расчет</span>
         </a>
         <a href="javascript:void(0)" class="nav-item" id="nav-pkgs" onclick="nav('pkgs')">
-            <i class="fa-solid fa-box"></i><span>Посылки</span>
+            <i class="fa-solid fa-cube"></i><span>Посылки</span>
         </a>
         <a href="javascript:void(0)" class="nav-item" id="nav-profile" onclick="nav('profile')">
-            <i class="fa-solid fa-user"></i><span>Профиль</span>
+            <i class="fa-regular fa-id-card"></i><span>Профиль</span>
         </a>
     </nav>
 
@@ -306,7 +360,7 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // ⚠️⚠️⚠️ ССЫЛКА NGROK ⚠️⚠️⚠️
+        // ⚠️⚠️⚠️ ВАШ NGROK ЗДЕСЬ ⚠️⚠️⚠️
         const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
         
         const userId = tg.initDataUnsafe?.user?.id || 317295540; 
@@ -314,22 +368,14 @@
         
         let APP_CONFIG = { rates: {}, warehouses: { retail: {}, wholesale: {} } };
         let userData = { category: 'less_100', pvz: '...', bonus: 0, packages: [], marking: '...', name: 'User' };
-        
-        let showWholesaleAddr = false; // Переключатель вида адресов в профиле
+        let showWholesaleAddr = false;
 
         async function init() {
-            loadRoutes();
-            
-            // Установка аватарки сразу
             document.getElementById('user-avatar').src = userPhoto;
+            loadRoutes();
 
             try {
-                const response = await fetch(`${API_BASE}/api/dashboard/${userId}`, {
-                    method: 'GET',
-                    headers: { 'ngrok-skip-browser-warning': 'true' }
-                });
-
-                if (!response.ok) throw new Error(`Status: ${response.status}`);
+                const response = await fetch(`${API_BASE}/api/dashboard/${userId}`, { method: 'GET', headers: { 'ngrok-skip-browser-warning': 'true' } });
                 const data = await response.json();
 
                 if (data.app_config) APP_CONFIG = data.app_config;
@@ -343,18 +389,9 @@
                         name: tg.initDataUnsafe?.user?.first_name || "Клиент"
                     };
                 }
-
                 render();
-                
-                setTimeout(() => {
-                    document.getElementById('loader').style.opacity = '0';
-                    setTimeout(() => document.getElementById('loader').style.display = 'none', 300);
-                    document.getElementById('screen-home').classList.add('active');
-                }, 500);
-
-            } catch (e) {
-                document.getElementById('error-log').innerHTML = `Err: ${e.message}`;
-            }
+                setTimeout(() => { document.getElementById('loader').style.opacity = '0'; setTimeout(() => document.getElementById('loader').style.display = 'none', 300); document.getElementById('screen-home').classList.add('active'); }, 600);
+            } catch (e) { document.getElementById('error-log').innerHTML = "Ошибка связи"; }
         }
 
         async function loadRoutes() {
@@ -365,77 +402,66 @@
                     const select = document.getElementById('calc-route');
                     select.innerHTML = '<option>Выберите маршрут...</option>';
                     data.routes.forEach(r => {
-                        const opt = document.createElement('option');
-                        opt.value = r; opt.innerText = r; select.appendChild(opt);
+                        const opt = document.createElement('option'); opt.value = r; opt.innerText = r; select.appendChild(opt);
                     });
                 }
             } catch(e) {}
         }
 
         function render() {
-            // --- РЕНДЕР ПРОФИЛЯ ---
+            // PROFILE
             document.getElementById('user-name').innerText = userData.name;
-            document.getElementById('user-id').innerText = `@${tg.initDataUnsafe?.user?.username || 'user'} • ID: ${userId}`;
+            document.getElementById('user-id').innerText = `ID: ${userId}`;
             document.getElementById('marking-text').innerText = userData.marking;
             document.getElementById('profile-pvz').innerText = userData.pvz;
             
-            // Статистика
             document.getElementById('stat-orders').innerText = userData.packages.length;
             document.getElementById('stat-weight').innerText = userData.bonus;
             
-            // Уровень (Геймификация)
-            const bonus = userData.bonus;
-            let rank = "Новичок";
-            let rankClass = "lvl-bronze";
-            
-            if(bonus > 10) { rank = "Любитель"; rankClass = "lvl-silver"; }
-            if(bonus > 100) { rank = "Профи"; rankClass = "lvl-gold"; }
-            if(bonus > 500) { rank = "VIP"; rankClass = "lvl-vip"; }
-            
-            document.getElementById('stat-rank').innerText = rank;
+            let rank = "IRON";
+            if(userData.bonus > 10) rank = "BRONZE";
+            if(userData.bonus > 100) rank = "GOLD";
+            if(userData.bonus > 500) rank = "PLATINUM";
             document.getElementById('level-badge').innerText = rank;
-            
-            // Обновляем классы аватарки
-            const ava = document.getElementById('user-avatar');
-            ava.className = `avatar-img ${rankClass}`;
 
-            // Адреса
             renderAddressBlock();
 
-            // --- РЕНДЕР КАЛЬКУЛЯТОРА ---
+            // CALC
             const isOpt = userData.category === 'more_100';
             document.getElementById('cat-less').classList.toggle('active', !isOpt);
             document.getElementById('cat-more').classList.toggle('active', isOpt);
-
             document.getElementById('calc-route-box').style.display = isOpt ? 'block' : 'none';
             document.getElementById('retail-info').style.display = isOpt ? 'none' : 'block';
             document.querySelectorAll('.opt-only').forEach(el => el.style.display = isOpt ? 'block' : 'none');
 
-            // --- РЕНДЕР ЗАКАЗОВ ---
+            // PACKAGES
             const cont = document.getElementById('orders-container');
             cont.innerHTML = '';
             if(!userData.packages.length) {
-                cont.innerHTML = '<div style="text-align:center;color:gray;padding:20px;">История пуста</div>';
+                cont.innerHTML = '<div style="text-align:center;color:#555;padding-top:20px;">История пуста</div>';
             } else {
                 userData.packages.forEach(p => {
-                    let badgeClass = 'st-blue';
-                    if(p.status_text.includes('Ожидает')) badgeClass = 'st-gray';
-                    if(p.status_text.includes('Прибыл') || p.status_text.includes('Готов')) badgeClass = 'st-green';
+                    let stClass = 'st-wait';
+                    if(p.status_text.includes('Прибыл') || p.status_text.includes('Готов')) stClass = 'st-active';
                     
                     cont.innerHTML += `
-                        <div class="card">
-                            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-                                <span style="font-size:12px;color:#666;">${p.date}</span>
-                                <span class="status-badge ${badgeClass}">${p.status_text}</span>
+                        <div class="parcel-item">
+                            <div style="display:flex; align-items:center;">
+                                <div class="parcel-icon"><i class="fa-solid fa-box-open"></i></div>
+                                <div>
+                                    <div style="font-weight:700; color:white; font-size:15px;">${p.description || 'Посылка'}</div>
+                                    <div class="text-dim" style="font-family:monospace; margin-top:2px;">${p.track_number}</div>
+                                </div>
                             </div>
-                            <div style="font-weight:bold;margin-bottom:5px;">${p.description || 'Посылка'}</div>
-                            <div style="font-family:monospace;color:var(--tiffany);">${p.track_number}</div>
+                            <div style="text-align:right;">
+                                <div class="status-pill ${stClass}">${p.status_text}</div>
+                                <div class="text-dim" style="font-size:10px; margin-top:4px;">${p.date}</div>
+                            </div>
                         </div>`;
                 });
             }
         }
 
-        // Логика переключения адресов в профиле
         function toggleAddressType() {
             showWholesaleAddr = !showWholesaleAddr;
             document.getElementById('addr-switch-text').innerText = showWholesaleAddr ? "Розницы" : "Опта";
@@ -445,14 +471,10 @@
         function renderAddressBlock() {
             const retailDiv = document.getElementById('retail-block');
             const wholesaleDiv = document.getElementById('wholesale-block');
-            
             if(showWholesaleAddr) {
-                retailDiv.style.display = 'none';
-                wholesaleDiv.style.display = 'block';
-                renderWholesaleAddress();
+                retailDiv.style.display = 'none'; wholesaleDiv.style.display = 'block'; renderWholesaleAddress();
             } else {
-                retailDiv.style.display = 'block';
-                wholesaleDiv.style.display = 'none';
+                retailDiv.style.display = 'block'; wholesaleDiv.style.display = 'none';
                 document.getElementById('yiwu-retail-text').innerText = APP_CONFIG.warehouses.retail?.address || "...";
             }
         }
@@ -466,11 +488,10 @@
         async function calculateServer() {
             const btn = document.querySelector('button[onclick="calculateServer()"]');
             const resBox = document.getElementById('calc-result-box');
-            btn.innerText = "..."; btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
 
             const payload = {
-                user_id: userId,
-                category: userData.category,
+                user_id: userId, category: userData.category,
                 weight_per_item: parseFloat(document.getElementById('c-weight').value) || 0,
                 quantity: parseInt(document.getElementById('c-qty').value) || 1
             };
@@ -478,7 +499,7 @@
             if (userData.category === 'more_100') {
                 const routeFull = document.getElementById('calc-route').value;
                 const parts = routeFull.split(" - ");
-                if (parts.length < 2) { tg.showAlert("Выберите маршрут!"); btn.innerText = "Рассчитать"; btn.disabled = false; return; }
+                if (parts.length < 2) { tg.showAlert("Выберите маршрут!"); btn.innerText = "РАССЧИТАТЬ"; btn.disabled = false; return; }
                 payload.route_from = parts[0]; payload.route_to = parts[1];
                 payload.length = parseFloat(document.getElementById('c-l').value) || 0;
                 payload.width = parseFloat(document.getElementById('c-w').value) || 0;
@@ -486,28 +507,21 @@
             }
 
             try {
-                const response = await fetch(`${API_BASE}/api/calculate`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'},
-                    body: JSON.stringify(payload)
-                });
+                const response = await fetch(`${API_BASE}/api/calculate`, { method: 'POST', headers: {'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'}, body: JSON.stringify(payload) });
                 const result = await response.json();
                 if(result.status === 'ok') {
                     document.getElementById('res-price').innerText = result.price.toFixed(2);
                     document.getElementById('res-currency').innerText = result.currency;
                     resBox.style.display = 'block';
-                } else {
-                    tg.showAlert(result.message);
-                    resBox.style.display = 'none';
-                }
+                    tg.HapticFeedback.notificationOccurred('success');
+                } else { tg.showAlert(result.message); resBox.style.display = 'none'; }
             } catch (e) { tg.showAlert("Ошибка сети"); } 
-            finally { btn.innerText = "Рассчитать"; btn.disabled = false; }
+            finally { btn.innerText = "РАССЧИТАТЬ"; btn.disabled = false; }
         }
 
         async function setCat(cat) {
             tg.HapticFeedback.selectionChanged();
-            userData.category = cat;
-            render();
+            userData.category = cat; render();
             fetch(`${API_BASE}/api/update_settings`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ user_id: userId, category: cat }) });
         }
 
@@ -517,24 +531,20 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById('nav-' + scr).classList.add('active');
             tg.HapticFeedback.impactOccurred('light');
-
-            const fab = document.getElementById('fab-add');
-            fab.style.display = (scr === 'pkgs') ? 'flex' : 'none';
+            document.getElementById('fab-add').style.display = (scr === 'pkgs') ? 'flex' : 'none';
         }
 
-        // Modal
         function openModal() { document.getElementById('add-modal').classList.add('active'); tg.HapticFeedback.impactOccurred('medium'); }
         function closeModal() { document.getElementById('add-modal').classList.remove('active'); }
+        
         async function submitTrack() {
             const track = document.getElementById('new-track').value;
             const desc = document.getElementById('new-desc').value;
             if(!track) return tg.showAlert("Введите трек!");
-            
             try {
                 const res = await fetch(`${API_BASE}/api/add_track`, { method: 'POST', headers: {'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'}, body: JSON.stringify({ user_id: userId, track_number: track, description: desc }) });
                 const r = await res.json();
-                if(r.status === 'ok') { tg.showAlert("Добавлено!"); closeModal(); init(); }
-                else tg.showAlert(r.message);
+                if(r.status === 'ok') { tg.showAlert("Успешно!"); closeModal(); init(); } else tg.showAlert(r.message);
             } catch(e) {}
         }
 
