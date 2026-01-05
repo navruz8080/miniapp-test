@@ -19,6 +19,9 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .card { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        /* Новый класс для обводки */
+        .card-border { border: 1px solid var(--tiffany); }
+        
         .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .calc-grid input { background: #1c1c1e; border: 1px solid #333; border-radius: 10px; padding: 12px; color: white; font-size: 14px; outline: none; width: 100%; box-sizing: border-box; }
         .calc-res { background: rgba(26, 226, 199, 0.1); padding: 15px; border-radius: 12px; text-align: center; color: var(--tiffany); font-weight: bold; margin-top: 15px; font-size: 20px; }
@@ -88,7 +91,6 @@
                 <input type="number" id="c-l" placeholder="Длина (см)" class="opt-only">
                 <input type="number" id="c-w" placeholder="Ширина (см)" class="opt-only">
                 <input type="number" id="c-h" placeholder="Высота (см)" class="opt-only">
-                
                 <input type="number" id="c-weight" placeholder="Вес 1 шт (кг)" style="border: 1px solid var(--tiffany);">
                 <input type="number" id="c-qty" placeholder="Кол-во (шт)" style="grid-column: span 2;" value="1">
             </div>
@@ -130,20 +132,21 @@
         </div>
 
         <div id="retail-block" style="display: none;">
-            <div class="card" style="border: 1px solid var(--tiffany);">
+            <div class="card card-border">
+                <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 8px;">АДРЕС СКЛАДА (ИУ - РОЗНИЦА)</div>
+                <div class="addr-box" onclick="copyRetailAddr()">
+                    <span style="white-space: pre-wrap;" id="yiwu-retail-text">Загрузка адреса...</span>
+                    <i class="fa-regular fa-copy copy-icon"></i>
+                </div>
+            </div>
+
+            <div class="card card-border">
                 <div style="font-size: 11px; color: var(--tiffany); margin-bottom: 8px; font-weight: bold;">
                     <i class="fa-solid fa-tag"></i> ВАША МАРКИРОВКА (C-87)
                 </div>
                 <div style="font-size: 12px; color: #888; margin-bottom: 8px;">Код для наклейки на груз:</div>
                 <div class="addr-box" onclick="copyMarking()">
                     <span id="marking-text" style="font-weight: bold; font-size: 15px; color: white;">Загрузка...</span>
-                    <i class="fa-regular fa-copy copy-icon"></i>
-                </div>
-            </div>
-            <div class="card">
-                <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 8px;">АДРЕС СКЛАДА (ИУ - РОЗНИЦА)</div>
-                <div class="addr-box" onclick="copyRetailAddr()">
-                    <span style="white-space: pre-wrap;" id="yiwu-retail-text">Загрузка адреса...</span>
                     <i class="fa-regular fa-copy copy-icon"></i>
                 </div>
             </div>
@@ -184,7 +187,7 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // ⚠️⚠️⚠️ ВСТАВЬТЕ СЮДА ВАШУ ССЫЛКУ NGROK ⚠️⚠️⚠️
+        // ⚠️⚠️⚠️ ССЫЛКА NGROK ⚠️⚠️⚠️
         const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
         
         const userId = tg.initDataUnsafe?.user?.id || 317295540; 
@@ -236,22 +239,16 @@
                     method: 'GET',
                     headers: { 'ngrok-skip-browser-warning': 'true' }
                 });
-
                 const data = await res.json();
-                
                 if(data.status === 'ok') {
                     const select = document.getElementById('calc-route');
-                    select.innerHTML = ''; 
-                    
+                    select.innerHTML = '';
                     const defaultOpt = document.createElement('option');
                     defaultOpt.innerText = "Выберите маршрут...";
                     select.appendChild(defaultOpt);
-
                     data.routes.forEach(r => {
                         const opt = document.createElement('option');
-                        opt.value = r; 
-                        opt.innerText = r;
-                        select.appendChild(opt);
+                        opt.value = r; opt.innerText = r; select.appendChild(opt);
                     });
                 }
             } catch(e) { console.error("Routes load error:", e); }
@@ -263,11 +260,9 @@
             document.getElementById('h-pvz-val').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${userData.pvz}`;
             
             const isOpt = userData.category === 'more_100';
-            
             document.getElementById('cat-less').classList.toggle('active', !isOpt);
             document.getElementById('cat-more').classList.toggle('active', isOpt);
 
-            // ЛОГИКА КАЛЬКУЛЯТОРА
             const calcTitle = document.getElementById('calc-title');
             const routeBox = document.getElementById('calc-route-box');
             const optInputs = document.querySelectorAll('.opt-only');
@@ -284,7 +279,6 @@
                 retailInfo.style.display = 'block';
                 optInputs.forEach(el => el.style.display = 'none');
             }
-
             renderProfile(isOpt);
             renderOrders();
         }
@@ -292,7 +286,6 @@
         async function calculateServer() {
             const btn = document.querySelector('button[onclick="calculateServer()"]');
             const resBox = document.getElementById('calc-result-box');
-            
             btn.innerText = "Считаем..."; btn.disabled = true;
 
             const payload = {
@@ -310,8 +303,7 @@
                     btn.innerText = "Рассчитать"; btn.disabled = false;
                     return;
                 }
-                payload.route_from = parts[0];
-                payload.route_to = parts[1];
+                payload.route_from = parts[0]; payload.route_to = parts[1];
                 payload.length = parseFloat(document.getElementById('c-l').value) || 0;
                 payload.width = parseFloat(document.getElementById('c-w').value) || 0;
                 payload.height = parseFloat(document.getElementById('c-h').value) || 0;
@@ -320,14 +312,10 @@
             try {
                 const response = await fetch(`${API_BASE}/api/calculate`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'ngrok-skip-browser-warning': 'true'
-                    },
+                    headers: {'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'},
                     body: JSON.stringify(payload)
                 });
                 const result = await response.json();
-
                 if(result.status === 'ok') {
                     document.getElementById('res-price').innerText = result.price.toFixed(2);
                     document.getElementById('res-currency').innerText = result.currency;
@@ -336,11 +324,8 @@
                     tg.showAlert(result.message || "Ошибка расчета");
                     resBox.style.display = 'none';
                 }
-            } catch (e) {
-                tg.showAlert("Ошибка связи с сервером");
-            } finally {
-                btn.innerText = "Рассчитать стоимость"; btn.disabled = false;
-            }
+            } catch (e) { tg.showAlert("Ошибка связи с сервером"); } 
+            finally { btn.innerText = "Рассчитать стоимость"; btn.disabled = false; }
         }
 
         function renderProfile(isOpt) {
