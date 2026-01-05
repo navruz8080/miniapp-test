@@ -74,22 +74,30 @@
             <div id="h-pvz-val" style="font-weight: 600; margin-top: 8px;">--</div>
         </div>
 
-        <div id="opt-calc" class="card" style="display:none;">
-            <h3 style="margin-top:0"><i class="fa-solid fa-calculator"></i> Калькулятор (Опт)</h3>
+        <div id="calc-block" class="card" style="display: block;">
+            <h3 style="margin-top:0" id="calc-title"><i class="fa-solid fa-calculator"></i> Калькулятор</h3>
             
-            <div style="margin-bottom: 10px;">
+            <div id="calc-route-box" style="margin-bottom: 10px;">
                 <label style="font-size: 12px; color: #888;">Маршрут</label>
                 <select id="calc-route">
-                    <option>Загрузка маршрутов...</option>
+                    <option>Загрузка...</option>
                 </select>
             </div>
 
             <div class="calc-grid">
-                <input type="number" id="c-l" placeholder="Длина (см)">
-                <input type="number" id="c-w" placeholder="Ширина (см)">
-                <input type="number" id="c-h" placeholder="Высота (см)">
-                <input type="number" id="c-weight" placeholder="Вес 1 шт (кг)">
-                <input type="number" id="c-qty" placeholder="Кол-во (шт)" style="grid-column: span 2;">
+                <input type="number" id="c-l" placeholder="Длина (см)" class="opt-only">
+                <input type="number" id="c-w" placeholder="Ширина (см)" class="opt-only">
+                <input type="number" id="c-h" placeholder="Высота (см)" class="opt-only">
+                
+                <input type="number" id="c-weight" placeholder="Вес 1 шт (кг)" style="border: 1px solid var(--tiffany);">
+                <input type="number" id="c-qty" placeholder="Кол-во (шт)" style="grid-column: span 2;" value="1">
+            </div>
+
+            <div id="retail-info" style="display:none; font-size: 11px; color: #888; margin-top: 10px; line-height: 1.4;">
+                Тарифы:<br>
+                • до 0.5 кг — <b>13с</b><br>
+                • до 50 кг — <b>23с/кг</b><br>
+                • до 99 кг — <b>18с/кг</b>
             </div>
 
             <button onclick="calculateServer()" style="width: 100%; background: var(--tiffany); border: none; padding: 12px; border-radius: 10px; font-weight: bold; margin-top: 15px; color:black; cursor: pointer;">
@@ -97,7 +105,7 @@
             </button>
 
             <div id="calc-result-box" class="calc-res" style="display: none; margin-top: 15px;">
-                <span id="res-price">0.00</span> $
+                <span id="res-price">0.00</span> <span id="res-currency"></span>
             </div>
         </div>
     </div>
@@ -175,7 +183,7 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // ⚠️⚠️⚠️ ПРОВЕРЬТЕ ССЫЛКУ NGROK ⚠️⚠️⚠️
+        // ⚠️⚠️⚠️ ВСТАВЬТЕ СЮДА ВАШУ ССЫЛКУ NGROK ⚠️⚠️⚠️
         const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
         
         const userId = tg.initDataUnsafe?.user?.id || 317295540; 
@@ -185,7 +193,7 @@
 
         async function init() {
             document.getElementById('user-id-display').innerText = `ID: ${userId}`;
-            loadRoutes(); // Загружаем маршруты
+            loadRoutes();
 
             try {
                 const response = await fetch(`${API_BASE}/api/dashboard/${userId}`, {
@@ -223,7 +231,6 @@
 
         async function loadRoutes() {
             try {
-                // 🔥 ДОБАВЛЕН ЗАГОЛОВОК, ЧТОБЫ NGROK НЕ БЛОКИРОВАЛ ЗАПРОС
                 const res = await fetch(`${API_BASE}/api/get_routes`, {
                     method: 'GET',
                     headers: { 'ngrok-skip-browser-warning': 'true' }
@@ -249,44 +256,72 @@
             } catch(e) { console.error("Routes load error:", e); }
         }
 
+        function render() {
+            document.getElementById('h-sub').innerText = userData.category === 'more_100' ? "Оптовый клиент" : "Розничный клиент";
+            document.getElementById('h-bon-val').innerText = userData.bonus + " кг";
+            document.getElementById('h-pvz-val').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${userData.pvz}`;
+            
+            const isOpt = userData.category === 'more_100';
+            
+            document.getElementById('cat-less').classList.toggle('active', !isOpt);
+            document.getElementById('cat-more').classList.toggle('active', isOpt);
+
+            // ЛОГИКА КАЛЬКУЛЯТОРА
+            const calcTitle = document.getElementById('calc-title');
+            const routeBox = document.getElementById('calc-route-box');
+            const optInputs = document.querySelectorAll('.opt-only');
+            const retailInfo = document.getElementById('retail-info');
+
+            if (isOpt) {
+                calcTitle.innerHTML = '<i class="fa-solid fa-calculator"></i> Калькулятор (Опт)';
+                routeBox.style.display = 'block';
+                retailInfo.style.display = 'none';
+                optInputs.forEach(el => el.style.display = 'block');
+            } else {
+                calcTitle.innerHTML = '<i class="fa-solid fa-calculator"></i> Калькулятор (Розница)';
+                routeBox.style.display = 'none';
+                retailInfo.style.display = 'block';
+                optInputs.forEach(el => el.style.display = 'none');
+            }
+
+            renderProfile(isOpt);
+            renderOrders();
+        }
+
         async function calculateServer() {
             const btn = document.querySelector('button[onclick="calculateServer()"]');
             const resBox = document.getElementById('calc-result-box');
             
             btn.innerText = "Считаем..."; btn.disabled = true;
 
-            const routeFull = document.getElementById('calc-route').value;
-            // Проверка, что маршрут выбран корректно
-            if (!routeFull || routeFull.includes("Выберите") || routeFull.includes("Загрузка")) {
-                tg.showAlert("Выберите маршрут из списка!");
-                btn.innerText = "Рассчитать стоимость"; btn.disabled = false;
-                return;
-            }
-
-            const parts = routeFull.split(" - ");
-            if (parts.length < 2) {
-                tg.showAlert("Некорректный маршрут");
-                btn.innerText = "Рассчитать стоимость"; btn.disabled = false;
-                return;
-            }
-
             const payload = {
                 user_id: userId,
-                route_from: parts[0],
-                route_to: parts[1],
-                length: parseFloat(document.getElementById('c-l').value) || 0,
-                width: parseFloat(document.getElementById('c-w').value) || 0,
-                height: parseFloat(document.getElementById('c-h').value) || 0,
+                category: userData.category,
                 weight_per_item: parseFloat(document.getElementById('c-weight').value) || 0,
-                quantity: parseInt(document.getElementById('c-qty').value) || 0
+                quantity: parseInt(document.getElementById('c-qty').value) || 1
             };
+
+            if (userData.category === 'more_100') {
+                const routeFull = document.getElementById('calc-route').value;
+                const parts = routeFull.split(" - ");
+                if (parts.length < 2) {
+                    tg.showAlert("Для опта нужно выбрать маршрут!");
+                    btn.innerText = "Рассчитать"; btn.disabled = false;
+                    return;
+                }
+                payload.route_from = parts[0];
+                payload.route_to = parts[1];
+                payload.length = parseFloat(document.getElementById('c-l').value) || 0;
+                payload.width = parseFloat(document.getElementById('c-w').value) || 0;
+                payload.height = parseFloat(document.getElementById('c-h').value) || 0;
+            }
 
             try {
                 const response = await fetch(`${API_BASE}/api/calculate`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'ngrok-skip-browser-warning': 'true' // И сюда тоже добавим на всякий случай
+                        'ngrok-skip-browser-warning': 'true'
                     },
                     body: JSON.stringify(payload)
                 });
@@ -294,6 +329,7 @@
 
                 if(result.status === 'ok') {
                     document.getElementById('res-price').innerText = result.price.toFixed(2);
+                    document.getElementById('res-currency').innerText = result.currency;
                     resBox.style.display = 'block';
                 } else {
                     tg.showAlert(result.message || "Ошибка расчета");
@@ -304,20 +340,6 @@
             } finally {
                 btn.innerText = "Рассчитать стоимость"; btn.disabled = false;
             }
-        }
-
-        function render() {
-            document.getElementById('h-sub').innerText = userData.category === 'more_100' ? "Оптовый клиент" : "Розничный клиент";
-            document.getElementById('h-bon-val').innerText = userData.bonus + " кг";
-            document.getElementById('h-pvz-val').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${userData.pvz}`;
-            
-            const isOpt = userData.category === 'more_100';
-            document.getElementById('cat-less').classList.toggle('active', !isOpt);
-            document.getElementById('cat-more').classList.toggle('active', isOpt);
-            document.getElementById('opt-calc').style.display = isOpt ? 'block' : 'none';
-
-            renderProfile(isOpt);
-            renderOrders();
         }
 
         function renderProfile(isOpt) {
