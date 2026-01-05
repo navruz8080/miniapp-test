@@ -7,9 +7,11 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg-black: #000000; --card-bg: #111111; --tiffany: #1ae2c7; --text-main: #ffffff; --text-gray: #888888; }
-        body { font-family: -apple-system, system-ui, sans-serif; background-color: var(--bg-black); color: var(--text-main); margin: 0; padding: 0 15px 100px 15px; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+        :root { --bg-black: #000000; --card-bg: #111111; --tiffany: #1ae2c7; --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; --text-main: #ffffff; --text-gray: #888888; }
+        body { font-family: -apple-system, system-ui, sans-serif; background-color: var(--bg-black); color: var(--text-main); margin: 0; padding: 0 0 100px 0; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
         
+        /* ОБЩИЕ СТИЛИ */
+        .container { padding: 0 15px; }
         #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-black); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s ease; }
         .drop-anim { font-size: 60px; color: var(--tiffany); animation: dropBounce 2s ease-in-out infinite; }
         @keyframes dropBounce { 0% { transform: translateY(-150px) scaleY(1.1); opacity: 0; } 30% { transform: translateY(0) scaleY(0.9); opacity: 1; } 100% { transform: translateY(0); } }
@@ -19,16 +21,7 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .card { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
-        /* Новый класс для обводки */
         .card-border { border: 1px solid var(--tiffany); }
-        
-        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .calc-grid input { background: #1c1c1e; border: 1px solid #333; border-radius: 10px; padding: 12px; color: white; font-size: 14px; outline: none; width: 100%; box-sizing: border-box; }
-        .calc-res { background: rgba(26, 226, 199, 0.1); padding: 15px; border-radius: 12px; text-align: center; color: var(--tiffany); font-weight: bold; margin-top: 15px; font-size: 20px; }
-        
-        .switcher { display: flex; background: #1c1c1e; padding: 4px; border-radius: 12px; }
-        .sw-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; background: transparent; color: var(--text-gray); font-size: 13px; }
-        .sw-btn.active { background: var(--tiffany); color: #000; font-weight: bold; }
         
         .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(17,17,17,0.98); display: flex; padding: 10px 0 25px 0; border-top: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); z-index: 1000; }
         .nav-item { text-align: center; color: var(--text-gray); text-decoration: none; flex: 1; }
@@ -36,8 +29,93 @@
         .nav-item i { font-size: 22px; margin-bottom: 4px; display: block; }
         .nav-item span { font-size: 10px; }
 
-        .addr-box { background: #000; padding: 12px; border-radius: 10px; font-size: 13px; line-height: 1.5; color: #ddd; position: relative; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
-        .addr-box:active { background: #111; border-color: var(--tiffany); }
+        /* --- СТИЛИ ПРОФИЛЯ (СОЦИАЛЬНАЯ СЕТЬ) --- */
+        .profile-header {
+            background: linear-gradient(180deg, rgba(26,226,199,0.15) 0%, rgba(0,0,0,0) 100%);
+            padding: 30px 15px 20px 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 20px;
+        }
+
+        .avatar-container {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 15px auto;
+        }
+        
+        .avatar-img {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #333; /* Базовый цвет рамки */
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+        
+        /* Рамки уровней */
+        .lvl-bronze { border-color: var(--bronze); box-shadow: 0 0 10px rgba(205, 127, 50, 0.3); }
+        .lvl-silver { border-color: var(--silver); box-shadow: 0 0 10px rgba(192, 192, 192, 0.3); }
+        .lvl-gold { border-color: var(--gold); box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
+        .lvl-vip { border-color: var(--tiffany); box-shadow: 0 0 20px rgba(26, 226, 199, 0.5); }
+
+        .level-badge {
+            position: absolute;
+            bottom: -5px; right: -5px;
+            background: #222;
+            color: white;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 10px;
+            border: 1px solid #444;
+            font-weight: bold;
+        }
+
+        .user-name { font-size: 20px; font-weight: bold; color: white; margin-bottom: 5px; }
+        .user-id { font-size: 12px; color: var(--text-gray); margin-bottom: 15px; }
+
+        .marking-pill {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(26, 226, 199, 0.1);
+            border: 1px solid var(--tiffany);
+            border-radius: 20px;
+            padding: 8px 16px;
+            color: var(--tiffany);
+            font-family: monospace;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .marking-pill:active { background: var(--tiffany); color: black; }
+        .marking-pill i { margin-left: 8px; font-size: 12px; }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .stat-item { text-align: center; }
+        .stat-val { font-size: 18px; font-weight: bold; color: white; }
+        .stat-label { font-size: 10px; color: var(--text-gray); text-transform: uppercase; margin-top: 4px; }
+
+        .section-title { font-size: 13px; color: var(--text-gray); margin: 20px 0 10px 5px; font-weight: 600; text-transform: uppercase; }
+
+        /* Стили калькулятора и форм */
+        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .calc-grid input, select { background: #1c1c1e; border: 1px solid #333; border-radius: 10px; padding: 12px; color: white; font-size: 14px; outline: none; width: 100%; box-sizing: border-box; }
+        .calc-res { background: rgba(26, 226, 199, 0.1); padding: 15px; border-radius: 12px; text-align: center; color: var(--tiffany); font-weight: bold; margin-top: 15px; font-size: 20px; }
+        .switcher { display: flex; background: #1c1c1e; padding: 4px; border-radius: 12px; }
+        .sw-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; background: transparent; color: var(--text-gray); font-size: 13px; }
+        .sw-btn.active { background: var(--tiffany); color: #000; font-weight: bold; }
+
+        .addr-box { background: #000; padding: 12px; border-radius: 10px; font-size: 13px; line-height: 1.5; color: #ddd; position: relative; cursor: pointer; border: 1px solid #333; transition: 0.2s; }
+        .addr-box:active { border-color: var(--tiffany); }
         .copy-icon { position: absolute; right: 12px; top: 12px; color: var(--tiffany); opacity: 0.7; }
         
         .status-badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
@@ -47,7 +125,18 @@
         .st-red { background: rgba(255, 59, 48, 0.2); color: #ff3b30; }
 
         .refresh-btn { position: absolute; top: 20px; right: 20px; color: var(--tiffany); font-size: 20px; cursor: pointer; z-index: 10001; }
-        select { width: 100%; background: #1c1c1e; color: white; border: 1px solid #333; padding: 12px; border-radius: 10px; margin-top: 5px; appearance: none; outline: none; }
+
+        /* Модальное окно */
+        .fab { position: fixed; bottom: 90px; right: 20px; width: 56px; height: 56px; background: var(--tiffany); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black; font-size: 24px; box-shadow: 0 4px 12px rgba(26, 226, 199, 0.4); cursor: pointer; z-index: 900; transition: transform 0.2s; }
+        .fab:active { transform: scale(0.9); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
+        .modal-box { background: #1c1c1e; width: 85%; max-width: 320px; padding: 20px; border-radius: 16px; border: 1px solid #333; position: relative; }
+        .modal-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; text-align: center; }
+        .modal-input { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; outline: none; font-size: 14px; }
+        .modal-btn { width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .btn-primary { background: var(--tiffany); color: black; }
+        .btn-secondary { background: transparent; color: #888; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -60,126 +149,156 @@
 
     <div class="refresh-btn" onclick="location.reload()"><i class="fa-solid fa-rotate-right"></i></div>
 
+    <div id="add-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title">Добавить трек</div>
+            <input type="text" id="new-track" class="modal-input" placeholder="Трек-номер">
+            <input type="text" id="new-desc" class="modal-input" placeholder="Описание (напр. Кроссовки)">
+            <button class="modal-btn btn-primary" onclick="submitTrack()">Добавить</button>
+            <button class="modal-btn btn-secondary" onclick="closeModal()">Отмена</button>
+        </div>
+    </div>
+
+    <div id="fab-add" class="fab" style="display: none;" onclick="openModal()">
+        <i class="fa-solid fa-plus"></i>
+    </div>
+
     <div id="screen-home" class="screen">
-        <div style="margin: 25px 0;">
-            <h1 style="margin:0; font-size: 28px; letter-spacing: -1px;">Drop</h1>
-            <div id="h-sub" style="color: var(--tiffany); font-size: 14px;">Загрузка...</div>
-        </div>
+        <div class="container" style="margin-top: 25px;">
+            <h1 style="margin:0; font-size: 28px;">Калькулятор</h1>
+            <div style="color: var(--text-gray); font-size: 14px; margin-bottom: 20px;">Рассчитайте стоимость доставки</div>
 
-        <div class="card">
-            <div style="color: var(--text-gray); font-size: 11px; text-transform: uppercase;">Бонусный баланс</div>
-            <div id="h-bon-val" style="font-size: 32px; font-weight: bold; margin-top: 5px;">-- кг</div>
-            <div style="font-size: 10px; color: #555; margin-top: 5px;" id="user-id-display">ID: --</div>
-        </div>
-        
-        <div id="h-pvz-card" class="card">
-            <div style="color: var(--text-gray); font-size: 11px; text-transform: uppercase;">Пункт выдачи</div>
-            <div id="h-pvz-val" style="font-weight: 600; margin-top: 8px;">--</div>
-        </div>
-
-        <div id="calc-block" class="card" style="display: block;">
-            <h3 style="margin-top:0" id="calc-title"><i class="fa-solid fa-calculator"></i> Калькулятор</h3>
-            
-            <div id="calc-route-box" style="margin-bottom: 10px;">
-                <label style="font-size: 12px; color: #888;">Маршрут</label>
-                <select id="calc-route">
-                    <option>Загрузка...</option>
-                </select>
+            <div class="card">
+                <div class="switcher">
+                    <button id="cat-less" class="sw-btn active" onclick="setCat('less_100')">Розница</button>
+                    <button id="cat-more" class="sw-btn" onclick="setCat('more_100')">Опт (>100кг)</button>
+                </div>
             </div>
 
-            <div class="calc-grid">
-                <input type="number" id="c-l" placeholder="Длина (см)" class="opt-only">
-                <input type="number" id="c-w" placeholder="Ширина (см)" class="opt-only">
-                <input type="number" id="c-h" placeholder="Высота (см)" class="opt-only">
-                <input type="number" id="c-weight" placeholder="Вес 1 шт (кг)" style="border: 1px solid var(--tiffany);">
-                <input type="number" id="c-qty" placeholder="Кол-во (шт)" style="grid-column: span 2;" value="1">
-            </div>
+            <div id="calc-block" class="card" style="border: 1px solid var(--tiffany);">
+                <div id="calc-route-box" style="margin-bottom: 10px; display: none;">
+                    <label style="font-size: 12px; color: #888;">Маршрут</label>
+                    <select id="calc-route"><option>Загрузка...</option></select>
+                </div>
 
-            <div id="retail-info" style="display:none; font-size: 11px; color: #888; margin-top: 10px; line-height: 1.4;">
-                Тарифы:<br>
-                • до 0.5 кг — <b>13с</b> (фикс)<br>
-                • 0.5 - 1 кг — <b>23с</b> (фикс)<br>
-                • 1 - 50 кг — <b>23с/кг</b><br>
-                • 50 - 99 кг — <b>20с/кг</b>
-            </div>
+                <div class="calc-grid">
+                    <input type="number" id="c-l" placeholder="Дл (см)" class="opt-only" style="display:none">
+                    <input type="number" id="c-w" placeholder="Шир (см)" class="opt-only" style="display:none">
+                    <input type="number" id="c-h" placeholder="Выс (см)" class="opt-only" style="display:none">
+                    <input type="number" id="c-weight" placeholder="Вес (кг)" style="border: 1px solid #333;">
+                    <input type="number" id="c-qty" placeholder="Кол-во" value="1">
+                </div>
 
-            <button onclick="calculateServer()" style="width: 100%; background: var(--tiffany); border: none; padding: 12px; border-radius: 10px; font-weight: bold; margin-top: 15px; color:black; cursor: pointer;">
-                Рассчитать стоимость
-            </button>
+                <div id="retail-info" style="font-size: 11px; color: #888; margin-top: 10px; line-height: 1.4;">
+                    Тарифы:<br>• до 0.5 кг — <b>13с</b><br>• 0.5-1 кг — <b>23с</b><br>• 1-50 кг — <b>23с/кг</b><br>• 50-99 кг — <b>20с/кг</b>
+                </div>
 
-            <div id="calc-result-box" class="calc-res" style="display: none; margin-top: 15px;">
-                <span id="res-price">0.00</span> <span id="res-currency"></span>
+                <button onclick="calculateServer()" style="width: 100%; background: var(--tiffany); border: none; padding: 12px; border-radius: 10px; font-weight: bold; margin-top: 15px; cursor: pointer;">Рассчитать</button>
+
+                <div id="calc-result-box" class="calc-res" style="display: none; margin-top: 15px;">
+                    <span id="res-price">0.00</span> <span id="res-currency"></span>
+                </div>
             </div>
         </div>
     </div>
 
     <div id="screen-pkgs" class="screen">
-        <h2 style="margin: 25px 0;">Мои заказы</h2>
-        <div id="orders-container">
-            <div style="text-align: center; color: gray; margin-top: 50px;">Загрузка...</div>
+        <div class="container" style="margin-top: 25px;">
+            <h1 style="margin:0; font-size: 28px;">Мои заказы</h1>
+            <div id="orders-container" style="margin-top: 20px;">
+                <div style="text-align: center; color: gray; margin-top: 50px;">Загрузка...</div>
+            </div>
         </div>
     </div>
 
     <div id="screen-profile" class="screen">
-        <h2 style="margin: 25px 0;">Профиль и Адреса</h2>
         
-        <div class="card">
-            <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 10px;">ТИП ГРУЗА</div>
-            <div class="switcher">
-                <button id="cat-less" class="sw-btn" onclick="setCat('less_100')">Розница (до 100 кг)</button>
-                <button id="cat-more" class="sw-btn" onclick="setCat('more_100')">Опт (от 100 кг)</button>
+        <div class="profile-header">
+            <div class="avatar-container">
+                <img id="user-avatar" src="" class="avatar-img lvl-bronze" alt="Avatar">
+                <div id="level-badge" class="level-badge">Start</div>
+            </div>
+            <div id="user-name" class="user-name">Загрузка...</div>
+            <div id="user-id" class="user-id">ID: ...</div>
+            
+            <div class="marking-pill" onclick="copyMarking()">
+                <span id="marking-text">C-87 / ...</span>
+                <i class="fa-regular fa-copy"></i>
             </div>
         </div>
 
-        <div id="retail-block" style="display: none;">
-            <div class="card card-border">
-                <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 8px;">АДРЕС СКЛАДА (ИУ - РОЗНИЦА)</div>
-                <div class="addr-box" onclick="copyRetailAddr()">
-                    <span style="white-space: pre-wrap;" id="yiwu-retail-text">Загрузка адреса...</span>
-                    <i class="fa-regular fa-copy copy-icon"></i>
+        <div class="container">
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div id="stat-orders" class="stat-val">0</div>
+                    <div class="stat-label">Заказов</div>
+                </div>
+                <div class="stat-item">
+                    <div id="stat-weight" class="stat-val">0</div>
+                    <div class="stat-label">Вес (кг)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val" style="color: var(--tiffany);">Rank</div>
+                    <div id="stat-rank" class="stat-label">Бронза</div>
                 </div>
             </div>
 
-            <div class="card card-border">
-                <div style="font-size: 11px; color: var(--tiffany); margin-bottom: 8px; font-weight: bold;">
-                    <i class="fa-solid fa-tag"></i> ВАША МАРКИРОВКА (C-87)
-                </div>
-                <div style="font-size: 12px; color: #888; margin-bottom: 8px;">Код для наклейки на груз:</div>
-                <div class="addr-box" onclick="copyMarking()">
-                    <span id="marking-text" style="font-weight: bold; font-size: 15px; color: white;">Загрузка...</span>
-                    <i class="fa-regular fa-copy copy-icon"></i>
+            <div class="section-title">Мои адреса в Китае</div>
+            
+            <div id="retail-block">
+                <div class="card" style="border-left: 3px solid var(--tiffany);">
+                    <div style="font-size: 11px; color: var(--tiffany); margin-bottom: 5px; font-weight: bold;">
+                        <i class="fa-solid fa-warehouse"></i> СКЛАД ИУ (РОЗНИЦА)
+                    </div>
+                    <div class="addr-box" onclick="copyRetailAddr()">
+                        <span style="white-space: pre-wrap;" id="yiwu-retail-text">Загрузка...</span>
+                        <i class="fa-regular fa-copy copy-icon"></i>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div id="wholesale-block" style="display: none;">
-            <div class="card">
-                <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 8px;">ГОРОД ОТПРАВЛЕНИЯ</div>
-                <select id="origin-city-select" class="city-select" onchange="renderWholesaleAddress()">
-                    <option value="yiwu">Иу (Yiwu)</option>
-                    <option value="guangzhou">Гуанчжоу (Guangzhou)</option>
-                    <option value="urumqi">Урумчи (Urumqi)</option>
-                </select>
-            </div>
-            <div class="card">
-                <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 8px;">АДРЕС ОПТОВОГО СКЛАДА</div>
-                <div class="addr-box" onclick="copyWholesaleAddr()">
-                    <span style="white-space: pre-wrap;" id="wholesale-addr-text">--</span>
-                    <i class="fa-regular fa-copy copy-icon"></i>
+            <div id="wholesale-block" style="display:none;">
+                <div class="card" style="border-left: 3px solid var(--gold);">
+                    <div style="font-size: 11px; color: var(--gold); margin-bottom: 5px; font-weight: bold;">
+                        <i class="fa-solid fa-truck-fast"></i> ОПТОВЫЙ СКЛАД
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <select id="origin-city-select" style="padding: 8px; font-size: 12px;" onchange="renderWholesaleAddress()">
+                            <option value="yiwu">Иу (Yiwu)</option>
+                            <option value="urumqi">Урумчи (Urumqi)</option>
+                            <option value="guangzhou">Гуанчжоу</option>
+                        </select>
+                    </div>
+                    <div class="addr-box" onclick="copyWholesaleAddr()">
+                        <span style="white-space: pre-wrap;" id="wholesale-addr-text">--</span>
+                        <i class="fa-regular fa-copy copy-icon"></i>
+                    </div>
                 </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 10px;">
+                <span style="font-size: 12px; color: #555; text-decoration: underline;" onclick="toggleAddressType()">
+                    Показать адрес для <span id="addr-switch-text">Опта</span>
+                </span>
+            </div>
+            
+            <div class="section-title">Мои настройки</div>
+            <div class="card">
+                <div style="font-size: 12px; color: var(--text-gray);">Текущий ПВЗ</div>
+                <div id="profile-pvz" style="font-size: 16px; font-weight: bold; margin-top: 4px;">--</div>
             </div>
         </div>
     </div>
 
     <nav class="nav-bar">
         <a href="javascript:void(0)" class="nav-item active" id="nav-home" onclick="nav('home')">
-            <i class="fa-solid fa-house"></i><span>Главная</span>
+            <i class="fa-solid fa-calculator"></i><span>Главная</span>
         </a>
         <a href="javascript:void(0)" class="nav-item" id="nav-pkgs" onclick="nav('pkgs')">
             <i class="fa-solid fa-box"></i><span>Посылки</span>
         </a>
         <a href="javascript:void(0)" class="nav-item" id="nav-profile" onclick="nav('profile')">
-            <i class="fa-solid fa-user-gear"></i><span>Профиль</span>
+            <i class="fa-solid fa-user"></i><span>Профиль</span>
         </a>
     </nav>
 
@@ -191,13 +310,18 @@
         const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
         
         const userId = tg.initDataUnsafe?.user?.id || 317295540; 
+        const userPhoto = tg.initDataUnsafe?.user?.photo_url || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
         
         let APP_CONFIG = { rates: {}, warehouses: { retail: {}, wholesale: {} } };
-        let userData = { category: 'less_100', pvz: 'Загрузка...', bonus: 0, packages: [], marking: '...' };
+        let userData = { category: 'less_100', pvz: '...', bonus: 0, packages: [], marking: '...', name: 'User' };
+        
+        let showWholesaleAddr = false; // Переключатель вида адресов в профиле
 
         async function init() {
-            document.getElementById('user-id-display').innerText = `ID: ${userId}`;
             loadRoutes();
+            
+            // Установка аватарки сразу
+            document.getElementById('user-avatar').src = userPhoto;
 
             try {
                 const response = await fetch(`${API_BASE}/api/dashboard/${userId}`, {
@@ -205,7 +329,7 @@
                     headers: { 'ngrok-skip-browser-warning': 'true' }
                 });
 
-                if (!response.ok) throw new Error(`Ошибка сервера: ${response.status}`);
+                if (!response.ok) throw new Error(`Status: ${response.status}`);
                 const data = await response.json();
 
                 if (data.app_config) APP_CONFIG = data.app_config;
@@ -215,7 +339,8 @@
                         pvz: data.user_info.pvz,
                         bonus: data.user_info.bonus_balance,
                         marking: data.user_info.marking_code,
-                        packages: data.packages || []
+                        packages: data.packages || [],
+                        name: tg.initDataUnsafe?.user?.first_name || "Клиент"
                     };
                 }
 
@@ -228,65 +353,120 @@
                 }, 500);
 
             } catch (e) {
-                console.error(e);
-                document.getElementById('error-log').innerHTML = `ОШИБКА:<br>${e.message}<br><br>Проверьте ссылку Ngrok!`;
+                document.getElementById('error-log').innerHTML = `Err: ${e.message}`;
             }
         }
 
         async function loadRoutes() {
             try {
-                const res = await fetch(`${API_BASE}/api/get_routes`, {
-                    method: 'GET',
-                    headers: { 'ngrok-skip-browser-warning': 'true' }
-                });
+                const res = await fetch(`${API_BASE}/api/get_routes`, {headers: { 'ngrok-skip-browser-warning': 'true' }});
                 const data = await res.json();
                 if(data.status === 'ok') {
                     const select = document.getElementById('calc-route');
-                    select.innerHTML = '';
-                    const defaultOpt = document.createElement('option');
-                    defaultOpt.innerText = "Выберите маршрут...";
-                    select.appendChild(defaultOpt);
+                    select.innerHTML = '<option>Выберите маршрут...</option>';
                     data.routes.forEach(r => {
                         const opt = document.createElement('option');
                         opt.value = r; opt.innerText = r; select.appendChild(opt);
                     });
                 }
-            } catch(e) { console.error("Routes load error:", e); }
+            } catch(e) {}
         }
 
         function render() {
-            document.getElementById('h-sub').innerText = userData.category === 'more_100' ? "Оптовый клиент" : "Розничный клиент";
-            document.getElementById('h-bon-val').innerText = userData.bonus + " кг";
-            document.getElementById('h-pvz-val').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${userData.pvz}`;
+            // --- РЕНДЕР ПРОФИЛЯ ---
+            document.getElementById('user-name').innerText = userData.name;
+            document.getElementById('user-id').innerText = `@${tg.initDataUnsafe?.user?.username || 'user'} • ID: ${userId}`;
+            document.getElementById('marking-text').innerText = userData.marking;
+            document.getElementById('profile-pvz').innerText = userData.pvz;
             
+            // Статистика
+            document.getElementById('stat-orders').innerText = userData.packages.length;
+            document.getElementById('stat-weight').innerText = userData.bonus;
+            
+            // Уровень (Геймификация)
+            const bonus = userData.bonus;
+            let rank = "Новичок";
+            let rankClass = "lvl-bronze";
+            
+            if(bonus > 10) { rank = "Любитель"; rankClass = "lvl-silver"; }
+            if(bonus > 100) { rank = "Профи"; rankClass = "lvl-gold"; }
+            if(bonus > 500) { rank = "VIP"; rankClass = "lvl-vip"; }
+            
+            document.getElementById('stat-rank').innerText = rank;
+            document.getElementById('level-badge').innerText = rank;
+            
+            // Обновляем классы аватарки
+            const ava = document.getElementById('user-avatar');
+            ava.className = `avatar-img ${rankClass}`;
+
+            // Адреса
+            renderAddressBlock();
+
+            // --- РЕНДЕР КАЛЬКУЛЯТОРА ---
             const isOpt = userData.category === 'more_100';
             document.getElementById('cat-less').classList.toggle('active', !isOpt);
             document.getElementById('cat-more').classList.toggle('active', isOpt);
 
-            const calcTitle = document.getElementById('calc-title');
-            const routeBox = document.getElementById('calc-route-box');
-            const optInputs = document.querySelectorAll('.opt-only');
-            const retailInfo = document.getElementById('retail-info');
+            document.getElementById('calc-route-box').style.display = isOpt ? 'block' : 'none';
+            document.getElementById('retail-info').style.display = isOpt ? 'none' : 'block';
+            document.querySelectorAll('.opt-only').forEach(el => el.style.display = isOpt ? 'block' : 'none');
 
-            if (isOpt) {
-                calcTitle.innerHTML = '<i class="fa-solid fa-calculator"></i> Калькулятор (Опт)';
-                routeBox.style.display = 'block';
-                retailInfo.style.display = 'none';
-                optInputs.forEach(el => el.style.display = 'block');
+            // --- РЕНДЕР ЗАКАЗОВ ---
+            const cont = document.getElementById('orders-container');
+            cont.innerHTML = '';
+            if(!userData.packages.length) {
+                cont.innerHTML = '<div style="text-align:center;color:gray;padding:20px;">История пуста</div>';
             } else {
-                calcTitle.innerHTML = '<i class="fa-solid fa-calculator"></i> Калькулятор (Розница)';
-                routeBox.style.display = 'none';
-                retailInfo.style.display = 'block';
-                optInputs.forEach(el => el.style.display = 'none');
+                userData.packages.forEach(p => {
+                    let badgeClass = 'st-blue';
+                    if(p.status_text.includes('Ожидает')) badgeClass = 'st-gray';
+                    if(p.status_text.includes('Прибыл') || p.status_text.includes('Готов')) badgeClass = 'st-green';
+                    
+                    cont.innerHTML += `
+                        <div class="card">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                                <span style="font-size:12px;color:#666;">${p.date}</span>
+                                <span class="status-badge ${badgeClass}">${p.status_text}</span>
+                            </div>
+                            <div style="font-weight:bold;margin-bottom:5px;">${p.description || 'Посылка'}</div>
+                            <div style="font-family:monospace;color:var(--tiffany);">${p.track_number}</div>
+                        </div>`;
+                });
             }
-            renderProfile(isOpt);
-            renderOrders();
+        }
+
+        // Логика переключения адресов в профиле
+        function toggleAddressType() {
+            showWholesaleAddr = !showWholesaleAddr;
+            document.getElementById('addr-switch-text').innerText = showWholesaleAddr ? "Розницы" : "Опта";
+            renderAddressBlock();
+        }
+
+        function renderAddressBlock() {
+            const retailDiv = document.getElementById('retail-block');
+            const wholesaleDiv = document.getElementById('wholesale-block');
+            
+            if(showWholesaleAddr) {
+                retailDiv.style.display = 'none';
+                wholesaleDiv.style.display = 'block';
+                renderWholesaleAddress();
+            } else {
+                retailDiv.style.display = 'block';
+                wholesaleDiv.style.display = 'none';
+                document.getElementById('yiwu-retail-text').innerText = APP_CONFIG.warehouses.retail?.address || "...";
+            }
+        }
+
+        function renderWholesaleAddress() {
+            const city = document.getElementById('origin-city-select').value;
+            const wh = APP_CONFIG.warehouses.wholesale?.[city];
+            document.getElementById('wholesale-addr-text').innerText = wh ? wh.address : "Нет данных";
         }
 
         async function calculateServer() {
             const btn = document.querySelector('button[onclick="calculateServer()"]');
             const resBox = document.getElementById('calc-result-box');
-            btn.innerText = "Считаем..."; btn.disabled = true;
+            btn.innerText = "..."; btn.disabled = true;
 
             const payload = {
                 user_id: userId,
@@ -298,11 +478,7 @@
             if (userData.category === 'more_100') {
                 const routeFull = document.getElementById('calc-route').value;
                 const parts = routeFull.split(" - ");
-                if (parts.length < 2) {
-                    tg.showAlert("Для опта нужно выбрать маршрут!");
-                    btn.innerText = "Рассчитать"; btn.disabled = false;
-                    return;
-                }
+                if (parts.length < 2) { tg.showAlert("Выберите маршрут!"); btn.innerText = "Рассчитать"; btn.disabled = false; return; }
                 payload.route_from = parts[0]; payload.route_to = parts[1];
                 payload.length = parseFloat(document.getElementById('c-l').value) || 0;
                 payload.width = parseFloat(document.getElementById('c-w').value) || 0;
@@ -321,70 +497,18 @@
                     document.getElementById('res-currency').innerText = result.currency;
                     resBox.style.display = 'block';
                 } else {
-                    tg.showAlert(result.message || "Ошибка расчета");
+                    tg.showAlert(result.message);
                     resBox.style.display = 'none';
                 }
-            } catch (e) { tg.showAlert("Ошибка связи с сервером"); } 
-            finally { btn.innerText = "Рассчитать стоимость"; btn.disabled = false; }
-        }
-
-        function renderProfile(isOpt) {
-            const retailBlock = document.getElementById('retail-block');
-            const wholesaleBlock = document.getElementById('wholesale-block');
-
-            if (!isOpt) {
-                retailBlock.style.display = 'block';
-                wholesaleBlock.style.display = 'none';
-                const addr = APP_CONFIG.warehouses.retail?.address || "Загрузка...";
-                document.getElementById('yiwu-retail-text').innerText = addr;
-                document.getElementById('marking-text').innerText = userData.marking;
-            } else {
-                retailBlock.style.display = 'none';
-                wholesaleBlock.style.display = 'block';
-                renderWholesaleAddress(); 
-            }
-        }
-
-        function renderWholesaleAddress() {
-            const city = document.getElementById('origin-city-select').value;
-            const wh = APP_CONFIG.warehouses.wholesale?.[city];
-            document.getElementById('wholesale-addr-text').innerText = wh ? wh.address : "Нет данных";
-        }
-
-        function renderOrders() {
-            const cont = document.getElementById('orders-container');
-            cont.innerHTML = '';
-            if(!userData.packages.length) {
-                cont.innerHTML = '<div style="text-align:center;color:gray;padding:40px;">Пока нет активных заказов</div>';
-                return;
-            }
-            userData.packages.forEach(p => {
-                let badgeClass = 'st-blue';
-                if(p.status_text.includes('Ожидает') || p.status_text.includes('AWAITING')) badgeClass = 'st-gray';
-                if(p.status_text.includes('Прибыл') || p.status_text.includes('Готов')) badgeClass = 'st-green';
-                if(p.status_text.includes('Отмен') || p.status_text.includes('CANCELED')) badgeClass = 'st-red';
-
-                cont.innerHTML += `
-                    <div class="card">
-                        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-                            <span style="font-size:12px;color:#666;">${p.date}</span>
-                            <span class="status-badge ${badgeClass}">${p.status_text}</span>
-                        </div>
-                        <div style="font-weight:bold;margin-bottom:5px;">${p.description || 'Посылка'}</div>
-                        <div style="font-family:monospace;color:var(--tiffany);">${p.track_number}</div>
-                    </div>`;
-            });
+            } catch (e) { tg.showAlert("Ошибка сети"); } 
+            finally { btn.innerText = "Рассчитать"; btn.disabled = false; }
         }
 
         async function setCat(cat) {
             tg.HapticFeedback.selectionChanged();
             userData.category = cat;
             render();
-            await fetch(`${API_BASE}/api/update_settings`, {
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ user_id: userId, category: cat })
-            });
+            fetch(`${API_BASE}/api/update_settings`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ user_id: userId, category: cat }) });
         }
 
         function nav(scr) {
@@ -393,17 +517,31 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById('nav-' + scr).classList.add('active');
             tg.HapticFeedback.impactOccurred('light');
+
+            const fab = document.getElementById('fab-add');
+            fab.style.display = (scr === 'pkgs') ? 'flex' : 'none';
+        }
+
+        // Modal
+        function openModal() { document.getElementById('add-modal').classList.add('active'); tg.HapticFeedback.impactOccurred('medium'); }
+        function closeModal() { document.getElementById('add-modal').classList.remove('active'); }
+        async function submitTrack() {
+            const track = document.getElementById('new-track').value;
+            const desc = document.getElementById('new-desc').value;
+            if(!track) return tg.showAlert("Введите трек!");
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/add_track`, { method: 'POST', headers: {'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'}, body: JSON.stringify({ user_id: userId, track_number: track, description: desc }) });
+                const r = await res.json();
+                if(r.status === 'ok') { tg.showAlert("Добавлено!"); closeModal(); init(); }
+                else tg.showAlert(r.message);
+            } catch(e) {}
         }
 
         function copyMarking() { copyValue(document.getElementById('marking-text').innerText); }
         function copyRetailAddr() { copyValue(document.getElementById('yiwu-retail-text').innerText); }
         function copyWholesaleAddr() { copyValue(document.getElementById('wholesale-addr-text').innerText); }
-
-        function copyValue(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                tg.HapticFeedback.notificationOccurred('success');
-            }).catch(() => tg.showAlert("Ошибка копирования"));
-        }
+        function copyValue(text) { navigator.clipboard.writeText(text).then(() => tg.HapticFeedback.notificationOccurred('success')).catch(() => tg.showAlert("Ошибка")); }
 
         init();
     </script>
