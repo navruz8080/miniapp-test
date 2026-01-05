@@ -175,7 +175,7 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // ⚠️⚠️⚠️ ВСТАВЬТЕ СЮДА ВАШУ ССЫЛКУ NGROK ⚠️⚠️⚠️
+        // ⚠️⚠️⚠️ ПРОВЕРЬТЕ ССЫЛКУ NGROK ⚠️⚠️⚠️
         const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
         
         const userId = tg.initDataUnsafe?.user?.id || 317295540; 
@@ -185,7 +185,7 @@
 
         async function init() {
             document.getElementById('user-id-display').innerText = `ID: ${userId}`;
-            loadRoutes(); // Загружаем маршруты калькулятора сразу
+            loadRoutes(); // Загружаем маршруты
 
             try {
                 const response = await fetch(`${API_BASE}/api/dashboard/${userId}`, {
@@ -223,11 +223,22 @@
 
         async function loadRoutes() {
             try {
-                const res = await fetch(`${API_BASE}/api/get_routes`);
+                // 🔥 ДОБАВЛЕН ЗАГОЛОВОК, ЧТОБЫ NGROK НЕ БЛОКИРОВАЛ ЗАПРОС
+                const res = await fetch(`${API_BASE}/api/get_routes`, {
+                    method: 'GET',
+                    headers: { 'ngrok-skip-browser-warning': 'true' }
+                });
+
                 const data = await res.json();
+                
                 if(data.status === 'ok') {
                     const select = document.getElementById('calc-route');
-                    select.innerHTML = '';
+                    select.innerHTML = ''; 
+                    
+                    const defaultOpt = document.createElement('option');
+                    defaultOpt.innerText = "Выберите маршрут...";
+                    select.appendChild(defaultOpt);
+
                     data.routes.forEach(r => {
                         const opt = document.createElement('option');
                         opt.value = r; 
@@ -245,10 +256,16 @@
             btn.innerText = "Считаем..."; btn.disabled = true;
 
             const routeFull = document.getElementById('calc-route').value;
+            // Проверка, что маршрут выбран корректно
+            if (!routeFull || routeFull.includes("Выберите") || routeFull.includes("Загрузка")) {
+                tg.showAlert("Выберите маршрут из списка!");
+                btn.innerText = "Рассчитать стоимость"; btn.disabled = false;
+                return;
+            }
+
             const parts = routeFull.split(" - ");
-            
             if (parts.length < 2) {
-                tg.showAlert("Выберите маршрут!");
+                tg.showAlert("Некорректный маршрут");
                 btn.innerText = "Рассчитать стоимость"; btn.disabled = false;
                 return;
             }
@@ -267,7 +284,10 @@
             try {
                 const response = await fetch(`${API_BASE}/api/calculate`, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true' // И сюда тоже добавим на всякий случай
+                    },
                     body: JSON.stringify(payload)
                 });
                 const result = await response.json();
