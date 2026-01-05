@@ -6,166 +6,199 @@
     <title>Drop Ecosystem</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        :root { 
-            --bg-dark: #080a10; 
-            --glass: rgba(22, 27, 38, 0.65);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --primary: #23F7DD; /* Tiffany Neon */
-            --primary-glow: rgba(35, 247, 221, 0.25);
-            --accent-purple: #7B61FF;
-            --text-main: #ffffff; 
-            --text-gray: #828a9a;
-            --danger: #FF4B55;
-            --success: #00D68F;
-        }
-        
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: var(--bg-dark); 
-            /* Фоновый градиент как в xPortal */
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(35, 247, 221, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(123, 97, 255, 0.08) 0%, transparent 40%);
-            color: var(--text-main); 
-            margin: 0; padding: 0 0 120px 0; 
-            -webkit-tap-highlight-color: transparent; 
-            overflow-x: hidden; 
-            min-height: 100vh;
+        /* --- ЦВЕТОВЫЕ ПЕРЕМЕННЫЕ (THEMING) --- */
+        :root[data-theme="light"] {
+            --bg-body: #F2F2F7; /* iOS Light Gray */
+            --bg-card: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --accent: #1ae2c7; /* Tiffany */
+            --accent-dim: rgba(26, 226, 199, 0.1);
+            --border: rgba(0,0,0,0.05);
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --dock-bg: rgba(255, 255, 255, 0.85);
+            --input-bg: #F2F2F7;
         }
 
-        /* --- UI COMPONENTS --- */
-        .container { padding: 0 16px; }
-        
-        /* Стекломорфизм Карточки */
-        .glass-card { 
-            background: var(--glass); 
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px; 
-            padding: 20px; 
-            margin-bottom: 12px; 
-            position: relative;
+        :root[data-theme="dark"] {
+            --bg-body: #000000;
+            --bg-card: #1C1C1E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #98989F;
+            --accent: #1ae2c7;
+            --accent-dim: rgba(26, 226, 199, 0.15);
+            --border: rgba(255,255,255,0.1);
+            --shadow: 0 4px 12px rgba(0,0,0,0.2);
+            --dock-bg: rgba(28, 28, 30, 0.85);
+            --input-bg: #2C2C2E;
         }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            margin: 0; padding: 0 0 120px 0;
+            transition: background-color 0.3s, color 0.3s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container { padding: 0 16px; max-width: 600px; margin: 0 auto; }
+
+        /* --- КАРТОЧКИ --- */
+        .card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: 0.3s;
+        }
+
+        /* --- ЗАГОЛОВКИ И ХЕДЕР --- */
+        .app-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 0;
+        }
+        h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
         
-        /* Заголовки */
-        h1 { font-size: 26px; font-weight: 800; margin: 24px 0 16px 0; letter-spacing: -0.5px; }
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .section-title { font-size: 18px; font-weight: 700; }
-        
-        /* Кнопки */
-        .btn {
-            background: var(--primary);
-            color: #080a10;
-            border: none;
-            border-radius: 14px;
-            padding: 14px;
-            font-weight: 700;
-            width: 100%;
+        .theme-btn {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--shadow);
             cursor: pointer;
-            font-size: 14px;
-            box-shadow: 0 4px 15px var(--primary-glow);
-            transition: 0.2s;
+            color: var(--text-primary);
+            font-size: 18px;
         }
-        .btn:active { transform: scale(0.97); }
-        .btn-outline { background: transparent; border: 1px solid var(--glass-border); color: var(--text-gray); box-shadow: none; }
-        
-        /* Inputs */
-        input, select {
-            background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: white;
-            padding: 14px; border-radius: 14px; width: 100%; box-sizing: border-box; outline: none;
-            font-family: 'Inter', sans-serif; font-size: 14px; transition: 0.3s;
-        }
-        input:focus { border-color: var(--primary); box-shadow: 0 0 10px var(--primary-glow); }
 
-        /* --- NAVIGATION DOCK (FLOATING) --- */
+        /* --- ЭЛЕМЕНТЫ УПРАВЛЕНИЯ --- */
+        .btn-main {
+            background: var(--accent);
+            color: #000; /* На тиффани лучше черный текст */
+            width: 100%; padding: 16px; border-radius: 16px; border: none;
+            font-weight: 600; font-size: 16px; cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.1s;
+        }
+        .btn-main:active { transform: scale(0.98); }
+
+        .switcher {
+            background: var(--input-bg);
+            padding: 4px; border-radius: 14px;
+            display: flex; margin-bottom: 20px;
+        }
+        .sw-btn {
+            flex: 1; padding: 10px; border: none; border-radius: 10px;
+            background: transparent; color: var(--text-secondary);
+            font-weight: 500; font-size: 14px; transition: 0.3s;
+        }
+        .sw-btn.active {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        input, select {
+            background: var(--input-bg);
+            border: none;
+            color: var(--text-primary);
+            padding: 16px; border-radius: 14px;
+            width: 100%; box-sizing: border-box;
+            font-size: 15px; outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* --- BOTTOM DOCK (Бар внизу) --- */
         .dock-container {
-            position: fixed; bottom: 20px; left: 16px; right: 16px;
-            z-index: 1000;
+            position: fixed; bottom: 20px; left: 0; right: 0;
+            display: flex; justify-content: center; z-index: 1000;
         }
         .dock {
-            background: rgba(18, 22, 31, 0.85);
-            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 28px;
-            display: flex; justify-content: space-between;
-            padding: 12px 6px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            background: var(--dock-bg);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 10px 20px;
+            display: flex; gap: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
         }
         .dock-item {
-            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: #5c6375; text-decoration: none; transition: 0.3s;
-            position: relative;
+            display: flex; flex-direction: column; align-items: center;
+            color: var(--text-secondary);
+            width: 50px; cursor: pointer; transition: 0.3s;
         }
-        .dock-icon { font-size: 22px; margin-bottom: 4px; transition: 0.3s; }
-        .dock-label { font-size: 10px; font-weight: 600; opacity: 0; transform: translateY(10px); transition: 0.3s; }
+        .dock-icon { font-size: 24px; margin-bottom: 4px; transition: 0.3s; }
+        .dock-label { font-size: 10px; font-weight: 500; opacity: 0; transform: translateY(5px); transition: 0.3s; }
         
-        /* Активное состояние */
-        .dock-item.active { color: var(--primary); }
-        .dock-item.active .dock-icon { transform: translateY(-2px); text-shadow: 0 0 15px var(--primary-glow); }
+        .dock-item.active { color: var(--accent); }
         .dock-item.active .dock-label { opacity: 1; transform: translateY(0); }
+        .dock-item.active .dock-icon { transform: translateY(-2px); }
 
-        /* --- SCREENS --- */
-        .screen { display: none; animation: fadeUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
-        .screen.active { display: block; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- MODULE: TRUCKING (БИРЖА) --- */
-        .trip-card {
-            display: flex; flex-direction: column; gap: 10px;
-            border-left: 3px solid var(--accent-purple);
+        /* --- ПРОФИЛЬ (Чистый стиль) --- */
+        .profile-head { text-align: center; margin-bottom: 20px; }
+        .avatar {
+            width: 80px; height: 80px; border-radius: 50%;
+            margin: 0 auto 10px;
+            background: var(--input-bg);
+            border: 3px solid var(--bg-card);
+            box-shadow: var(--shadow);
+            object-fit: cover;
         }
-        .trip-route { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; }
-        .trip-arrow { color: var(--text-gray); font-size: 12px; }
-        .trip-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-gray); }
-        .trip-price { color: var(--success); font-weight: 700; font-size: 14px; }
+        .copy-pill {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--accent-dim); color: var(--accent); /* Цвет текста тиффани */
+            padding: 6px 14px; border-radius: 20px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+        }
         
-        /* --- MODULE: MARKET --- */
-        .market-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .product-card { padding: 10px; border-radius: 18px; }
-        .prod-img { width: 100%; height: 100px; background: #222; border-radius: 12px; margin-bottom: 8px; object-fit: cover; }
-        .prod-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .prod-price { color: var(--primary); font-weight: 800; font-size: 14px; }
+        .addr-card {
+            display: flex; flex-direction: column; gap: 8px;
+            cursor: pointer; position: relative;
+        }
+        .addr-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; }
+        .addr-text { font-size: 14px; line-height: 1.5; color: var(--text-primary); font-family: monospace; }
+        .addr-icon { position: absolute; top: 0; right: 0; color: var(--accent); }
 
-        /* --- MODULE: CHINA (OLD STYLES ADAPTED) --- */
-        .switcher { display: flex; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 16px; margin-bottom: 15px; }
-        .sw-btn { flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-gray); border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .sw-btn.active { background: rgba(35, 247, 221, 0.1); color: var(--primary); }
-        .calc-res { text-align: center; margin-top: 15px; }
-        .calc-res span { font-size: 28px; font-weight: 800; color: var(--primary); text-shadow: 0 0 20px var(--primary-glow); }
+        /* --- Screens --- */
+        .screen { display: none; animation: fadeIn 0.3s; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* --- PROFILE --- */
-        .profile-head { text-align: center; margin-bottom: 30px; }
-        .avatar { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--primary); padding: 4px; margin: 0 auto 10px; }
-        .avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-        .stat-row { display: flex; justify-content: space-between; background: rgba(255,255,255,0.03); border-radius: 16px; padding: 15px; margin-bottom: 20px; }
-        .stat-col { text-align: center; flex: 1; }
-        .stat-val { font-size: 18px; font-weight: 800; color: white; }
-        .stat-lbl { font-size: 10px; color: var(--text-gray); text-transform: uppercase; margin-top: 4px; }
+        /* --- Разное --- */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .stat-box { background: var(--bg-card); padding: 15px; border-radius: 16px; text-align: center; box-shadow: var(--shadow); }
+        .text-dim { color: var(--text-secondary); font-size: 12px; }
+        .text-val { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-top: 4px; }
 
-        /* Helpers */
-        .text-dim { color: var(--text-gray); font-size: 12px; }
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; background: rgba(255,255,255,0.1); }
     </style>
 </head>
-<body>
+<body data-theme="light">
+
+    <div class="container">
+        <div class="app-header">
+            <h1>Drop Ecosystem</h1>
+            <div class="theme-btn" onclick="toggleTheme()">
+                <i class="fa-solid fa-moon" id="theme-icon"></i>
+            </div>
+        </div>
+    </div>
 
     <div id="screen-china" class="screen active">
         <div class="container">
-            <div class="section-header" style="margin-top: 20px;">
-                <h1>Мой Китай</h1>
-                <div style="font-size: 24px;">🇨🇳</div>
-            </div>
-
-            <div class="glass-card">
+            
+            <div class="card">
                 <div class="switcher">
                     <button id="cat-less" class="sw-btn active" onclick="setCat('less_100')">Розница</button>
                     <button id="cat-more" class="sw-btn" onclick="setCat('more_100')">Опт</button>
                 </div>
 
                 <div id="calc-route-box" style="margin-bottom: 10px; display: none;">
-                    <select id="calc-route"><option>Загрузка...</option></select>
+                    <select id="calc-route"><option>Загрузка маршрутов...</option></select>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -173,106 +206,78 @@
                     <input type="number" id="c-w" placeholder="Ширина" class="opt-only" style="display:none">
                     <input type="number" id="c-h" placeholder="Высота" class="opt-only" style="display:none">
                     <input type="number" id="c-weight" placeholder="Вес (кг)" style="grid-column: span 2;">
-                    <input type="number" id="c-qty" placeholder="Кол-во" value="1" style="grid-column: span 2;">
+                    <input type="number" id="c-qty" placeholder="Кол-во мест" value="1" style="grid-column: span 2;">
                 </div>
 
-                <div id="retail-info" class="text-dim" style="margin-top: 10px; line-height: 1.5;">
-                    📦 Тарифы: до 0.5кг - 13с, до 1кг - 23с, далее 23с/кг.
+                <div id="retail-info" style="margin-top: 15px; font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+                    <div style="display:flex; justify-content:space-between;"><span>до 0.5 кг</span> <b>13 TJS</b></div>
+                    <div style="display:flex; justify-content:space-between;"><span>0.5 - 1 кг</span> <b>23 TJS</b></div>
+                    <div style="display:flex; justify-content:space-between;"><span>1 - 50 кг</span> <b>23 TJS/кг</b></div>
+                    <div style="display:flex; justify-content:space-between;"><span>> 50 кг</span> <b>20 TJS/кг</b></div>
                 </div>
 
-                <div id="calc-result-box" class="calc-res" style="display: none;">
-                    <span id="res-price">0.00</span> <span style="font-size: 16px;">TJS</span>
+                <div id="calc-result-box" style="display: none; margin-top: 20px; text-align: center; background: var(--input-bg); padding: 15px; border-radius: 12px;">
+                    <div style="font-size: 12px; color: var(--text-secondary);">Итого к оплате</div>
+                    <div style="font-size: 24px; font-weight: 800; color: var(--accent);">
+                        <span id="res-price">0.00</span> <span id="res-currency" style="font-size: 16px; color: var(--text-primary);">USD</span>
+                    </div>
                 </div>
 
-                <button class="btn" style="margin-top: 15px;" onclick="calculateServer()">Рассчитать</button>
+                <button class="btn-main" onclick="calculateServer()">Рассчитать</button>
             </div>
 
-            <div class="section-header">
-                <div class="section-title">Активные посылки</div>
-                <div class="text-dim" onclick="alert('История')">Все</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div style="font-weight: 700; font-size: 18px;">Мои посылки</div>
             </div>
+            
             <div id="orders-container">
-                <div style="text-align: center; color: #555; padding: 20px;">Загрузка...</div>
+                <div style="text-align: center; padding: 30px; color: var(--text-secondary);">Загрузка...</div>
             </div>
         </div>
     </div>
 
     <div id="screen-trucks" class="screen">
         <div class="container">
-            <div class="section-header" style="margin-top: 20px;">
-                <h1>Биржа</h1>
-                <div style="background: var(--accent-purple); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px;">🚛</div>
-            </div>
-
-            <div class="glass-card">
+            <div class="card">
+                <h2 style="margin-top:0; margin-bottom: 15px;">Биржа грузов</h2>
                 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                    <button class="btn" style="background: var(--accent-purple); color: white;">Найти машину</button>
-                    <button class="btn btn-outline">Я водитель</button>
+                    <button class="btn-main" style="background: #7B61FF; color: white;">Найти машину</button>
+                    <button class="btn-main" style="background: transparent; border: 1px solid var(--border); color: var(--text-primary);">Я водитель</button>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <input type="text" placeholder="Откуда">
-                    <input type="text" placeholder="Куда">
-                </div>
+                <input type="text" placeholder="Откуда" style="margin-bottom: 10px;">
+                <input type="text" placeholder="Куда">
             </div>
 
-            <div class="section-title" style="margin-bottom: 10px;">Ближайшие рейсы</div>
-
-            <div class="glass-card trip-card">
-                <div class="trip-route">Душанбе <i class="fa-solid fa-arrow-right trip-arrow"></i> Худжанд</div>
-                <div class="text-dim"><i class="fa-regular fa-clock"></i> Выезд: Завтра, 08:00</div>
-                <div class="trip-meta">
-                    <span><i class="fa-solid fa-truck-pickup"></i> Mercedes Sprinter</span>
-                    <span class="trip-price">2.5 TJS/кг</span>
-                </div>
-                <div style="margin-top: 5px;">
-                    <span class="badge" style="color: var(--success);">Свободно 1200 кг</span>
-                </div>
+            <h3 style="margin-left: 5px; font-size: 16px;">Актуальные рейсы</h3>
+            <div class="card" style="border-left: 4px solid #7B61FF;">
+                <div style="font-weight: 700; font-size: 16px; margin-bottom: 5px;">Душанбе ➝ Худжанд</div>
+                <div class="text-dim">Завтра, 08:00 • Mercedes Sprinter</div>
+                <div style="margin-top: 10px; font-weight: 700; color: #00D68F;">2.5 TJS / кг</div>
             </div>
-
-            <div class="glass-card trip-card">
-                <div class="trip-route">Ташкент <i class="fa-solid fa-arrow-right trip-arrow"></i> Наманган</div>
-                <div class="text-dim"><i class="fa-regular fa-clock"></i> Выезд: 25 янв</div>
-                <div class="trip-meta">
-                    <span><i class="fa-solid fa-truck"></i> Фура (Тент)</span>
-                    <span class="trip-price">Договорная</span>
-                </div>
-                <div style="margin-top: 5px;">
-                    <span class="badge" style="color: #FFB02E;">Вся машина</span>
-                </div>
+            <div class="card" style="border-left: 4px solid #FFB02E;">
+                <div style="font-weight: 700; font-size: 16px; margin-bottom: 5px;">Ташкент ➝ Наманган</div>
+                <div class="text-dim">25 янв • Фура (Тент)</div>
+                <div style="margin-top: 10px; font-weight: 700; color: #FFB02E;">Свободна вся машина</div>
             </div>
-
         </div>
     </div>
 
     <div id="screen-market" class="screen">
         <div class="container">
-            <div class="section-header" style="margin-top: 20px;">
-                <h1>Маркет</h1>
-                <div style="background: #FFB02E; color: black; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px;">🛍</div>
+            <div class="card">
+                <h2 style="margin-top:0;">Маркетплейс</h2>
+                <input type="text" placeholder="Поиск товаров...">
             </div>
-
-            <div style="margin-bottom: 15px;">
-                <input type="text" placeholder="🔍 Поиск товаров...">
-            </div>
-
-            <div class="market-grid">
-                <div class="glass-card product-card">
-                    <img src="https://via.placeholder.com/150" class="prod-img">
-                    <div class="prod-title">Смарт-часы Series 8 (Опт)</div>
-                    <div class="prod-price">150 TJS</div>
-                    <div class="text-dim">Мин: 10 шт</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="card" style="padding: 10px;">
+                    <div style="height: 100px; background: #ddd; border-radius: 12px; margin-bottom: 8px;"></div>
+                    <div style="font-weight: 600; font-size: 13px;">Часы Apple Watch</div>
+                    <div style="color: var(--accent); font-weight: 700;">150 TJS</div>
                 </div>
-                <div class="glass-card product-card">
-                    <img src="https://via.placeholder.com/150" class="prod-img">
-                    <div class="prod-title">Кроссовки Nike Air (Копия)</div>
-                    <div class="prod-price">220 TJS</div>
-                    <div class="text-dim">В наличии</div>
-                </div>
-                <div class="glass-card product-card">
-                    <img src="https://via.placeholder.com/150" class="prod-img">
-                    <div class="prod-title">Чехлы iPhone 15</div>
-                    <div class="prod-price">15 TJS</div>
-                    <div class="text-dim">Мин: 50 шт</div>
+                <div class="card" style="padding: 10px;">
+                    <div style="height: 100px; background: #ddd; border-radius: 12px; margin-bottom: 8px;"></div>
+                    <div style="font-weight: 600; font-size: 13px;">Кроссовки Nike</div>
+                    <div style="color: var(--accent); font-weight: 700;">220 TJS</div>
                 </div>
             </div>
         </div>
@@ -280,58 +285,66 @@
 
     <div id="screen-profile" class="screen">
         <div class="container">
-            <div class="profile-head" style="margin-top: 40px;">
-                <div class="avatar">
-                    <img id="user-avatar" src="" alt="">
+            <div class="card">
+                <div class="profile-head">
+                    <img id="user-avatar" class="avatar" src="" alt="Avatar">
+                    <h2 id="user-name" style="margin: 0; font-size: 20px;">Загрузка...</h2>
+                    <div id="user-id" class="text-dim" style="margin-bottom: 10px;">ID: ...</div>
+                    
+                    <div class="copy-pill" onclick="copyMarking()">
+                        <span id="marking-text">C-87...</span>
+                        <i class="fa-regular fa-copy"></i>
+                    </div>
                 </div>
-                <h2 id="user-name">User Name</h2>
-                <div class="text-dim" id="user-id">ID: 000</div>
-                <div style="margin-top: 10px;">
-                    <span class="badge" style="background: var(--primary-glow); color: var(--primary); font-size: 12px; padding: 6px 12px;" onclick="copyMarking()">
-                        <span id="marking-text">C-87...</span> <i class="fa-regular fa-copy"></i>
-                    </span>
+
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <div class="text-dim">Бонусы</div>
+                        <div class="text-val" id="stat-weight">0.0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="text-dim">Заказов</div>
+                        <div class="text-val" id="stat-orders">0</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="stat-row">
-                <div class="stat-col">
-                    <div class="stat-val" id="stat-weight">0</div>
-                    <div class="stat-lbl">Бонусы</div>
+            <div class="card">
+                <div style="display:flex; justify-content: space-between; margin-bottom: 15px;">
+                    <div style="font-weight: 700;">Адрес склада</div>
+                    <div style="font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 600;" onclick="toggleAddressType()">
+                        <span id="addr-switch-label">Включить ОПТ</span>
+                    </div>
                 </div>
-                <div class="stat-col">
-                    <div class="stat-val" id="stat-orders">0</div>
-                    <div class="stat-lbl">Заказов</div>
-                </div>
-                <div class="stat-col">
-                    <div class="stat-val" style="color: var(--primary);">PRO</div>
-                    <div class="stat-lbl">Статус</div>
-                </div>
-            </div>
 
-            <div class="glass-card">
-                <div class="section-title" style="margin-bottom: 10px; font-size: 14px;">Мои Адреса</div>
-                
                 <div id="retail-block">
-                    <div style="font-size: 10px; color: var(--primary); font-weight: 800; margin-bottom: 5px;">ИУ (РОЗНИЦА)</div>
-                    <div style="font-family: monospace; font-size: 12px; line-height: 1.4; color: #ccc;" id="yiwu-retail-text" onclick="copyRetailAddr()">Загрузка...</div>
+                    <div class="addr-card" onclick="copyRetailAddr()">
+                        <div class="addr-label">ИУ (Розница)</div>
+                        <div class="addr-text" id="yiwu-retail-text">Загрузка адреса...</div>
+                        <div class="addr-icon"><i class="fa-regular fa-copy"></i></div>
+                    </div>
                 </div>
 
                 <div id="wholesale-block" style="display: none;">
-                     <div style="margin-bottom: 5px;">
-                        <select id="origin-city-select" style="padding: 6px;" onchange="renderWholesaleAddress()">
-                            <option value="yiwu">Иу</option>
-                            <option value="urumqi">Урумчи</option>
+                    <div style="margin-bottom: 10px;">
+                        <select id="origin-city-select" onchange="renderWholesaleAddress()" style="background: var(--input-bg); padding: 10px;">
+                            <option value="yiwu">Иу (Yiwu)</option>
+                            <option value="urumqi">Урумчи (Urumqi)</option>
                         </select>
                     </div>
-                    <div style="font-family: monospace; font-size: 12px; line-height: 1.4; color: #ccc;" id="wholesale-addr-text" onclick="copyWholesaleAddr()">...</div>
-                </div>
-
-                <div style="text-align: center; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 5px;">
-                    <span style="font-size: 10px; color: var(--text-gray); cursor: pointer;" onclick="toggleAddressType()">
-                        Сменить на <span id="addr-switch-text" style="color: white;">ОПТ</span>
-                    </span>
+                    <div class="addr-card" onclick="copyWholesaleAddr()">
+                        <div class="addr-label">Адрес Оптового Склада</div>
+                        <div class="addr-text" id="wholesale-addr-text">--</div>
+                        <div class="addr-icon"><i class="fa-regular fa-copy"></i></div>
+                    </div>
                 </div>
             </div>
+            
+            <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="text-dim">Ваш ПВЗ</div>
+                <div style="font-weight: 600;" id="profile-pvz">...</div>
+            </div>
+
         </div>
     </div>
 
@@ -360,7 +373,7 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // ⚠️ ВСТАВЬТЕ ССЫЛКУ NGROK ⚠️
+        // ⚠️⚠️⚠️ ВАША ССЫЛКА NGROK ⚠️⚠️⚠️
         const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
         
         const userId = tg.initDataUnsafe?.user?.id || 317295540; 
@@ -370,33 +383,41 @@
         let userData = { category: 'less_100', pvz: '...', bonus: 0, packages: [], marking: '...', name: 'User' };
         let showWholesaleAddr = false;
 
-        // --- NAVIGATION LOGIC ---
-        function nav(screenId, el) {
-            // UI Update
-            document.querySelectorAll('.dock-item').forEach(i => i.classList.remove('active'));
-            if(el) el.classList.add('active');
-
-            // Screen Switch
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('screen-' + screenId).classList.add('active');
-            
-            tg.HapticFeedback.impactOccurred('light');
+        // --- THEME SWITCHER ---
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            if (body.getAttribute('data-theme') === 'light') {
+                body.setAttribute('data-theme', 'dark');
+                icon.className = 'fa-solid fa-sun';
+            } else {
+                body.setAttribute('data-theme', 'light');
+                icon.className = 'fa-solid fa-moon';
+            }
         }
 
-        // --- INIT & LOGIC (COPIED FROM PREVIOUS) ---
+        // --- INIT ---
         async function init() {
             document.getElementById('user-avatar').src = userPhoto;
+            
+            // Загружаем маршруты
             loadRoutes();
+
             try {
                 const response = await fetch(`${API_BASE}/api/dashboard/${userId}`, { method: 'GET', headers: { 'ngrok-skip-browser-warning': 'true' } });
                 const data = await response.json();
+
                 if (data.app_config) APP_CONFIG = data.app_config;
                 if (data.user_info) {
-                    userData = { ...userData, ...data.user_info, packages: data.packages || [] };
-                    userData.name = tg.initDataUnsafe?.user?.first_name || "Клиент";
+                    userData = {
+                        ...userData,
+                        ...data.user_info,
+                        packages: data.packages || [],
+                        name: tg.initDataUnsafe?.user?.first_name || "Клиент"
+                    };
                 }
                 render();
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("Ошибка загрузки:", e); }
         }
 
         async function loadRoutes() {
@@ -414,74 +435,91 @@
         }
 
         function render() {
-            // Profile
+            // Profile Info
             document.getElementById('user-name').innerText = userData.name;
             document.getElementById('user-id').innerText = `ID: ${userId}`;
             document.getElementById('marking-text').innerText = userData.marking;
             document.getElementById('stat-weight').innerText = userData.bonus;
             document.getElementById('stat-orders').innerText = userData.packages.length;
+            document.getElementById('profile-pvz').innerText = userData.pvz;
+
+            // Адреса (Исправлено)
             renderAddressBlock();
 
-            // Calc
+            // Calc State
             const isOpt = userData.category === 'more_100';
             document.getElementById('cat-less').classList.toggle('active', !isOpt);
             document.getElementById('cat-more').classList.toggle('active', isOpt);
+            
             document.getElementById('calc-route-box').style.display = isOpt ? 'block' : 'none';
             document.getElementById('retail-info').style.display = isOpt ? 'none' : 'block';
             document.querySelectorAll('.opt-only').forEach(el => el.style.display = isOpt ? 'block' : 'none');
 
-            // Orders (In China Tab)
+            // Packages
             const cont = document.getElementById('orders-container');
             cont.innerHTML = '';
             if(!userData.packages.length) {
-                cont.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">Нет активных посылок</div>';
+                cont.innerHTML = '<div style="text-align:center;color:#888;">Нет активных посылок</div>';
             } else {
                 userData.packages.forEach(p => {
-                    let stClass = 'color: #888';
-                    if(p.status_text.includes('Прибыл') || p.status_text.includes('Готов')) stClass = 'color: var(--primary)';
+                    let stColor = '#8E8E93';
+                    if(p.status_text.includes('Прибыл') || p.status_text.includes('Готов')) stColor = '#1ae2c7';
                     
                     cont.innerHTML += `
-                        <div class="glass-card" style="padding: 12px; margin-bottom: 8px;">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                                <div style="font-weight:700;">${p.description || 'Посылка'}</div>
-                                <div style="font-size:10px; ${stClass}">${p.status_text}</div>
+                        <div class="card" style="padding: 15px; margin-bottom: 10px;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                                <div style="font-weight:600;">${p.description || 'Посылка'}</div>
+                                <div style="font-size:12px; font-weight:700; color:${stColor}">${p.status_text}</div>
                             </div>
-                            <div style="font-family:monospace; font-size:12px; color:var(--text-gray);">${p.track_number}</div>
+                            <div style="font-family:monospace; font-size:13px; color:var(--text-secondary);">${p.track_number}</div>
                         </div>`;
                 });
             }
         }
 
-        // Logic Helpers
+        // --- LOGIC: ADDRESSES ---
         function toggleAddressType() {
             showWholesaleAddr = !showWholesaleAddr;
-            document.getElementById('addr-switch-text').innerText = showWholesaleAddr ? "РОЗНИЦУ" : "ОПТ";
+            document.getElementById('addr-switch-label').innerText = showWholesaleAddr ? "Вернуть РОЗНИЦУ" : "Включить ОПТ";
             renderAddressBlock();
         }
+
         function renderAddressBlock() {
             const retailDiv = document.getElementById('retail-block');
             const wholesaleDiv = document.getElementById('wholesale-block');
+            
             if(showWholesaleAddr) {
-                retailDiv.style.display = 'none'; wholesaleDiv.style.display = 'block'; renderWholesaleAddress();
+                retailDiv.style.display = 'none';
+                wholesaleDiv.style.display = 'block';
+                renderWholesaleAddress();
             } else {
-                retailDiv.style.display = 'block'; wholesaleDiv.style.display = 'none';
-                document.getElementById('yiwu-retail-text').innerText = APP_CONFIG.warehouses.retail?.address || "...";
+                retailDiv.style.display = 'block';
+                wholesaleDiv.style.display = 'none';
+                
+                // Проверка на наличие данных перед отображением
+                const addr = APP_CONFIG.warehouses?.retail?.address;
+                document.getElementById('yiwu-retail-text').innerText = addr ? addr : "Загрузка...";
             }
         }
+
         function renderWholesaleAddress() {
             const city = document.getElementById('origin-city-select').value;
-            const wh = APP_CONFIG.warehouses.wholesale?.[city];
+            const wh = APP_CONFIG.warehouses?.wholesale?.[city];
             document.getElementById('wholesale-addr-text').innerText = wh ? wh.address : "Нет данных";
         }
+
+        // --- LOGIC: CALC ---
         async function calculateServer() {
             const btn = document.querySelector('button[onclick="calculateServer()"]');
             const resBox = document.getElementById('calc-result-box');
             btn.innerText = "..."; btn.disabled = true;
+
             const payload = {
                 user_id: userId, category: userData.category,
                 weight_per_item: parseFloat(document.getElementById('c-weight').value) || 0,
                 quantity: parseInt(document.getElementById('c-qty').value) || 1
             };
+
             if (userData.category === 'more_100') {
                 const routeFull = document.getElementById('calc-route').value;
                 const parts = routeFull.split(" - ");
@@ -491,22 +529,32 @@
                 payload.width = parseFloat(document.getElementById('c-w').value) || 0;
                 payload.height = parseFloat(document.getElementById('c-h').value) || 0;
             }
+
             try {
                 const response = await fetch(`${API_BASE}/api/calculate`, { method: 'POST', headers: {'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'}, body: JSON.stringify(payload) });
                 const result = await response.json();
                 if(result.status === 'ok') {
                     document.getElementById('res-price').innerText = result.price.toFixed(2);
-                    // document.getElementById('res-currency').innerText = result.currency;
                     resBox.style.display = 'block';
                 } else { tg.showAlert(result.message); }
             } catch (e) { tg.showAlert("Ошибка сети"); } 
             finally { btn.innerText = "Рассчитать"; btn.disabled = false; }
         }
+
         async function setCat(cat) {
             tg.HapticFeedback.selectionChanged();
             userData.category = cat; render();
             fetch(`${API_BASE}/api/update_settings`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ user_id: userId, category: cat }) });
         }
+
+        function nav(screenId, el) {
+            document.querySelectorAll('.dock-item').forEach(i => i.classList.remove('active'));
+            if(el) el.classList.add('active');
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-' + screenId).classList.add('active');
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
         function copyMarking() { navigator.clipboard.writeText(document.getElementById('marking-text').innerText).then(() => tg.HapticFeedback.notificationOccurred('success')); }
         function copyRetailAddr() { navigator.clipboard.writeText(document.getElementById('yiwu-retail-text').innerText).then(() => tg.HapticFeedback.notificationOccurred('success')); }
         function copyWholesaleAddr() { navigator.clipboard.writeText(document.getElementById('wholesale-addr-text').innerText).then(() => tg.HapticFeedback.notificationOccurred('success')); }
