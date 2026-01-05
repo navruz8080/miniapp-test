@@ -3,109 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Drop App</title>
+    <title>Drop SuperApp</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --bg-body: #F7F7F9;
-            --bg-card: #FFFFFF;
-            --text-main: #111111;
-            --text-sec: #888888;
-            --accent: #1ae2c7;
-            --accent-dark: #0fa38f;
-            --border: rgba(0,0,0,0.06);
-            --shadow: 0 4px 20px rgba(0,0,0,0.04);
-            --radius: 20px;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-body); color: var(--text-main);
-            margin: 0; padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .container { padding: 0 16px; max-width: 480px; margin: 0 auto; padding-bottom: 40px; }
-
-        /* HEADER */
+        :root { --bg-body: #F7F7F9; --bg-card: #FFFFFF; --text-main: #111111; --text-sec: #888888; --accent: #1ae2c7; --accent-dark: #0fa38f; --radius: 20px; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        .container { padding: 0 16px; max-width: 480px; margin: 0 auto; padding-bottom: 90px; }
+        
+        /* HEADERS & NAV */
         .home-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; }
         .user-info { display: flex; align-items: center; gap: 12px; }
-        .u-ava { width: 44px; height: 44px; border-radius: 50%; background: #eee; object-fit: cover; border: 2px solid #fff; box-shadow: var(--shadow); }
-        .u-text h3 { margin: 0; font-size: 16px; font-weight: 700; }
-        .u-text p { margin: 0; font-size: 12px; color: var(--text-sec); }
-
-        /* BANNER */
-        .banner {
-            background: linear-gradient(135deg, #111 0%, #333 100%);
-            border-radius: var(--radius); padding: 20px; color: white;
-            margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            position: relative; overflow: hidden;
-        }
-        .b-val { font-size: 32px; font-weight: 800; margin: 5px 0; }
+        .u-ava { width: 44px; height: 44px; border-radius: 50%; background: #eee; border: 2px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.05); object-fit: cover; }
+        .screen { display: none; min-height: 100vh; background: var(--bg-body); position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding-bottom: 50px; }
+        .screen.active { display: block; animation: slideIn 0.2s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .sub-header { display: flex; align-items: center; gap: 15px; padding: 20px 16px; background: var(--bg-card); position: sticky; top: 0; z-index: 90; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .back-btn { font-size: 20px; padding: 5px; cursor: pointer; }
+        
+        /* BANNER & GAMIFICATION */
+        .banner { background: linear-gradient(135deg, #111 0%, #333 100%); border-radius: var(--radius); padding: 20px; color: white; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative; overflow: hidden; }
+        .xp-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; margin-top: 10px; overflow: hidden; }
+        .xp-fill { height: 100%; background: var(--accent); width: 0%; transition: 1s; }
+        .status-badge { background: var(--accent); color: #000; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; margin-left: 8px; text-transform: uppercase; }
 
         /* GRID */
         .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 24px; }
-        .app-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
+        .app-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; }
         .app-item:active { transform: scale(0.95); opacity: 0.8; }
-        .app-icon-box {
-            width: 56px; height: 56px; background: var(--bg-card); border-radius: 18px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 24px; box-shadow: var(--shadow); color: var(--accent-dark);
-        }
+        .app-icon-box { width: 56px; height: 56px; background: var(--bg-card); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); color: var(--accent-dark); }
         .app-label { font-size: 11px; font-weight: 600; text-align: center; }
 
-        /* SCREENS & NAV */
-        .screen { display: none; min-height: 100vh; background: var(--bg-body); position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding-bottom: 50px; }
-        .screen.active { display: block; animation: slideIn 0.2s ease-out; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        .sub-header {
-            display: flex; align-items: center; gap: 15px; padding: 20px 16px;
-            background: var(--bg-card); position: sticky; top: 0; z-index: 90;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-        }
-        .back-btn { font-size: 20px; padding: 5px; cursor: pointer; }
-        .page-title { font-size: 18px; font-weight: 700; }
-
         /* UI */
-        .card { background: var(--bg-card); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+        .card { background: var(--bg-card); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid var(--border); }
         .btn-main { background: var(--text-main); color: #fff; width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; }
         .btn-accent { background: var(--accent); color: #000; }
+        input, select { width: 100%; padding: 14px; background: #F4F6F8; border: none; border-radius: 12px; margin-bottom: 10px; box-sizing: border-box; font-family: 'Inter'; }
         
-        input, select { width: 100%; padding: 14px; background: #F4F6F8; border: none; border-radius: 12px; margin-bottom: 10px; font-family: 'Inter', sans-serif; box-sizing: border-box; }
-        label { font-size: 12px; font-weight: 600; color: var(--text-sec); margin-bottom: 4px; display: block; }
-
-        /* TOGGLE */
-        .switch-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 34px; transition: .3s; }
-        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: .3s; }
-        input:checked + .slider { background-color: var(--accent); }
-        input:checked + .slider:before { transform: translateX(20px); }
-
-        /* ADDRESS BOX */
-        .address-box {
-            background: #F4F6F8; border-radius: 14px; padding: 14px; margin-top: 5px;
-            font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.5; color: #333;
-            cursor: pointer; position: relative; border: 1px solid transparent;
-        }
-        .address-box:active { background: #eefbf9; border-color: var(--accent); }
-        .copy-hint { position: absolute; top: 10px; right: 10px; color: var(--accent-dark); font-size: 14px; }
+        /* MARKET GRID */
+        .market-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .prod-card { background: #fff; border-radius: 16px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .prod-img { width: 100%; height: 100px; background: #eee; border-radius: 12px; margin-bottom: 8px; object-fit: cover; }
+        .prod-price { color: var(--accent-dark); font-weight: 800; font-size: 14px; }
+        .joint-badge { background: #FFB02E; color: #000; font-size: 9px; padding: 3px 6px; border-radius: 6px; font-weight: 700; display: inline-block; margin-bottom: 4px; }
 
         /* TABS */
         .tabs { display: flex; background: #e0e0e0; padding: 4px; border-radius: 14px; margin-bottom: 15px; }
         .tab-btn { flex: 1; padding: 10px; text-align: center; border-radius: 10px; font-size: 13px; font-weight: 600; color: #666; cursor: pointer; }
         .tab-btn.active { background: #fff; color: #000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-        /* MODALS */
+        /* MODALS & HELPERS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal-overlay.active { display: flex; }
         .modal-box { background: white; width: 85%; max-width: 320px; padding: 24px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
         .empty-state { text-align: center; padding: 40px 20px; color: var(--text-sec); }
+        .address-box { background: #F4F6F8; border-radius: 14px; padding: 14px; margin-top: 5px; font-family: 'JetBrains Mono'; font-size: 13px; color: #333; cursor: pointer; position: relative; }
+        .copy-hint { position: absolute; top: 10px; right: 10px; color: var(--accent-dark); font-size: 14px; }
     </style>
 </head>
 <body>
@@ -115,21 +70,31 @@
             <div class="user-info">
                 <img id="u-ava" class="u-ava" src="">
                 <div class="u-text">
-                    <h3 id="u-name">Загрузка...</h3>
+                    <div style="display:flex; align-items:center;">
+                        <h3 id="u-name">Загрузка...</h3>
+                        <span id="u-status" class="status-badge">...</span>
+                    </div>
                     <p id="u-id">ID: ...</p>
                 </div>
             </div>
         </div>
 
         <div class="banner">
-            <div style="font-size: 12px; opacity: 0.8;">Бонусный баланс</div>
-            <div class="b-val"><span id="u-bonus">0.0</span> <span style="font-size: 16px;">кг</span></div>
-            <div style="background:rgba(255,255,255,0.2); display:inline-block; padding:4px 8px; border-radius:6px; font-size:11px;">
-                PVZ: <span id="u-pvz">Не выбран</span>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-size: 12px; opacity: 0.8;">Бонусный баланс</div>
+                <div style="font-size: 24px; font-weight:800;"><span id="u-bonus">0</span> <span style="font-size:14px;">TJS</span></div>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <div style="display:flex; justify-content:space-between; font-size:10px; margin-bottom:4px; opacity:0.8;">
+                    <span>XP (Опыт)</span>
+                    <span id="xp-val">0 / 100</span>
+                </div>
+                <div class="xp-bar"><div id="xp-fill" class="xp-fill"></div></div>
             </div>
         </div>
 
-        <div style="font-weight: 700; margin-bottom: 15px;">Сервисы</div>
+        <div style="font-weight: 700; margin-bottom: 15px;">Меню</div>
         <div class="app-grid">
             <div class="app-item" onclick="nav('china')">
                 <div class="app-icon-box" style="color: #ff4b55;"><i class="fa-brands fa-dhl"></i></div>
@@ -138,6 +103,10 @@
             <div class="app-item" onclick="nav('trucks')">
                 <div class="app-icon-box" style="color: #7B61FF;"><i class="fa-solid fa-truck-fast"></i></div>
                 <div class="app-label">Биржа</div>
+            </div>
+            <div class="app-item" onclick="nav('market')">
+                <div class="app-icon-box" style="color: #FFB02E;"><i class="fa-solid fa-bag-shopping"></i></div>
+                <div class="app-label">Маркет</div>
             </div>
             <div class="app-item" onclick="nav('calc')">
                 <div class="app-icon-box" style="color: var(--accent-dark);"><i class="fa-solid fa-calculator"></i></div>
@@ -149,193 +118,134 @@
             </div>
         </div>
 
-        <div style="font-weight: 700; margin-bottom: 10px;">Последние посылки</div>
-        <div id="home-pkg-list">
-            <div class="empty-state">Загрузка...</div>
-        </div>
+        <div style="font-weight: 700; margin-bottom: 10px;">Активность</div>
+        <div id="home-pkg-list"><div class="empty-state">Загрузка...</div></div>
     </div>
 
-    <div id="screen-china" class="screen">
-        <div class="sub-header">
-            <div class="back-btn" onclick="back()"><i class="fa-solid fa-arrow-left"></i></div>
-            <div class="page-title">Мой Китай</div>
-        </div>
-        <div class="container" style="padding-top: 10px;">
-            <div class="card">
-                <div class="switch-row">
-                    <b>Режим ОПТ (>100 кг)</b>
-                    <label class="switch">
-                        <input type="checkbox" id="mode-toggle" onchange="toggleMode()">
-                        <span class="slider"></span>
-                    </label>
-                </div>
+    <div id="screen-market" class="screen">
+        <div class="sub-header"><div class="back-btn" onclick="back()"><i class="fa-solid fa-arrow-left"></i></div><div class="page-title">Маркет</div></div>
+        <div class="container" style="padding-top:10px;">
+            <div class="tabs">
+                <div id="tab-buy" class="tab-btn active" onclick="switchMarket('item')">Купить</div>
+                <div id="tab-joint" class="tab-btn" onclick="switchMarket('joint')">Вместе (Складчина)</div>
             </div>
+            
+            <div id="market-list" class="market-grid">
+                </div>
+            
+            <div style="text-align:center; padding: 20px; color:#888;" id="market-loader">Загрузка...</div>
 
-            <div class="card">
-                <div style="font-weight: 700; margin-bottom: 10px;">
-                    <span id="addr-title">Адрес Склада</span>
-                </div>
-                <div id="city-selector" style="display:none; margin-bottom:10px;">
-                    <select id="origin-city-select" onchange="renderAddress()">
-                        <option value="yiwu">Иу (Yiwu)</option>
-                        <option value="urumqi">Урумчи (Urumqi)</option>
-                    </select>
-                </div>
-                <div class="address-box" onclick="copyText('addr-text')">
-                    <i class="fa-regular fa-copy copy-hint"></i>
-                    <div id="addr-text">Загрузка...</div>
-                </div>
+            <div style="position:fixed; bottom:20px; left:16px; right:16px;">
+                <button class="btn-main btn-accent" onclick="openModal('prod-modal')">➕ Продать товар</button>
             </div>
-
-            <div id="code-block" class="card">
-                <div style="font-weight: 700; margin-bottom: 5px;">Ваш Код (Маркировка)</div>
-                <div style="font-size: 11px; color: #888; margin-bottom: 5px;">Укажите при заказе!</div>
-                <div class="address-box" onclick="copyText('user-code')">
-                    <i class="fa-regular fa-copy copy-hint"></i>
-                    <div id="user-code" style="font-weight: 700; color: var(--accent-dark);">...</div>
-                </div>
-            </div>
-
-            <button class="btn-main btn-accent" onclick="openModal('add-modal')">➕ Добавить трек</button>
-            <div id="full-pkg-list" style="margin-top: 20px;"></div>
         </div>
     </div>
 
     <div id="screen-trucks" class="screen">
-        <div class="sub-header">
-            <div class="back-btn" onclick="back()"><i class="fa-solid fa-arrow-left"></i></div>
-            <div class="page-title">Биржа грузов</div>
-        </div>
-        <div class="container" style="padding-top: 10px;">
+        <div class="sub-header"><div class="back-btn" onclick="back()"><i class="fa-solid fa-arrow-left"></i></div><div class="page-title">Биржа</div></div>
+        <div class="container" style="padding-top:10px;">
             <div class="tabs">
                 <div id="tab-trip" class="tab-btn active" onclick="switchTab('trips')">Ищу машину</div>
                 <div id="tab-cargo" class="tab-btn" onclick="switchTab('cargo')">Ищу груз</div>
             </div>
-            <div id="exchange-list" style="padding-bottom: 80px;">
-                <div class="empty-state">Загрузка списка...</div>
-            </div>
-            <div style="position: fixed; bottom: 20px; left: 16px; right: 16px;">
+            <div id="exchange-list" style="padding-bottom:80px;"><div class="empty-state">Загрузка...</div></div>
+            <div style="position:fixed; bottom:20px; left:16px; right:16px;">
                 <button id="btn-action" class="btn-main btn-accent" onclick="handleAction()">Действие</button>
             </div>
         </div>
     </div>
 
-    <div id="screen-calc" class="screen">
-        <div class="sub-header">
-            <div class="back-btn" onclick="back()"><i class="fa-solid fa-arrow-left"></i></div>
-            <div class="page-title">Калькулятор</div>
-        </div>
-        <div class="container" style="padding-top: 10px;">
-            
+    <div id="screen-china" class="screen">
+        <div class="sub-header"><div class="back-btn" onclick="back()"><i class="fa-solid fa-arrow-left"></i></div><div class="page-title">Мой Китай</div></div>
+        <div class="container" style="padding-top:10px;">
+            <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                <b>Режим ОПТ (>100 кг)</b>
+                <input type="checkbox" id="mode-toggle" onchange="toggleMode()" style="width:20px; height:20px;">
+            </div>
             <div class="card">
-                <div class="switch-row" style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
-                    <div>
-                        <div style="font-weight: 700;">Режим расчета</div>
-                        <div style="font-size: 11px; color: var(--text-sec);" id="calc-mode-status">Розница</div>
-                    </div>
-                    <label class="switch">
-                        <input type="checkbox" id="calc-mode-toggle" onchange="toggleMode()">
-                        <span class="slider"></span>
-                    </label>
+                <b>Адрес Склада</b>
+                <div id="city-selector" style="display:none; margin-top:10px;">
+                    <select id="origin-city-select" onchange="renderAddress()"><option value="yiwu">Иу</option><option value="urumqi">Урумчи</option></select>
                 </div>
+                <div class="address-box" onclick="copyText('addr-text')"><i class="fa-regular fa-copy copy-hint"></i><div id="addr-text">...</div></div>
+            </div>
+            <div id="code-block" class="card">
+                <b>Ваш Код</b>
+                <div class="address-box" onclick="copyText('user-code')"><i class="fa-regular fa-copy copy-hint"></i><div id="user-code" style="color:var(--accent-dark); font-weight:700;">...</div></div>
+            </div>
+            <button class="btn-main btn-accent" onclick="openModal('add-modal')">Добавить трек</button>
+            <div id="full-pkg-list" style="margin-top:20px;"></div>
+        </div>
+    </div>
 
-                <div id="calc-opt-box" style="display:none; padding-bottom:15px; margin-bottom:15px; border-bottom:1px dashed #ddd;">
-                    <div style="font-size:12px; color:#888; margin-bottom:5px;">Маршрут</div>
-                    <select id="calc-route"><option>Выберите...</option></select>
-                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
-                        <input id="c-l" type="number" placeholder="Дл">
-                        <input id="c-w" type="number" placeholder="Шир">
-                        <input id="c-h" type="number" placeholder="Выс">
-                    </div>
+    <div id="screen-calc" class="screen">
+        <div class="sub-header"><div class="back-btn" onclick="back()"><i class="fa-solid fa-arrow-left"></i></div><div class="page-title">Калькулятор</div></div>
+        <div class="container" style="padding-top:10px;">
+            <div class="card">
+                <div id="calc-opt-box" style="display:none;">
+                    <select id="calc-route"><option>Маршрут...</option></select>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;"><input id="c-l" placeholder="Дл"><input id="c-w" placeholder="Шир"><input id="c-h" placeholder="Выс"></div>
                 </div>
-
-                <div style="font-size:12px; color:#888; margin-bottom:5px;">Параметры груза</div>
-                <input id="c-wg" type="number" placeholder="Вес (кг)" style="font-size: 16px; font-weight: 600;">
-                <input id="c-qt" type="number" placeholder="Количество мест" value="1">
-                
-                <div id="c-res" style="text-align:center; font-size: 28px; font-weight: 800; margin: 20px 0; color: var(--accent-dark);">
-                    0.00 <span style="font-size:16px; color:#333;">TJS</span>
-                </div>
-                
+                <input id="c-wg" placeholder="Вес (кг)"><input id="c-qt" placeholder="Кол-во" value="1">
+                <div id="c-res" style="text-align:center;font-size:24px;font-weight:800;margin:20px 0;">0.00</div>
                 <button class="btn-main" onclick="doCalc()">Рассчитать</button>
             </div>
         </div>
     </div>
 
     <div id="screen-settings" class="screen">
-        <div class="sub-header">
-            <div class="back-btn" onclick="back()"><i class="fa-solid fa-arrow-left"></i></div>
-            <div class="page-title">Настройки</div>
-        </div>
-        <div class="container" style="padding-top: 10px;">
+        <div class="sub-header"><div class="back-btn" onclick="back()"><i class="fa-solid fa-arrow-left"></i></div><div class="page-title">Настройки</div></div>
+        <div class="container" style="padding-top:10px;">
             <div class="card">
-                <label>Ваше Имя</label>
-                <input id="set-name" type="text" placeholder="Введите имя">
-                
-                <label>Номер телефона</label>
-                <input id="set-phone" type="text" placeholder="+992...">
-                
-                <label>Пункт выдачи (PVZ)</label>
-                <select id="set-pvz">
-                    <option value="Не выбран">Не выбран</option>
-                    <option value="Душанбе - Саховат">Душанбе - Саховат</option>
-                    <option value="Душанбе - Корвон">Душанбе - Корвон</option>
-                    <option value="Худжанд - Панчшанбе">Худжанд - Панчшанбе</option>
-                    <option value="Спитамен">Спитамен</option>
-                    <option value="Истаравшан">Истаравшан</option>
-                    <option value="Канибадам">Канибадам</option>
-                </select>
-
-                <label>Язык приложения</label>
-                <select id="set-lang">
-                    <option value="ru">Русский</option>
-                    <option value="tj">Тоҷикӣ</option>
-                </select>
-
-                <button class="btn-main btn-accent" onclick="saveSettings()">Сохранить настройки</button>
+                <input id="set-name" placeholder="Имя"><input id="set-phone" placeholder="Телефон">
+                <select id="set-pvz"><option>Не выбран</option><option>Душанбе</option><option>Худжанд</option></select>
+                <button class="btn-main btn-accent" onclick="saveSettings()">Сохранить</button>
             </div>
         </div>
     </div>
 
-    <div id="screen-market" class="screen">
-        <div class="sub-header"><div class="back-btn" onclick="back()"><i class="fa-solid fa-arrow-left"></i></div><div class="page-title">Маркет</div></div>
-        <div class="container empty-state">Раздел в разработке 🛠</div>
-    </div>
-
-    <div id="add-modal" class="modal-overlay"><div class="modal-box"><h3>Добавить трек</h3><input id="n-track" placeholder="Трек-номер"><input id="n-desc" placeholder="Описание"><button class="btn-main" onclick="submitTrack()">Сохранить</button><div style="text-align:center;margin-top:15px;color:#888" onclick="closeModal('add-modal')">Закрыть</div></div></div>
-    <div id="driver-modal" class="modal-overlay"><div class="modal-box"><h3>Стать водителем</h3><input id="d-car" placeholder="Авто"><input id="d-num" placeholder="Гос. номер"><input id="d-w" type="number" placeholder="Грузоподъемность"><button class="btn-main" onclick="regDriver()">ОК</button><div style="text-align:center;margin-top:15px;color:#888" onclick="closeModal('driver-modal')">Отмена</div></div></div>
-    <div id="trip-modal" class="modal-overlay"><div class="modal-box"><h3>Создать рейс</h3><input id="t-from" placeholder="Откуда"><input id="t-to" placeholder="Куда"><input id="t-price" type="number" placeholder="Цена за кг"><button class="btn-main" onclick="createTrip()">Опубликовать</button><div style="text-align:center;margin-top:15px;color:#888" onclick="closeModal('trip-modal')">Отмена</div></div></div>
-    <div id="cargo-modal" class="modal-overlay"><div class="modal-box"><h3>Добавить груз</h3><input id="cg-from" placeholder="Откуда"><input id="cg-to" placeholder="Куда"><input id="cg-desc" placeholder="Что везем?"><input id="cg-w" placeholder="Вес"><input id="cg-p" placeholder="Предлагаю цену"><button class="btn-main" onclick="createCargo()">Создать</button><div style="text-align:center;margin-top:15px;color:#888" onclick="closeModal('cargo-modal')">Отмена</div></div></div>
+    <div id="add-modal" class="modal-overlay"><div class="modal-box"><h3>Трек</h3><input id="n-track" placeholder="Номер"><input id="n-desc" placeholder="Описание"><button class="btn-main" onclick="submitTrack()">OK</button><div style="text-align:center;margin-top:10px;color:#888" onclick="closeModal('add-modal')">Закрыть</div></div></div>
+    <div id="driver-modal" class="modal-overlay"><div class="modal-box"><h3>Водитель</h3><input id="d-car" placeholder="Авто"><input id="d-num" placeholder="Номер"><input id="d-w" placeholder="Кг"><button class="btn-main" onclick="regDriver()">OK</button><div style="text-align:center;margin-top:10px;color:#888" onclick="closeModal('driver-modal')">Закрыть</div></div></div>
+    <div id="trip-modal" class="modal-overlay"><div class="modal-box"><h3>Рейс</h3><input id="t-from" placeholder="Откуда"><input id="t-to" placeholder="Куда"><input id="t-price" placeholder="Цена"><button class="btn-main" onclick="createTrip()">OK</button><div style="text-align:center;margin-top:10px;color:#888" onclick="closeModal('trip-modal')">Закрыть</div></div></div>
+    <div id="cargo-modal" class="modal-overlay"><div class="modal-box"><h3>Груз</h3><input id="cg-from" placeholder="Откуда"><input id="cg-to" placeholder="Куда"><input id="cg-desc" placeholder="Что"><input id="cg-w" placeholder="Кг"><input id="cg-p" placeholder="Цена"><button class="btn-main" onclick="createCargo()">OK</button><div style="text-align:center;margin-top:10px;color:#888" onclick="closeModal('cargo-modal')">Закрыть</div></div></div>
+    <div id="prod-modal" class="modal-overlay"><div class="modal-box"><h3>Продать</h3><input id="p-title" placeholder="Название"><input id="p-desc" placeholder="Описание"><input id="p-price" placeholder="Цена (TJS)"><button class="btn-main" onclick="createProduct()">OK</button><div style="text-align:center;margin-top:10px;color:#888" onclick="closeModal('prod-modal')">Закрыть</div></div></div>
 
     <script>
         const tg = window.Telegram.WebApp; tg.expand();
-        // ⚠️ NGROK URL ⚠️
-        const API = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
-        const uid = tg.initDataUnsafe?.user?.id || 317295540; 
+        const API = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; // ⚠️ YOUR NGROK
+        const uid = tg.initDataUnsafe?.user?.id || 317295540;
         
-        let config = {}, user = {}, isOpt = false, currentTab = 'trips', isDriver = false;
+        let config={}, user={}, isOpt=false, tabTruck='trips', tabMarket='item', isDriver=false;
 
         async function init() {
             try {
                 document.getElementById('u-ava').src = tg.initDataUnsafe?.user?.photo_url || "";
                 let res = await fetch(`${API}/api/dashboard/${uid}`, {headers:{'ngrok-skip-browser-warning':'true'}});
                 let data = await res.json();
-                config = data.app_config; user = data.user_info;
+                config=data.app_config; user=data.user_info;
                 
-                // Set UI
-                updateUserUI();
+                // UI
+                document.getElementById('u-name').innerText = user.name || "Client";
+                document.getElementById('u-id').innerText = `ID: ${uid}`;
+                document.getElementById('u-bonus').innerText = user.bonus_balance;
+                document.getElementById('u-status').innerText = user.level;
                 
-                // Settings Fields
-                document.getElementById('set-name').value = user.name || "";
-                document.getElementById('set-phone').value = user.marking_code.split('/').pop().trim() || ""; 
-                document.getElementById('set-pvz').value = (user.pvz && user.pvz !== 'null') ? user.pvz : "Не выбран";
-                document.getElementById('set-lang').value = user.language || 'ru';
+                // XP Bar
+                let xpPct = (user.xp / user.next_level_xp) * 100;
+                document.getElementById('xp-fill').style.width = xpPct + "%";
+                document.getElementById('xp-val').innerText = `${user.xp} / ${user.next_level_xp} XP`;
 
+                // Settings
+                document.getElementById('set-name').value = user.name;
+                document.getElementById('set-phone').value = user.marking_code.split('/').pop().trim();
+                
                 renderPackages(data.packages);
-
+                
                 isOpt = (user.category === 'more_100');
+                document.getElementById('mode-toggle').checked = isOpt;
                 updateModeUI();
 
+                // Routes
                 let rRes = await fetch(`${API}/api/get_routes`); let rData = await rRes.json();
                 let sel = document.getElementById('calc-route');
                 sel.innerHTML = '<option>Маршрут...</option>';
@@ -345,191 +255,145 @@
             } catch(e) { console.error(e); }
         }
 
-        function updateUserUI() {
-            document.getElementById('u-name').innerText = user.name || "Client";
-            document.getElementById('u-id').innerText = `ID: ${uid}`;
-            document.getElementById('u-bonus').innerText = user.bonus_balance;
-            document.getElementById('u-pvz').innerText = (user.pvz && user.pvz !== 'null') ? user.pvz : "Не выбран";
-            document.getElementById('user-code').innerText = user.marking_code;
-        }
-
         // --- NAV ---
-        function nav(screen) {
-            document.getElementById('screen-home').style.display = 'none';
-            let scr = document.getElementById('screen-'+screen);
-            scr.style.display = ''; scr.classList.add('active');
-            if(screen === 'trucks') loadExchange();
+        function nav(s) { 
+            document.getElementById('screen-home').style.display='none'; 
+            let scr=document.getElementById('screen-'+s); scr.style.display=''; scr.classList.add('active'); 
+            if(s==='trucks') loadExchange();
+            if(s==='market') loadMarket();
         }
-        function back() {
-            document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); s.style.display=''; });
-            document.getElementById('screen-home').style.display = 'block';
+        function back() { 
+            document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active'); s.style.display='';}); 
+            document.getElementById('screen-home').style.display='block'; 
         }
 
-        // --- LOGIC ---
+        // --- MARKET ---
+        function switchMarket(type) {
+            tabMarket = type;
+            document.getElementById('tab-buy').classList.toggle('active', type==='item');
+            document.getElementById('tab-joint').classList.toggle('active', type==='joint');
+            if(type==='item') { document.getElementById('tab-buy').style.background='#fff'; document.getElementById('tab-joint').style.background='transparent'; }
+            else { document.getElementById('tab-joint').style.background='#fff'; document.getElementById('tab-buy').style.background='transparent'; }
+            loadMarket();
+        }
+
+        async function loadMarket() {
+            let cont = document.getElementById('market-list'); 
+            document.getElementById('market-loader').style.display='block'; cont.innerHTML='';
+            try {
+                let res = await fetch(`${API}/api/market/list?type=${tabMarket}`);
+                let data = await res.json();
+                document.getElementById('market-loader').style.display='none';
+                if(!data.items?.length) cont.innerHTML = '<div style="grid-column:span 2;text-align:center;padding:20px;color:#888">Пусто</div>';
+                
+                data.items.forEach(i => {
+                    let badge = i.item_type==='joint' ? `<div class="joint-badge">Складчина: 0/${i.target_quantity}</div>` : '';
+                    cont.innerHTML += `
+                    <div class="prod-card">
+                        <img src="${i.image_url||'https://placehold.co/100'}" class="prod-img">
+                        ${badge}
+                        <div style="font-weight:600;font-size:13px;line-height:1.2;margin-bottom:4px;">${i.title}</div>
+                        <div class="prod-price">${i.price} TJS</div>
+                    </div>`;
+                });
+            } catch(e){}
+        }
+
+        async function createProduct() {
+            let t=gid('p-title').value, d=gid('p-desc').value, p=gid('p-price').value;
+            let res = await fetch(`${API}/api/market/create`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({user_id:uid, title:t, description:d, price:parseFloat(p), item_type:tabMarket, target_qty:10})});
+            if((await res.json()).status==='ok') { closeModal('prod-modal'); loadMarket(); tg.showAlert("Товар добавлен!"); }
+        }
+
+        // --- TRUCKS ---
+        function switchTab(t) {
+            tabTruck=t;
+            let t1=gid('tab-trip'), t2=gid('tab-cargo');
+            t1.classList.toggle('active', t==='trips'); t2.classList.toggle('active', t==='cargo');
+            if(t==='trips') { t1.style.background='#fff'; t2.style.background='transparent'; } 
+            else { t2.style.background='#fff'; t1.style.background='transparent'; }
+            updateActionBtn(); loadExchange();
+        }
+        function updateActionBtn() {
+            let b=gid('btn-action');
+            if(tabTruck==='trips') { b.innerText="📦 Добавить груз"; b.onclick=()=>openModal('cargo-modal'); }
+            else { b.innerText=isDriver?"🚚 Создать рейс":"👨‍✈️ Стать водителем"; b.onclick=isDriver?()=>openModal('trip-modal'):()=>openModal('driver-modal'); }
+        }
+        async function loadExchange() {
+            let cont=gid('exchange-list'); cont.innerHTML='<div class="empty-state">Загрузка...</div>';
+            let res = await fetch(`${API}/api/trucking/list?type=${tabTruck}`);
+            let data = await res.json(); cont.innerHTML='';
+            if(!data.items?.length) cont.innerHTML='<div class="empty-state">Пусто</div>';
+            data.items.forEach(i => {
+                let brd = i.type==='trip'?'#7B61FF':'#FFB02E';
+                cont.innerHTML += `<div class="card" style="border-left:4px solid ${brd};padding:12px;"><div style="font-weight:700;">${i.title}</div><div style="font-size:12px;color:#888;">${i.subtitle}</div><div style="font-weight:700;margin-top:6px;display:flex;justify-content:space-between;"><span style="color:${brd}">${i.details}</span><span>${i.extra}</span></div></div>`;
+            });
+        }
+        function handleAction(){} // Handled by updateActionBtn
+
+        // --- CORE ---
         function toggleMode() {
-            // Sync toggles
-            let val = document.getElementById('mode-toggle').checked || document.getElementById('calc-mode-toggle').checked;
-            // If called from one, update the other manually to match state if they differ
-            // Actually, best to just read the one that triggered it, but simplified:
-            // Let's invert current state to be safe or read specific ID based on event?
-            // Simplest: Check which screen is active.
-            if(document.getElementById('screen-calc').classList.contains('active')) {
-                isOpt = document.getElementById('calc-mode-toggle').checked;
-            } else {
-                isOpt = document.getElementById('mode-toggle').checked;
-            }
-            
+            isOpt = document.getElementById('mode-toggle').checked;
             updateModeUI();
             let cat = isOpt ? 'more_100' : 'less_100';
             fetch(`${API}/api/update_settings`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ user_id: uid, category: cat }) });
         }
-
         function updateModeUI() {
-            // Update BOTH checkboxes
-            document.getElementById('mode-toggle').checked = isOpt;
-            document.getElementById('calc-mode-toggle').checked = isOpt;
-            document.getElementById('calc-mode-status').innerText = isOpt ? "ОПТ" : "Розница";
-
             document.getElementById('city-selector').style.display = isOpt ? 'block' : 'none';
             document.getElementById('code-block').style.display = isOpt ? 'none' : 'block';
             document.getElementById('addr-title').innerText = isOpt ? "Адрес (Опт)" : "Адрес (Иу, Розница)";
             document.getElementById('calc-opt-box').style.display = isOpt ? 'block' : 'none';
             renderAddress();
         }
-
         function renderAddress() {
+            let txt = document.getElementById('addr-text');
             if(isOpt) {
                 let city = document.getElementById('origin-city-select').value;
-                let addr = config.warehouses?.wholesale?.[city]?.address;
-                document.getElementById('addr-text').innerText = addr || "Нет данных";
+                txt.innerText = config.warehouses?.wholesale?.[city]?.address || "Нет данных";
             } else {
-                let addr = config.warehouses?.retail?.address;
-                document.getElementById('addr-text').innerText = addr || "Загрузка...";
+                txt.innerText = config.warehouses?.retail?.address || "Загрузка...";
             }
         }
-
-        async function saveSettings() {
-            let name = document.getElementById('set-name').value;
-            let phone = document.getElementById('set-phone').value;
-            let pvz = document.getElementById('set-pvz').value;
-            let lang = document.getElementById('set-lang').value;
-
-            try {
-                await fetch(`${API}/api/update_settings`, { 
-                    method: 'POST', 
-                    headers: {'Content-Type':'application/json'}, 
-                    body: JSON.stringify({ user_id: uid, full_name: name, phone: phone, pvz: pvz, language: lang }) 
-                });
-                
-                // Update Local Data
-                user.name = name; 
-                user.pvz = pvz;
-                // Marking code depends on phone/name so ideally reload dashboard, but for now partial update
-                updateUserUI();
-                
-                tg.showAlert("Настройки сохранены!");
-                back();
-                
-                // Reload to refresh marking code logic from server
-                init(); 
-            } catch(e) { tg.showAlert("Ошибка сохранения"); }
-        }
-
         function renderPackages(pkgs) {
-            let html = '';
-            if(!pkgs || pkgs.length===0) html = '<div class="empty-state">Нет активных посылок</div>';
-            else pkgs.forEach(p => {
-                let color = p.status_text.includes('Прибыл') ? '#1ae2c7' : '#888';
-                html += `<div class="card" style="padding:12px; margin-bottom:8px;"><div style="font-weight:700;font-size:14px;">${p.description||'Посылка'}</div><div style="font-size:12px; color:#888; margin-top:4px;">${p.track_number}</div><div style="font-size:11px; color:${color}; font-weight:600; margin-top:6px;">${p.status_text}</div></div>`;
-            });
-            document.getElementById('home-pkg-list').innerHTML = html;
-            document.getElementById('full-pkg-list').innerHTML = html;
+            let html='';
+            if(!pkgs?.length) html='<div class="empty-state">Нет посылок</div>';
+            else pkgs.forEach(p => html+=`<div class="card" style="padding:10px;"><div style="font-weight:700">${p.description||'Посылка'}</div><div style="font-size:12px;color:#888">${p.track_number} • ${p.status_text}</div></div>`);
+            document.getElementById('home-pkg-list').innerHTML=html; document.getElementById('full-pkg-list').innerHTML=html;
         }
-
-        // --- EXCHANGE ---
-        function switchTab(tab) {
-            currentTab = tab;
-            let t1 = document.getElementById('tab-trip');
-            let t2 = document.getElementById('tab-cargo');
-            
-            if(tab==='trips') { t1.style.background='#fff'; t2.style.background='transparent'; } 
-            else { t2.style.background='#fff'; t1.style.background='transparent'; }
-            
-            updateActionButton();
-            loadExchange();
-        }
-
-        function updateActionButton() {
-            let btn = document.getElementById('btn-action');
-            if (currentTab === 'trips') {
-                btn.innerText = "📦 Добавить груз";
-                btn.onclick = () => openModal('cargo-modal');
-            } else {
-                if (isDriver) { btn.innerText = "🚚 Создать рейс"; btn.onclick = () => openModal('trip-modal'); }
-                else { btn.innerText = "👨‍✈️ Стать водителем"; btn.onclick = () => openModal('driver-modal'); }
-            }
-        }
-
-        async function loadExchange() {
-            let cont = document.getElementById('exchange-list'); cont.innerHTML = '<div class="empty-state">Загрузка...</div>';
-            try {
-                let res = await fetch(`${API}/api/trucking/list?type=${currentTab}`);
-                let data = await res.json();
-                cont.innerHTML = '';
-                if(!data.items?.length) { cont.innerHTML = '<div class="empty-state">Список пуст</div>'; return; }
-                data.items.forEach(i => {
-                    let border = i.type === 'trip' ? '#7B61FF' : '#FFB02E';
-                    cont.innerHTML += `<div class="card" style="border-left:4px solid ${border}; padding:15px; margin-bottom:10px;"><div style="font-weight:700;font-size:15px;">${i.title}</div><div style="font-size:12px;color:#888;margin-top:4px;">${i.subtitle}</div><div style="display:flex;justify-content:space-between;margin-top:10px;font-weight:700;font-size:13px;"><span style="color:${border}">${i.details}</span><span>${i.extra}</span></div></div>`;
-                });
-            } catch(e) {}
-        }
-
         async function checkDriver() {
             let res = await fetch(`${API}/api/trucking/status/${uid}`);
-            let d = await res.json(); isDriver = d.is_driver;
-            updateActionButton();
+            let d = await res.json(); isDriver = d.is_driver; updateActionBtn();
+        }
+        
+        async function saveSettings() {
+            let n=gid('set-name').value, p=gid('set-phone').value, pvz=gid('set-pvz').value;
+            await fetch(`${API}/api/update_settings`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({user_id:uid, full_name:n, phone:p, pvz:pvz})});
+            tg.showAlert("Сохранено!"); init(); back();
         }
 
-        function handleAction() { /* Handled in updateActionButton */ }
+        // --- SUBMITS ---
+        async function regDriver(){ submitForm('trucking/register', {car_model:gid('d-car').value, car_number:gid('d-num').value, max_weight_kg:parseFloat(gid('d-w').value)}, 'driver-modal', checkDriver); }
+        async function createTrip(){ submitForm('trucking/create_trip', {city_from:gid('t-from').value, city_to:gid('t-to').value, price_per_kg:parseFloat(gid('t-price').value), date:'Скоро'}, 'trip-modal', loadExchange); }
+        async function createCargo(){ submitForm('trucking/create_cargo', {city_from:gid('cg-from').value, city_to:gid('cg-to').value, description:gid('cg-desc').value, weight:parseFloat(gid('cg-w').value), price_offer:parseFloat(gid('cg-p').value)}, 'cargo-modal', loadExchange); }
+        async function submitTrack(){ submitForm('add_track', {track_number:gid('n-track').value, description:gid('n-desc').value}, 'add-modal', init); }
+        
+        async function submitForm(ep, data, modal, cb) {
+            data.user_id = uid;
+            let res = await fetch(`${API}/api/${ep}`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+            if((await res.json()).status==='ok') { closeModal(modal); if(cb) cb(); tg.showAlert("Успешно!"); } else tg.showAlert("Ошибка");
+        }
 
-        // --- ACTIONS ---
-        async function regDriver() {
-            let car=gid('d-car').value, num=gid('d-num').value, w=gid('d-w').value;
-            let res = await fetch(`${API}/api/trucking/register`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({user_id:uid, car_model:car, car_number:num, max_weight_kg:parseFloat(w)})});
-            if((await res.json()).status==='ok') { closeModal('driver-modal'); checkDriver(); tg.showAlert("Готово!"); }
-        }
-        async function createTrip() {
-            let f=gid('t-from').value, t=gid('t-to').value, p=gid('t-price').value;
-            let res = await fetch(`${API}/api/trucking/create_trip`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({user_id:uid, city_from:f, city_to:t, date:"Скоро", price_per_kg:parseFloat(p)})});
-            if((await res.json()).status==='ok') { closeModal('trip-modal'); loadExchange(); tg.showAlert("Опубликовано!"); }
-        }
-        async function createCargo() {
-            let f=gid('cg-from').value, t=gid('cg-to').value, d=gid('cg-desc').value, w=gid('cg-w').value, p=gid('cg-p').value;
-            let res = await fetch(`${API}/api/trucking/create_cargo`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({user_id:uid, city_from:f, city_to:t, description:d, weight:parseFloat(w), price_offer:parseFloat(p)})});
-            if((await res.json()).status==='ok') { closeModal('cargo-modal'); switchTab('cargo'); tg.showAlert("Опубликовано!"); }
-        }
-        async function submitTrack() {
-            let t=gid('n-track').value, d=gid('n-desc').value;
-            let res = await fetch(`${API}/api/add_track`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({user_id:uid, track_number:t, description:d})});
-            if((await res.json()).status==='ok') { closeModal('add-modal'); init(); tg.showAlert("Добавлено!"); }
-        }
         async function doCalc() {
-            let route = gid('calc-route').value;
-            let w = parseFloat(gid('c-wg').value)||0;
-            let q = parseInt(gid('c-qt').value)||1;
-            let payload = {user_id:uid, category: isOpt?'more_100':'less_100', weight_per_item:w, quantity:q};
-            
+            let p = {user_id:uid, category:isOpt?'more_100':'less_100', weight_per_item:parseFloat(gid('c-wg').value), quantity:parseInt(gid('c-qt').value)};
             if(isOpt) {
-                let parts = route.split(' - ');
-                if(parts.length<2) return tg.showAlert("Выберите маршрут!");
-                payload.route_from = parts[0]; payload.route_to = parts[1];
-                payload.length=parseFloat(gid('c-l').value); payload.width=parseFloat(gid('c-w').value); payload.height=parseFloat(gid('c-h').value);
+                p.route_from=gid('calc-route').value.split(' - ')[0]; p.route_to=gid('calc-route').value.split(' - ')[1];
+                p.length=parseFloat(gid('c-l').value); p.width=parseFloat(gid('c-w').value); p.height=parseFloat(gid('c-h').value);
             }
             try {
-                let res = await fetch(`${API}/api/calculate`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+                let res = await fetch(`${API}/api/calculate`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p)});
                 let d = await res.json();
-                gid('c-res').innerText = d.status==='ok' ? `${d.price.toFixed(2)} ${d.currency}` : d.message;
-            } catch(e) { tg.showAlert("Ошибка"); }
+                gid('c-res').innerText = d.status==='ok' ? `${d.price.toFixed(2)} ${d.currency}` : "Ошибка";
+            } catch(e){}
         }
 
         function gid(id){return document.getElementById(id)}
