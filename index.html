@@ -58,9 +58,10 @@
         .app-label { font-size: 11px; font-weight: 600; text-align: center; }
 
         /* SCREENS & NAVIGATION */
+        /* ВАЖНО: display: none по умолчанию, display: block когда active */
         .screen { display: none; min-height: 100vh; background: var(--bg-body); position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding-bottom: 50px; }
-        .screen.active { display: block; animation: slideIn 0.25s ease-out; }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .screen.active { display: block; animation: slideIn 0.2s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         .sub-header {
             display: flex; align-items: center; gap: 15px; padding: 20px 16px;
@@ -284,12 +285,10 @@
             try {
                 document.getElementById('u-ava').src = tg.initDataUnsafe?.user?.photo_url || "";
                 
-                // 1. Load Data
                 let res = await fetch(`${API}/api/dashboard/${uid}`, {headers:{'ngrok-skip-browser-warning':'true'}});
                 let data = await res.json();
                 config = data.app_config; user = data.user_info;
                 
-                // 2. Fill UI
                 document.getElementById('u-name').innerText = user.name || (tg.initDataUnsafe?.user?.first_name) || "Client";
                 document.getElementById('u-id').innerText = `ID: ${uid}`;
                 document.getElementById('u-bonus').innerText = user.bonus_balance;
@@ -298,12 +297,10 @@
 
                 renderPackages(data.packages);
 
-                // 3. Set State
                 isOpt = (user.category === 'more_100');
                 document.getElementById('mode-toggle').checked = isOpt;
                 updateModeUI();
 
-                // 4. Load Routes
                 let rRes = await fetch(`${API}/api/get_routes`); let rData = await rRes.json();
                 let sel = document.getElementById('calc-route');
                 sel.innerHTML = '<option>Маршрут...</option>';
@@ -314,14 +311,23 @@
             } catch(e) { console.error(e); }
         }
 
-        // --- NAV ---
+        // --- ИСПРАВЛЕННАЯ НАВИГАЦИЯ ---
         function nav(screen) {
             document.getElementById('screen-home').style.display = 'none';
-            document.getElementById('screen-'+screen).classList.add('active');
+            // Очищаем inline-стиль перед показом
+            let scr = document.getElementById('screen-'+screen);
+            scr.style.display = ''; 
+            scr.classList.add('active');
+            
             if(screen === 'trucks') loadExchange();
         }
+
         function back() {
-            document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); s.style.display='none'; });
+            document.querySelectorAll('.screen').forEach(s => { 
+                s.classList.remove('active');
+                // Очищаем inline-стиль, чтобы CSS класс работал
+                s.style.display = ''; 
+            });
             document.getElementById('screen-home').style.display = 'block';
         }
 
@@ -334,14 +340,10 @@
         }
 
         function updateModeUI() {
-            // Если Опт: Показываем выбор города, скрываем Код C-87
             document.getElementById('city-selector').style.display = isOpt ? 'block' : 'none';
             document.getElementById('code-block').style.display = isOpt ? 'none' : 'block';
             document.getElementById('addr-title').innerText = isOpt ? "Адрес (Опт)" : "Адрес (Иу, Розница)";
-            
-            // Калькулятор
             document.getElementById('calc-opt-box').style.display = isOpt ? 'block' : 'none';
-            
             renderAddress();
         }
 
@@ -375,13 +377,11 @@
         // --- EXCHANGE ---
         function switchTab(tab) {
             currentTab = tab;
-            // UI Toggle
             let t1 = document.getElementById('tab-trip');
             let t2 = document.getElementById('tab-cargo');
             t1.classList.toggle('active', tab==='trips');
             t2.classList.toggle('active', tab==='cargo');
             
-            // Styles
             if(tab==='trips') { t1.style.background='#fff'; t2.style.background='transparent'; } 
             else { t2.style.background='#fff'; t1.style.background='transparent'; }
             
@@ -434,6 +434,14 @@
             }
         }
 
+        function handleAction() {
+            // Этот метод вызывается кнопкой внизу
+            // Логика уже внутри updateActionButton, но на всякий случай
+            if (currentTab === 'cargo') openModal('cargo-modal');
+            else if (isDriver) openModal('trip-modal');
+            else openModal('driver-modal');
+        }
+
         // --- ACTIONS ---
         async function regDriver() {
             let car=gid('d-car').value, num=gid('d-num').value, w=gid('d-w').value;
@@ -474,7 +482,6 @@
             } catch(e) { tg.showAlert("Ошибка"); }
         }
 
-        // --- UTILS ---
         function gid(id){return document.getElementById(id)}
         function openModal(id){ gid(id).classList.add('active'); tg.HapticFeedback.impactOccurred('medium'); }
         function closeModal(id){ gid(id).classList.remove('active'); }
