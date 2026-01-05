@@ -9,171 +9,87 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* --- ЦВЕТОВЫЕ ПЕРЕМЕННЫЕ (THEMING) --- */
+        /* --- ЦВЕТОВЫЕ ПЕРЕМЕННЫЕ --- */
         :root[data-theme="light"] {
-            --bg-body: #F2F2F7; /* iOS Light Gray */
+            --bg-body: #F2F2F7; 
             --bg-card: #FFFFFF;
             --text-primary: #000000;
             --text-secondary: #8E8E93;
-            --accent: #1ae2c7; /* Tiffany */
-            --accent-dim: rgba(26, 226, 199, 0.1);
+            --accent: #1ae2c7;
+            --accent-dim: rgba(26, 226, 199, 0.15);
             --border: rgba(0,0,0,0.05);
-            --shadow: 0 4px 12px rgba(0,0,0,0.05);
-            --dock-bg: rgba(255, 255, 255, 0.85);
+            --dock-bg: rgba(255, 255, 255, 0.9);
             --input-bg: #F2F2F7;
         }
-
         :root[data-theme="dark"] {
             --bg-body: #000000;
             --bg-card: #1C1C1E;
             --text-primary: #FFFFFF;
             --text-secondary: #98989F;
             --accent: #1ae2c7;
-            --accent-dim: rgba(26, 226, 199, 0.15);
+            --accent-dim: rgba(26, 226, 199, 0.2);
             --border: rgba(255,255,255,0.1);
-            --shadow: 0 4px 12px rgba(0,0,0,0.2);
-            --dock-bg: rgba(28, 28, 30, 0.85);
+            --dock-bg: rgba(28, 28, 30, 0.9);
             --input-bg: #2C2C2E;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-primary);
-            margin: 0; padding: 0 0 120px 0;
-            transition: background-color 0.3s, color 0.3s;
+            background-color: var(--bg-body); color: var(--text-primary);
+            margin: 0; padding: 0 0 100px 0;
             -webkit-tap-highlight-color: transparent;
+            transition: 0.3s;
         }
 
         .container { padding: 0 16px; max-width: 600px; margin: 0 auto; }
 
-        /* --- КАРТОЧКИ --- */
-        .card {
-            background: var(--bg-card);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            transition: 0.3s;
-        }
-
-        /* --- ЗАГОЛОВКИ И ХЕДЕР --- */
-        .app-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 20px 0;
-        }
+        /* HEADER */
+        .app-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
         h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
-        
-        .theme-btn {
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            background: var(--bg-card);
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: var(--shadow);
-            cursor: pointer;
-            color: var(--text-primary);
-            font-size: 18px;
-        }
+        .theme-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; color: var(--text-primary); }
 
-        /* --- ЭЛЕМЕНТЫ УПРАВЛЕНИЯ --- */
-        .btn-main {
-            background: var(--accent);
-            color: #000; /* На тиффани лучше черный текст */
-            width: 100%; padding: 16px; border-radius: 16px; border: none;
-            font-weight: 600; font-size: 16px; cursor: pointer;
-            margin-top: 10px;
-            transition: transform 0.1s;
-        }
+        /* CARDS */
+        .card { background: var(--bg-card); border-radius: 20px; padding: 20px; margin-bottom: 16px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+
+        /* INPUTS & BUTTONS */
+        .btn-main { background: var(--accent); color: #000; width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 600; font-size: 16px; cursor: pointer; margin-top: 10px; }
         .btn-main:active { transform: scale(0.98); }
-
-        .switcher {
-            background: var(--input-bg);
-            padding: 4px; border-radius: 14px;
-            display: flex; margin-bottom: 20px;
-        }
-        .sw-btn {
-            flex: 1; padding: 10px; border: none; border-radius: 10px;
-            background: transparent; color: var(--text-secondary);
-            font-weight: 500; font-size: 14px; transition: 0.3s;
-        }
-        .sw-btn.active {
-            background: var(--bg-card);
-            color: var(--text-primary);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        input, select {
-            background: var(--input-bg);
-            border: none;
-            color: var(--text-primary);
-            padding: 16px; border-radius: 14px;
-            width: 100%; box-sizing: border-box;
-            font-size: 15px; outline: none;
-            font-family: 'Inter', sans-serif;
-        }
-
-        /* --- BOTTOM DOCK (Бар внизу) --- */
-        .dock-container {
-            position: fixed; bottom: 20px; left: 0; right: 0;
-            display: flex; justify-content: center; z-index: 1000;
-        }
-        .dock {
-            background: var(--dock-bg);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border-radius: 30px;
-            padding: 10px 20px;
-            display: flex; gap: 25px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            border: 1px solid var(--border);
-        }
-        .dock-item {
-            display: flex; flex-direction: column; align-items: center;
-            color: var(--text-secondary);
-            width: 50px; cursor: pointer; transition: 0.3s;
-        }
-        .dock-icon { font-size: 24px; margin-bottom: 4px; transition: 0.3s; }
-        .dock-label { font-size: 10px; font-weight: 500; opacity: 0; transform: translateY(5px); transition: 0.3s; }
         
+        input, select { background: var(--input-bg); border: none; color: var(--text-primary); padding: 16px; border-radius: 14px; width: 100%; box-sizing: border-box; font-size: 15px; outline: none; margin-bottom: 10px; }
+
+        .switcher { background: var(--input-bg); padding: 4px; border-radius: 14px; display: flex; margin-bottom: 15px; }
+        .sw-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; background: transparent; color: var(--text-secondary); font-weight: 500; font-size: 14px; transition: 0.3s; }
+        .sw-btn.active { background: var(--bg-card); color: var(--text-primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+        /* NAVIGATION DOCK */
+        .dock-container { position: fixed; bottom: 20px; left: 0; right: 0; display: flex; justify-content: center; z-index: 1000; }
+        .dock { background: var(--dock-bg); backdrop-filter: blur(20px); border-radius: 30px; padding: 10px 25px; display: flex; gap: 30px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .dock-item { display: flex; flex-direction: column; align-items: center; color: var(--text-secondary); cursor: pointer; transition: 0.3s; }
+        .dock-icon { font-size: 22px; margin-bottom: 4px; }
+        .dock-label { font-size: 10px; font-weight: 500; opacity: 0; transform: translateY(5px); transition: 0.3s; }
         .dock-item.active { color: var(--accent); }
         .dock-item.active .dock-label { opacity: 1; transform: translateY(0); }
-        .dock-item.active .dock-icon { transform: translateY(-2px); }
+        .dock-item.active .dock-icon { transform: translateY(-3px); }
 
-        /* --- ПРОФИЛЬ (Чистый стиль) --- */
-        .profile-head { text-align: center; margin-bottom: 20px; }
-        .avatar {
-            width: 80px; height: 80px; border-radius: 50%;
-            margin: 0 auto 10px;
-            background: var(--input-bg);
-            border: 3px solid var(--bg-card);
-            box-shadow: var(--shadow);
-            object-fit: cover;
-        }
-        .copy-pill {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: var(--accent-dim); color: var(--accent); /* Цвет текста тиффани */
-            padding: 6px 14px; border-radius: 20px;
-            font-size: 13px; font-weight: 600; cursor: pointer;
-        }
-        
-        .addr-card {
-            display: flex; flex-direction: column; gap: 8px;
-            cursor: pointer; position: relative;
-        }
-        .addr-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; }
-        .addr-text { font-size: 14px; line-height: 1.5; color: var(--text-primary); font-family: monospace; }
-        .addr-icon { position: absolute; top: 0; right: 0; color: var(--accent); }
+        /* MODAL & FAB */
+        .fab { position: fixed; bottom: 100px; right: 20px; width: 56px; height: 56px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #000; font-size: 24px; box-shadow: 0 4px 15px rgba(26, 226, 199, 0.4); cursor: pointer; z-index: 900; transition: 0.2s; }
+        .fab:active { transform: scale(0.9); }
 
-        /* --- Screens --- */
-        .screen { display: none; animation: fadeIn 0.3s; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; display: none; align-items: flex-end; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; animation: slideUp 0.3s; }
+        .modal-box { background: var(--bg-card); width: 100%; border-radius: 24px 24px 0 0; padding: 30px 20px 50px 20px; border-top: 1px solid var(--border); }
+        @keyframes slideUp { from { opacity: 0; } to { opacity: 1; } }
+
+        /* SCREENS */
+        .screen { display: none; animation: fade 0.3s; }
         .screen.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 
-        /* --- Разное --- */
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .stat-box { background: var(--bg-card); padding: 15px; border-radius: 16px; text-align: center; box-shadow: var(--shadow); }
-        .text-dim { color: var(--text-secondary); font-size: 12px; }
-        .text-val { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-top: 4px; }
+        /* UTILS */
+        .text-dim { font-size: 12px; color: var(--text-secondary); }
+        .status-pill { font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; }
+        .st-green { color: var(--accent); background: var(--accent-dim); }
+        .st-gray { color: var(--text-secondary); background: var(--input-bg); }
 
     </style>
 </head>
@@ -182,56 +98,68 @@
     <div class="container">
         <div class="app-header">
             <h1>Drop Ecosystem</h1>
-            <div class="theme-btn" onclick="toggleTheme()">
-                <i class="fa-solid fa-moon" id="theme-icon"></i>
-            </div>
+            <div class="theme-btn" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="theme-icon"></i></div>
         </div>
     </div>
 
-    <div id="screen-china" class="screen active">
+    <div id="fab-add" class="fab" style="display: none;" onclick="openModal()">
+        <i class="fa-solid fa-plus"></i>
+    </div>
+
+    <div id="add-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h2 style="margin-top:0;">Новая посылка</h2>
+            <input type="text" id="new-track" placeholder="Трек-номер (напр. YT12345)">
+            <input type="text" id="new-desc" placeholder="Описание (напр. Часы)">
+            <button class="btn-main" onclick="submitTrack()">Добавить</button>
+            <div style="text-align:center; margin-top:15px; color:var(--text-secondary);" onclick="closeModal()">Отмена</div>
+        </div>
+    </div>
+
+    <div id="screen-calc" class="screen active">
         <div class="container">
-            
             <div class="card">
                 <div class="switcher">
                     <button id="cat-less" class="sw-btn active" onclick="setCat('less_100')">Розница</button>
                     <button id="cat-more" class="sw-btn" onclick="setCat('more_100')">Опт</button>
                 </div>
 
-                <div id="calc-route-box" style="margin-bottom: 10px; display: none;">
-                    <select id="calc-route"><option>Загрузка маршрутов...</option></select>
+                <div id="calc-route-box" style="display: none;">
+                    <select id="calc-route"><option>Загрузка...</option></select>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <input type="number" id="c-l" placeholder="Длина" class="opt-only" style="display:none">
-                    <input type="number" id="c-w" placeholder="Ширина" class="opt-only" style="display:none">
-                    <input type="number" id="c-h" placeholder="Высота" class="opt-only" style="display:none">
+                    <input type="number" id="c-l" placeholder="Дл" class="opt-only" style="display:none">
+                    <input type="number" id="c-w" placeholder="Шир" class="opt-only" style="display:none">
+                    <input type="number" id="c-h" placeholder="Выс" class="opt-only" style="display:none">
                     <input type="number" id="c-weight" placeholder="Вес (кг)" style="grid-column: span 2;">
-                    <input type="number" id="c-qty" placeholder="Кол-во мест" value="1" style="grid-column: span 2;">
+                    <input type="number" id="c-qty" placeholder="Кол-во" value="1" style="grid-column: span 2;">
                 </div>
 
-                <div id="retail-info" style="margin-top: 15px; font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
-                    <div style="display:flex; justify-content:space-between;"><span>до 0.5 кг</span> <b>13 TJS</b></div>
-                    <div style="display:flex; justify-content:space-between;"><span>0.5 - 1 кг</span> <b>23 TJS</b></div>
-                    <div style="display:flex; justify-content:space-between;"><span>1 - 50 кг</span> <b>23 TJS/кг</b></div>
-                    <div style="display:flex; justify-content:space-between;"><span>> 50 кг</span> <b>20 TJS/кг</b></div>
+                <div id="retail-info" style="margin-top: 10px; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                    <div>до 0.5 кг — <b>13 TJS</b></div>
+                    <div>0.5 - 1 кг — <b>23 TJS</b></div>
+                    <div>1 - 50 кг — <b>23 TJS/кг</b></div>
+                    <div>> 50 кг — <b>20 TJS/кг</b></div>
                 </div>
 
-                <div id="calc-result-box" style="display: none; margin-top: 20px; text-align: center; background: var(--input-bg); padding: 15px; border-radius: 12px;">
-                    <div style="font-size: 12px; color: var(--text-secondary);">Итого к оплате</div>
+                <div id="calc-result-box" style="display: none; margin-top: 15px; background: var(--input-bg); padding: 15px; border-radius: 12px; text-align: center;">
+                    <div style="font-size: 12px; color: var(--text-secondary);">Стоимость</div>
                     <div style="font-size: 24px; font-weight: 800; color: var(--accent);">
-                        <span id="res-price">0.00</span> <span id="res-currency" style="font-size: 16px; color: var(--text-primary);">USD</span>
+                        <span id="res-price">0.00</span> <span id="res-currency" style="font-size: 16px; color: var(--text-primary);">TJS</span>
                     </div>
                 </div>
 
                 <button class="btn-main" onclick="calculateServer()">Рассчитать</button>
             </div>
+        </div>
+    </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <div style="font-weight: 700; font-size: 18px;">Мои посылки</div>
-            </div>
-            
+    <div id="screen-pkgs" class="screen">
+        <div class="container">
+            <div style="margin-bottom: 15px; font-weight: 700; font-size: 18px;">Мои посылки</div>
             <div id="orders-container">
-                <div style="text-align: center; padding: 30px; color: var(--text-secondary);">Загрузка...</div>
+                <div style="text-align: center; padding: 40px; color: var(--text-secondary);">Загрузка посылок...</div>
             </div>
         </div>
     </div>
@@ -239,128 +167,71 @@
     <div id="screen-trucks" class="screen">
         <div class="container">
             <div class="card">
-                <h2 style="margin-top:0; margin-bottom: 15px;">Биржа грузов</h2>
-                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <h2 style="margin-top:0;">Биржа грузов</h2>
+                <div style="display: flex; gap: 10px;">
                     <button class="btn-main" style="background: #7B61FF; color: white;">Найти машину</button>
-                    <button class="btn-main" style="background: transparent; border: 1px solid var(--border); color: var(--text-primary);">Я водитель</button>
+                    <button class="btn-main" style="background: transparent; border: 1px solid var(--border); color: var(--text-primary);">Водитель</button>
                 </div>
-                <input type="text" placeholder="Откуда" style="margin-bottom: 10px;">
-                <input type="text" placeholder="Куда">
             </div>
-
-            <h3 style="margin-left: 5px; font-size: 16px;">Актуальные рейсы</h3>
             <div class="card" style="border-left: 4px solid #7B61FF;">
-                <div style="font-weight: 700; font-size: 16px; margin-bottom: 5px;">Душанбе ➝ Худжанд</div>
-                <div class="text-dim">Завтра, 08:00 • Mercedes Sprinter</div>
-                <div style="margin-top: 10px; font-weight: 700; color: #00D68F;">2.5 TJS / кг</div>
-            </div>
-            <div class="card" style="border-left: 4px solid #FFB02E;">
-                <div style="font-weight: 700; font-size: 16px; margin-bottom: 5px;">Ташкент ➝ Наманган</div>
-                <div class="text-dim">25 янв • Фура (Тент)</div>
-                <div style="margin-top: 10px; font-weight: 700; color: #FFB02E;">Свободна вся машина</div>
-            </div>
-        </div>
-    </div>
-
-    <div id="screen-market" class="screen">
-        <div class="container">
-            <div class="card">
-                <h2 style="margin-top:0;">Маркетплейс</h2>
-                <input type="text" placeholder="Поиск товаров...">
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                <div class="card" style="padding: 10px;">
-                    <div style="height: 100px; background: #ddd; border-radius: 12px; margin-bottom: 8px;"></div>
-                    <div style="font-weight: 600; font-size: 13px;">Часы Apple Watch</div>
-                    <div style="color: var(--accent); font-weight: 700;">150 TJS</div>
-                </div>
-                <div class="card" style="padding: 10px;">
-                    <div style="height: 100px; background: #ddd; border-radius: 12px; margin-bottom: 8px;"></div>
-                    <div style="font-weight: 600; font-size: 13px;">Кроссовки Nike</div>
-                    <div style="color: var(--accent); font-weight: 700;">220 TJS</div>
-                </div>
+                <div style="font-weight: 700;">Душанбе ➝ Худжанд</div>
+                <div class="text-dim">Завтра • Mercedes Sprinter</div>
+                <div style="margin-top: 8px; font-weight: 700; color: #00D68F;">2.5 TJS / кг</div>
             </div>
         </div>
     </div>
 
     <div id="screen-profile" class="screen">
         <div class="container">
-            <div class="card">
-                <div class="profile-head">
-                    <img id="user-avatar" class="avatar" src="" alt="Avatar">
-                    <h2 id="user-name" style="margin: 0; font-size: 20px;">Загрузка...</h2>
-                    <div id="user-id" class="text-dim" style="margin-bottom: 10px;">ID: ...</div>
-                    
-                    <div class="copy-pill" onclick="copyMarking()">
-                        <span id="marking-text">C-87...</span>
-                        <i class="fa-regular fa-copy"></i>
-                    </div>
-                </div>
-
-                <div class="stat-grid">
-                    <div class="stat-box">
-                        <div class="text-dim">Бонусы</div>
-                        <div class="text-val" id="stat-weight">0.0</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="text-dim">Заказов</div>
-                        <div class="text-val" id="stat-orders">0</div>
-                    </div>
+            <div class="card" style="text-align: center;">
+                <img id="user-avatar" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--bg-card); box-shadow: 0 4px 10px rgba(0,0,0,0.1);" src="" alt="">
+                <h2 id="user-name" style="margin: 10px 0 5px;">User</h2>
+                <div id="user-id" class="text-dim">ID: ...</div>
+                <div style="margin-top: 15px; display: inline-block; background: var(--accent-dim); color: var(--accent); padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer;" onclick="copyMarking()">
+                    <span id="marking-text">C-87...</span> <i class="fa-regular fa-copy"></i>
                 </div>
             </div>
 
             <div class="card">
-                <div style="display:flex; justify-content: space-between; margin-bottom: 15px;">
-                    <div style="font-weight: 700;">Адрес склада</div>
-                    <div style="font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 600;" onclick="toggleAddressType()">
-                        <span id="addr-switch-label">Включить ОПТ</span>
-                    </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <b>Адрес склада</b>
+                    <span style="color: var(--accent); font-size: 12px; font-weight: 600;" onclick="toggleAddressType()" id="addr-switch-label">Включить ОПТ</span>
                 </div>
-
+                
                 <div id="retail-block">
-                    <div class="addr-card" onclick="copyRetailAddr()">
-                        <div class="addr-label">ИУ (Розница)</div>
-                        <div class="addr-text" id="yiwu-retail-text">Загрузка адреса...</div>
-                        <div class="addr-icon"><i class="fa-regular fa-copy"></i></div>
+                    <div onclick="copyRetailAddr()" style="cursor: pointer;">
+                        <div class="text-dim">ИУ (РОЗНИЦА)</div>
+                        <div id="yiwu-retail-text" style="font-family: monospace; font-size: 13px; margin-top: 5px;">Загрузка...</div>
                     </div>
                 </div>
 
                 <div id="wholesale-block" style="display: none;">
-                    <div style="margin-bottom: 10px;">
-                        <select id="origin-city-select" onchange="renderWholesaleAddress()" style="background: var(--input-bg); padding: 10px;">
-                            <option value="yiwu">Иу (Yiwu)</option>
-                            <option value="urumqi">Урумчи (Urumqi)</option>
-                        </select>
-                    </div>
-                    <div class="addr-card" onclick="copyWholesaleAddr()">
-                        <div class="addr-label">Адрес Оптового Склада</div>
-                        <div class="addr-text" id="wholesale-addr-text">--</div>
-                        <div class="addr-icon"><i class="fa-regular fa-copy"></i></div>
+                    <select id="origin-city-select" onchange="renderWholesaleAddress()" style="margin-bottom: 10px; padding: 10px;">
+                        <option value="yiwu">Иу (Yiwu)</option>
+                        <option value="urumqi">Урумчи (Urumqi)</option>
+                    </select>
+                    <div onclick="copyWholesaleAddr()" style="cursor: pointer;">
+                        <div class="text-dim">ОПТОВЫЙ СКЛАД</div>
+                        <div id="wholesale-addr-text" style="font-family: monospace; font-size: 13px; margin-top: 5px;">--</div>
                     </div>
                 </div>
             </div>
-            
-            <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                <div class="text-dim">Ваш ПВЗ</div>
-                <div style="font-weight: 600;" id="profile-pvz">...</div>
-            </div>
-
         </div>
     </div>
 
     <div class="dock-container">
         <div class="dock">
-            <div class="dock-item active" onclick="nav('china', this)">
-                <i class="dock-icon fa-solid fa-earth-asia"></i>
-                <div class="dock-label">Китай</div>
+            <div class="dock-item active" onclick="nav('calc', this)">
+                <i class="dock-icon fa-solid fa-calculator"></i>
+                <div class="dock-label">Расчет</div>
+            </div>
+            <div class="dock-item" onclick="nav('pkgs', this)">
+                <i class="dock-icon fa-solid fa-box"></i>
+                <div class="dock-label">Посылки</div>
             </div>
             <div class="dock-item" onclick="nav('trucks', this)">
                 <i class="dock-icon fa-solid fa-truck-fast"></i>
                 <div class="dock-label">Биржа</div>
-            </div>
-            <div class="dock-item" onclick="nav('market', this)">
-                <i class="dock-icon fa-solid fa-bag-shopping"></i>
-                <div class="dock-label">Маркет</div>
             </div>
             <div class="dock-item" onclick="nav('profile', this)">
                 <i class="dock-icon fa-regular fa-user"></i>
@@ -372,52 +243,39 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-
-        // ⚠️⚠️⚠️ ВАША ССЫЛКА NGROK ⚠️⚠️⚠️
-        const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
         
+        // ⚠️⚠️⚠️ ССЫЛКА NGROK ⚠️⚠️⚠️
+        const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
+
         const userId = tg.initDataUnsafe?.user?.id || 317295540; 
         const userPhoto = tg.initDataUnsafe?.user?.photo_url || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-        
+
         let APP_CONFIG = { rates: {}, warehouses: { retail: {}, wholesale: {} } };
         let userData = { category: 'less_100', pvz: '...', bonus: 0, packages: [], marking: '...', name: 'User' };
         let showWholesaleAddr = false;
 
-        // --- THEME SWITCHER ---
         function toggleTheme() {
             const body = document.body;
             const icon = document.getElementById('theme-icon');
             if (body.getAttribute('data-theme') === 'light') {
-                body.setAttribute('data-theme', 'dark');
-                icon.className = 'fa-solid fa-sun';
+                body.setAttribute('data-theme', 'dark'); icon.className = 'fa-solid fa-sun';
             } else {
-                body.setAttribute('data-theme', 'light');
-                icon.className = 'fa-solid fa-moon';
+                body.setAttribute('data-theme', 'light'); icon.className = 'fa-solid fa-moon';
             }
         }
 
-        // --- INIT ---
         async function init() {
             document.getElementById('user-avatar').src = userPhoto;
-            
-            // Загружаем маршруты
             loadRoutes();
-
             try {
                 const response = await fetch(`${API_BASE}/api/dashboard/${userId}`, { method: 'GET', headers: { 'ngrok-skip-browser-warning': 'true' } });
                 const data = await response.json();
-
                 if (data.app_config) APP_CONFIG = data.app_config;
                 if (data.user_info) {
-                    userData = {
-                        ...userData,
-                        ...data.user_info,
-                        packages: data.packages || [],
-                        name: tg.initDataUnsafe?.user?.first_name || "Клиент"
-                    };
+                    userData = { ...userData, ...data.user_info, packages: data.packages || [], name: tg.initDataUnsafe?.user?.first_name || "Клиент" };
                 }
                 render();
-            } catch (e) { console.error("Ошибка загрузки:", e); }
+            } catch (e) { console.error(e); }
         }
 
         async function loadRoutes() {
@@ -435,49 +293,50 @@
         }
 
         function render() {
-            // Profile Info
             document.getElementById('user-name').innerText = userData.name;
             document.getElementById('user-id').innerText = `ID: ${userId}`;
             document.getElementById('marking-text').innerText = userData.marking;
-            document.getElementById('stat-weight').innerText = userData.bonus;
-            document.getElementById('stat-orders').innerText = userData.packages.length;
-            document.getElementById('profile-pvz').innerText = userData.pvz;
 
-            // Адреса (Исправлено)
+            // Адреса
             renderAddressBlock();
 
-            // Calc State
+            // Calc
             const isOpt = userData.category === 'more_100';
             document.getElementById('cat-less').classList.toggle('active', !isOpt);
             document.getElementById('cat-more').classList.toggle('active', isOpt);
-            
             document.getElementById('calc-route-box').style.display = isOpt ? 'block' : 'none';
             document.getElementById('retail-info').style.display = isOpt ? 'none' : 'block';
             document.querySelectorAll('.opt-only').forEach(el => el.style.display = isOpt ? 'block' : 'none');
 
-            // Packages
+            // Packages (ОТДЕЛЬНАЯ ФУНКЦИЯ ДЛЯ НАДЕЖНОСТИ)
+            renderPackagesList();
+        }
+
+        function renderPackagesList() {
             const cont = document.getElementById('orders-container');
             cont.innerHTML = '';
-            if(!userData.packages.length) {
-                cont.innerHTML = '<div style="text-align:center;color:#888;">Нет активных посылок</div>';
+            if(!userData.packages || userData.packages.length === 0) {
+                cont.innerHTML = '<div style="text-align:center; color:var(--text-secondary); padding:40px;">История пуста.<br>Нажмите +, чтобы добавить трек.</div>';
             } else {
                 userData.packages.forEach(p => {
-                    let stColor = '#8E8E93';
-                    if(p.status_text.includes('Прибыл') || p.status_text.includes('Готов')) stColor = '#1ae2c7';
+                    let stClass = 'st-gray';
+                    if(p.status_text.includes('Прибыл') || p.status_text.includes('Готов')) stClass = 'st-green';
                     
                     cont.innerHTML += `
-                        <div class="card" style="padding: 15px; margin-bottom: 10px;">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                                <div style="font-weight:600;">${p.description || 'Посылка'}</div>
-                                <div style="font-size:12px; font-weight:700; color:${stColor}">${p.status_text}</div>
+                        <div class="card" style="padding: 15px; margin-bottom: 10px; display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <div style="font-weight:600; font-size:15px;">${p.description || 'Посылка'}</div>
+                                <div style="font-family:monospace; color:var(--text-secondary); font-size:13px; margin-top:4px;">${p.track_number}</div>
                             </div>
-                            <div style="font-family:monospace; font-size:13px; color:var(--text-secondary);">${p.track_number}</div>
+                            <div style="text-align:right;">
+                                <div class="status-pill ${stClass}">${p.status_text}</div>
+                                <div style="font-size:10px; color:var(--text-secondary); margin-top:4px;">${p.date}</div>
+                            </div>
                         </div>`;
                 });
             }
         }
 
-        // --- LOGIC: ADDRESSES ---
         function toggleAddressType() {
             showWholesaleAddr = !showWholesaleAddr;
             document.getElementById('addr-switch-label').innerText = showWholesaleAddr ? "Вернуть РОЗНИЦУ" : "Включить ОПТ";
@@ -487,16 +346,10 @@
         function renderAddressBlock() {
             const retailDiv = document.getElementById('retail-block');
             const wholesaleDiv = document.getElementById('wholesale-block');
-            
             if(showWholesaleAddr) {
-                retailDiv.style.display = 'none';
-                wholesaleDiv.style.display = 'block';
-                renderWholesaleAddress();
+                retailDiv.style.display = 'none'; wholesaleDiv.style.display = 'block'; renderWholesaleAddress();
             } else {
-                retailDiv.style.display = 'block';
-                wholesaleDiv.style.display = 'none';
-                
-                // Проверка на наличие данных перед отображением
+                retailDiv.style.display = 'block'; wholesaleDiv.style.display = 'none';
                 const addr = APP_CONFIG.warehouses?.retail?.address;
                 document.getElementById('yiwu-retail-text').innerText = addr ? addr : "Загрузка...";
             }
@@ -508,7 +361,6 @@
             document.getElementById('wholesale-addr-text').innerText = wh ? wh.address : "Нет данных";
         }
 
-        // --- LOGIC: CALC ---
         async function calculateServer() {
             const btn = document.querySelector('button[onclick="calculateServer()"]');
             const resBox = document.getElementById('calc-result-box');
@@ -535,6 +387,7 @@
                 const result = await response.json();
                 if(result.status === 'ok') {
                     document.getElementById('res-price').innerText = result.price.toFixed(2);
+                    document.getElementById('res-currency').innerText = result.currency;
                     resBox.style.display = 'block';
                 } else { tg.showAlert(result.message); }
             } catch (e) { tg.showAlert("Ошибка сети"); } 
@@ -547,12 +400,34 @@
             fetch(`${API_BASE}/api/update_settings`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ user_id: userId, category: cat }) });
         }
 
+        // NAVIGATION
         function nav(screenId, el) {
             document.querySelectorAll('.dock-item').forEach(i => i.classList.remove('active'));
             if(el) el.classList.add('active');
+            
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('screen-' + screenId).classList.add('active');
             tg.HapticFeedback.impactOccurred('light');
+
+            // ПОКАЗЫВАТЬ КНОПКУ "+" ТОЛЬКО НА ВКЛАДКЕ ПОСЫЛОК
+            const fab = document.getElementById('fab-add');
+            if(screenId === 'pkgs') fab.style.display = 'flex';
+            else fab.style.display = 'none';
+        }
+
+        // MODAL
+        function openModal() { document.getElementById('add-modal').classList.add('active'); tg.HapticFeedback.impactOccurred('medium'); }
+        function closeModal() { document.getElementById('add-modal').classList.remove('active'); }
+        
+        async function submitTrack() {
+            const track = document.getElementById('new-track').value;
+            const desc = document.getElementById('new-desc').value;
+            if(!track) return tg.showAlert("Введите трек!");
+            try {
+                const res = await fetch(`${API_BASE}/api/add_track`, { method: 'POST', headers: {'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'}, body: JSON.stringify({ user_id: userId, track_number: track, description: desc }) });
+                const r = await res.json();
+                if(r.status === 'ok') { tg.showAlert("Успешно!"); closeModal(); init(); } else tg.showAlert(r.message);
+            } catch(e) {}
         }
 
         function copyMarking() { navigator.clipboard.writeText(document.getElementById('marking-text').innerText).then(() => tg.HapticFeedback.notificationOccurred('success')); }
