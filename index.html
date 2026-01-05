@@ -14,9 +14,8 @@
             --bg-card: #FFFFFF;
             --text-main: #111111;
             --text-sec: #888888;
-            --accent: #1ae2c7; /* Tiffany */
+            --accent: #1ae2c7;
             --accent-dark: #0fa38f;
-            --danger: #ff4b55;
             --border: rgba(0,0,0,0.06);
             --shadow: 0 4px 20px rgba(0,0,0,0.04);
             --radius: 20px;
@@ -31,80 +30,56 @@
 
         .container { padding: 0 16px; max-width: 480px; margin: 0 auto; padding-bottom: 40px; }
 
-        /* HEADER (PROFILE) */
-        .home-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 20px 0;
-        }
+        /* HEADER */
+        .home-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; }
         .user-info { display: flex; align-items: center; gap: 12px; }
         .u-ava { width: 44px; height: 44px; border-radius: 50%; background: #eee; object-fit: cover; border: 2px solid #fff; box-shadow: var(--shadow); }
         .u-text h3 { margin: 0; font-size: 16px; font-weight: 700; }
         .u-text p { margin: 0; font-size: 12px; color: var(--text-sec); }
-        .bell-btn { width: 40px; height: 40px; background: var(--bg-card); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow); color: var(--text-main); cursor: pointer; }
 
         /* BANNER */
         .banner {
             background: linear-gradient(135deg, #111 0%, #333 100%);
-            border-radius: var(--radius);
-            padding: 20px;
-            color: white;
-            margin-bottom: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-radius: var(--radius); padding: 20px; color: white;
+            margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             position: relative; overflow: hidden;
         }
-        .banner::after { content:''; position: absolute; right: -20px; bottom: -20px; width: 100px; height: 100px; background: var(--accent); opacity: 0.2; border-radius: 50%; filter: blur(20px); }
-        .b-label { font-size: 11px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
         .b-val { font-size: 32px; font-weight: 800; margin: 5px 0; }
-        .b-sub { font-size: 13px; display: flex; align-items: center; gap: 6px; }
-        .badge { background: rgba(255,255,255,0.15); padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
 
-        /* APP GRID (BINANCE STYLE) */
+        /* MENU GRID */
         .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 24px; }
         .app-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
         .app-item:active { transform: scale(0.95); opacity: 0.8; }
         .app-icon-box {
-            width: 56px; height: 56px;
-            background: var(--bg-card);
-            border-radius: 18px;
+            width: 56px; height: 56px; background: var(--bg-card); border-radius: 18px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 24px;
-            box-shadow: var(--shadow);
-            color: var(--accent-dark);
+            font-size: 24px; box-shadow: var(--shadow); color: var(--accent-dark);
         }
-        .app-label { font-size: 11px; font-weight: 600; color: var(--text-main); text-align: center; }
+        .app-label { font-size: 11px; font-weight: 600; text-align: center; }
 
-        /* SCREENS */
+        /* SCREENS & NAVIGATION */
         .screen { display: none; min-height: 100vh; background: var(--bg-body); position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding-bottom: 50px; }
         .screen.active { display: block; animation: slideIn 0.25s ease-out; }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
-        /* SUB-HEADER */
         .sub-header {
-            display: flex; align-items: center; gap: 15px;
-            padding: 20px 16px;
-            background: var(--bg-card);
-            position: sticky; top: 0; z-index: 90;
+            display: flex; align-items: center; gap: 15px; padding: 20px 16px;
+            background: var(--bg-card); position: sticky; top: 0; z-index: 90;
             box-shadow: 0 4px 10px rgba(0,0,0,0.03);
         }
-        .back-btn { font-size: 20px; padding: 5px; cursor: pointer; color: var(--text-main); }
+        .back-btn { font-size: 20px; padding: 5px; cursor: pointer; }
         .page-title { font-size: 18px; font-weight: 700; }
 
-        /* CARDS & UI */
+        /* UI COMPONENTS */
         .card { background: var(--bg-card); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); }
         
-        .address-box {
-            background: #F4F6F8; border-radius: 14px; padding: 14px; margin-top: 10px;
-            font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.5; color: #333;
-            cursor: pointer; position: relative; border: 1px solid transparent;
-        }
-        .address-box:active { background: #eefbf9; border-color: var(--accent); }
-        .copy-hint { position: absolute; top: 10px; right: 10px; color: var(--accent-dark); font-size: 14px; }
-
         .btn-main { background: var(--text-main); color: #fff; width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; }
         .btn-accent { background: var(--accent); color: #000; }
 
-        /* TOGGLE */
-        .switch-row { display: flex; justify-content: space-between; align-items: center; }
+        input, select { width: 100%; padding: 14px; background: #F4F6F8; border: none; border-radius: 12px; margin-bottom: 10px; font-family: 'Inter', sans-serif; box-sizing: border-box; }
+
+        /* TOGGLE SWITCH */
+        .switch-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 34px; transition: .3s; }
@@ -112,8 +87,19 @@
         input:checked + .slider { background-color: var(--accent); }
         input:checked + .slider:before { transform: translateX(20px); }
 
-        /* INPUTS */
-        input, select { width: 100%; padding: 14px; background: #F4F6F8; border: none; border-radius: 12px; margin-bottom: 10px; font-family: 'Inter', sans-serif; box-sizing: border-box; }
+        /* ADDRESS BOX */
+        .address-box {
+            background: #F4F6F8; border-radius: 14px; padding: 14px; margin-top: 5px;
+            font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.5; color: #333;
+            cursor: pointer; position: relative; border: 1px solid transparent;
+        }
+        .address-box:active { background: #eefbf9; border-color: var(--accent); }
+        .copy-hint { position: absolute; top: 10px; right: 10px; color: var(--accent-dark); font-size: 14px; }
+
+        /* EXCHANGE TABS */
+        .tabs { display: flex; background: #e0e0e0; padding: 4px; border-radius: 14px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; padding: 10px; text-align: center; border-radius: 10px; font-size: 13px; font-weight: 600; color: #666; cursor: pointer; }
+        .tab-btn.active { background: #fff; color: #000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
         /* MODALS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
@@ -134,19 +120,17 @@
                     <p id="u-id">ID: ...</p>
                 </div>
             </div>
-            <div class="bell-btn" onclick="tg.showAlert('Нет уведомлений')"><i class="fa-regular fa-bell"></i></div>
         </div>
 
         <div class="banner">
-            <div class="b-label">Бонусный баланс</div>
-            <div class="b-val"><span id="u-bonus">0.0</span> <span style="font-size: 16px; font-weight: 500;">кг</span></div>
-            <div class="b-sub">
-                <div class="badge">PVZ</div>
-                <span id="u-pvz">Не выбран</span>
+            <div style="font-size: 12px; opacity: 0.8;">Бонусный баланс</div>
+            <div class="b-val"><span id="u-bonus">0.0</span> <span style="font-size: 16px;">кг</span></div>
+            <div style="background:rgba(255,255,255,0.2); display:inline-block; padding:4px 8px; border-radius:6px; font-size:11px;">
+                PVZ: <span id="u-pvz">...</span>
             </div>
         </div>
 
-        <div style="font-weight: 700; margin-bottom: 15px; font-size: 15px;">Сервисы</div>
+        <div style="font-weight: 700; margin-bottom: 15px;">Сервисы</div>
         <div class="app-grid">
             <div class="app-item" onclick="nav('china')">
                 <div class="app-icon-box" style="color: #ff4b55;"><i class="fa-brands fa-dhl"></i></div>
@@ -181,10 +165,7 @@
             
             <div class="card">
                 <div class="switch-row">
-                    <div>
-                        <div style="font-weight: 700;">Режим ОПТ</div>
-                        <div style="font-size: 11px; color: var(--text-sec);" id="mode-status">От 100 кг</div>
-                    </div>
+                    <b>Режим ОПТ (>100 кг)</b>
                     <label class="switch">
                         <input type="checkbox" id="mode-toggle" onchange="toggleMode()">
                         <span class="slider"></span>
@@ -192,44 +173,35 @@
                 </div>
             </div>
 
-            <div id="block-retail">
-                <div class="card">
-                    <div style="font-weight: 700; margin-bottom: 5px;">📍 Адрес склада (ИУ)</div>
-                    <div style="font-size: 11px; color: var(--text-sec); margin-bottom: 10px;">Нажмите, чтобы скопировать адрес полностью</div>
-                    <div class="address-box" onclick="copyText('addr-retail')">
-                        <i class="fa-regular fa-copy copy-hint"></i>
-                        <div id="addr-retail">Загрузка адреса...</div>
-                    </div>
+            <div class="card">
+                <div style="font-weight: 700; margin-bottom: 10px;">
+                    <span id="addr-title">Адрес Склада</span>
                 </div>
-
-                <div class="card">
-                    <div style="font-weight: 700; margin-bottom: 5px;">🆔 Ваш код (Маркировка)</div>
-                    <div style="font-size: 11px; color: var(--text-sec); margin-bottom: 10px;">Обязательно укажите это на посылке!</div>
-                    <div class="address-box" onclick="copyText('user-code')">
-                        <i class="fa-regular fa-copy copy-hint"></i>
-                        <div id="user-code" style="font-weight: 700; color: var(--accent-dark); font-size: 14px;">C-87/...</div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="block-wholesale" style="display: none;">
-                <div class="card">
-                    <div style="font-weight: 700; margin-bottom: 10px;">🚛 Адрес для Опта</div>
-                    <select id="city-select" onchange="renderAddress()">
+                
+                <div id="city-selector" style="display:none; margin-bottom:10px;">
+                    <select id="origin-city-select" onchange="renderAddress()">
                         <option value="yiwu">Иу (Yiwu)</option>
                         <option value="urumqi">Урумчи (Urumqi)</option>
                     </select>
-                    <div class="address-box" onclick="copyText('addr-wholesale')">
-                        <i class="fa-regular fa-copy copy-hint"></i>
-                        <div id="addr-wholesale">--</div>
-                    </div>
-                    </div>
+                </div>
+
+                <div class="address-box" onclick="copyText('addr-text')">
+                    <i class="fa-regular fa-copy copy-hint"></i>
+                    <div id="addr-text">Загрузка...</div>
+                </div>
             </div>
 
-            <button class="btn-main btn-accent" onclick="openModal('add-modal')"><i class="fa-solid fa-plus"></i> Добавить трек-код</button>
-            <br><br>
-            <div style="font-weight: 700; margin-bottom: 10px;">Мои треки</div>
-            <div id="full-pkg-list"></div>
+            <div id="code-block" class="card">
+                <div style="font-weight: 700; margin-bottom: 5px;">Ваш Код (Маркировка)</div>
+                <div style="font-size: 11px; color: #888; margin-bottom: 5px;">Укажите при заказе!</div>
+                <div class="address-box" onclick="copyText('user-code')">
+                    <i class="fa-regular fa-copy copy-hint"></i>
+                    <div id="user-code" style="font-weight: 700; color: var(--accent-dark);">...</div>
+                </div>
+            </div>
+
+            <button class="btn-main btn-accent" onclick="openModal('add-modal')">➕ Добавить трек</button>
+            <div id="full-pkg-list" style="margin-top: 20px;"></div>
         </div>
     </div>
 
@@ -239,17 +211,18 @@
             <div class="page-title">Биржа грузов</div>
         </div>
         <div class="container" style="padding-top: 10px;">
-            <div class="card">
-                <div style="display: flex; gap: 10px;">
-                    <button id="tab-trip" class="btn-main" style="background:var(--text-main); color:white;" onclick="switchTab('trips')">Ищу машину</button>
-                    <button id="tab-cargo" class="btn-main" style="background:#eee; color:#333;" onclick="switchTab('cargo')">Ищу груз</button>
-                </div>
-            </div>
             
-            <div id="exchange-list"></div>
+            <div class="tabs">
+                <div id="tab-trip" class="tab-btn active" onclick="switchTab('trips')">Ищу машину</div>
+                <div id="tab-cargo" class="tab-btn" onclick="switchTab('cargo')">Ищу груз</div>
+            </div>
+
+            <div id="exchange-list" style="padding-bottom: 80px;">
+                <div class="empty-state">Загрузка списка...</div>
+            </div>
 
             <div style="position: fixed; bottom: 20px; left: 16px; right: 16px;">
-                <button id="btn-action" class="btn-main btn-accent" onclick="handleAction()">➕ Добавить заявку</button>
+                <button id="btn-action" class="btn-main btn-accent" onclick="handleAction()">Создать заявку</button>
             </div>
         </div>
     </div>
@@ -260,22 +233,27 @@
             <div class="page-title">Калькулятор</div>
         </div>
         <div class="container" style="padding-top: 10px;">
+            
             <div class="card">
-                <div id="calc-opt-box" style="display:none;">
-                    <select id="calc-route"><option>Выберите маршрут...</option></select>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                        <input id="c-l" type="number" placeholder="Длина (см)">
-                        <input id="c-w" type="number" placeholder="Ширина (см)">
-                        <input id="c-h" type="number" placeholder="Высота (см)">
+                <div id="calc-opt-box" style="display:none; padding-bottom:15px; margin-bottom:15px; border-bottom:1px dashed #ddd;">
+                    <div style="font-size:12px; color:#888; margin-bottom:5px;">Маршрут</div>
+                    <select id="calc-route"><option>Выберите...</option></select>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                        <input id="c-l" type="number" placeholder="Дл">
+                        <input id="c-w" type="number" placeholder="Шир">
+                        <input id="c-h" type="number" placeholder="Выс">
                     </div>
                 </div>
-                
-                <input id="c-wg" type="number" placeholder="Вес (кг)">
+
+                <div style="font-size:12px; color:#888; margin-bottom:5px;">Параметры груза</div>
+                <input id="c-wg" type="number" placeholder="Вес (кг)" style="font-size: 16px; font-weight: 600;">
                 <input id="c-qt" type="number" placeholder="Количество мест" value="1">
                 
-                <div id="c-res" style="text-align:center; font-size: 24px; font-weight: 800; margin: 20px 0; color: var(--accent-dark);"></div>
+                <div id="c-res" style="text-align:center; font-size: 28px; font-weight: 800; margin: 20px 0; color: var(--accent-dark);">
+                    0.00 <span style="font-size:16px; color:#333;">TJS</span>
+                </div>
+                
                 <button class="btn-main" onclick="doCalc()">Рассчитать</button>
-                <div style="text-align: center; margin-top: 10px; font-size: 12px; color: #888;">*Для смены тарифа (Опт/Розница) перейдите в "Мой Китай"</div>
             </div>
         </div>
     </div>
@@ -285,98 +263,69 @@
             <div class="back-btn" onclick="back()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="page-title">Маркет</div>
         </div>
-        <div class="container" style="text-align: center; padding-top: 50px; color: #888;">
-            <i class="fa-solid fa-person-digging" style="font-size: 40px; margin-bottom: 20px;"></i>
-            <p>Раздел в разработке</p>
-        </div>
+        <div class="container empty-state">Раздел в разработке 🛠</div>
     </div>
 
-    <div id="add-modal" class="modal-overlay">
-        <div class="modal-box">
-            <h3>Добавить посылку</h3>
-            <input id="n-track" placeholder="Трек-номер">
-            <input id="n-desc" placeholder="Описание (напр. Часы)">
-            <button class="btn-main btn-accent" onclick="submitTrack()">Сохранить</button>
-            <div style="text-align:center; margin-top:15px; font-size:13px; color:#888" onclick="closeModal('add-modal')">Закрыть</div>
-        </div>
-    </div>
-
-    <div id="driver-modal" class="modal-overlay"><div class="modal-box"><h3>Стать водителем</h3><input id="d-car" placeholder="Авто"><input id="d-num" placeholder="Гос. номер"><input id="d-w" type="number" placeholder="Грузоподъемность (кг)"><button class="btn-main" onclick="regDriver()">ОК</button><div style="text-align:center;margin-top:15px;color:#888" onclick="closeModal('driver-modal')">Отмена</div></div></div>
+    <div id="add-modal" class="modal-overlay"><div class="modal-box"><h3>Добавить трек</h3><input id="n-track" placeholder="Трек-номер"><input id="n-desc" placeholder="Описание"><button class="btn-main" onclick="submitTrack()">Сохранить</button><div style="text-align:center;margin-top:15px;color:#888" onclick="closeModal('add-modal')">Закрыть</div></div></div>
+    <div id="driver-modal" class="modal-overlay"><div class="modal-box"><h3>Стать водителем</h3><input id="d-car" placeholder="Авто"><input id="d-num" placeholder="Гос. номер"><input id="d-w" type="number" placeholder="Грузоподъемность"><button class="btn-main" onclick="regDriver()">ОК</button><div style="text-align:center;margin-top:15px;color:#888" onclick="closeModal('driver-modal')">Отмена</div></div></div>
     <div id="trip-modal" class="modal-overlay"><div class="modal-box"><h3>Создать рейс</h3><input id="t-from" placeholder="Откуда"><input id="t-to" placeholder="Куда"><input id="t-price" type="number" placeholder="Цена за кг"><button class="btn-main" onclick="createTrip()">Опубликовать</button><div style="text-align:center;margin-top:15px;color:#888" onclick="closeModal('trip-modal')">Отмена</div></div></div>
     <div id="cargo-modal" class="modal-overlay"><div class="modal-box"><h3>Добавить груз</h3><input id="cg-from" placeholder="Откуда"><input id="cg-to" placeholder="Куда"><input id="cg-desc" placeholder="Что везем?"><input id="cg-w" placeholder="Вес"><input id="cg-p" placeholder="Предлагаю цену"><button class="btn-main" onclick="createCargo()">Создать</button><div style="text-align:center;margin-top:15px;color:#888" onclick="closeModal('cargo-modal')">Отмена</div></div></div>
 
     <script>
         const tg = window.Telegram.WebApp; tg.expand();
         
-        // ⚠️ ВАЖНО: ВСТАВЬТЕ ССЫЛКУ NGROK ⚠️
+        // ⚠️ ВАШ NGROK ⚠️
         const API = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
-        
         const uid = tg.initDataUnsafe?.user?.id || 317295540; 
         
         let config = {}, user = {}, isOpt = false, currentTab = 'trips', isDriver = false;
 
         async function init() {
-            // Load User Data
             try {
-                // UI Placeholders
                 document.getElementById('u-ava').src = tg.initDataUnsafe?.user?.photo_url || "";
                 
+                // 1. Load Data
                 let res = await fetch(`${API}/api/dashboard/${uid}`, {headers:{'ngrok-skip-browser-warning':'true'}});
                 let data = await res.json();
+                config = data.app_config; user = data.user_info;
                 
-                config = data.app_config; 
-                user = data.user_info;
-                
-                // Fill Dashboard
+                // 2. Fill UI
                 document.getElementById('u-name').innerText = user.name || (tg.initDataUnsafe?.user?.first_name) || "Client";
                 document.getElementById('u-id').innerText = `ID: ${uid}`;
                 document.getElementById('u-bonus').innerText = user.bonus_balance;
-                
-                // Fix PVZ display (Check for null)
                 document.getElementById('u-pvz').innerText = (user.pvz && user.pvz !== 'null') ? user.pvz : "Не выбран";
-
-                // Fill Profile (China)
                 document.getElementById('user-code').innerText = user.marking_code;
-                
-                // Packages
+
                 renderPackages(data.packages);
 
-                // Config State
+                // 3. Set State
                 isOpt = (user.category === 'more_100');
                 document.getElementById('mode-toggle').checked = isOpt;
                 updateModeUI();
 
-                // Routes
+                // 4. Load Routes
                 let rRes = await fetch(`${API}/api/get_routes`); let rData = await rRes.json();
                 let sel = document.getElementById('calc-route');
                 sel.innerHTML = '<option>Маршрут...</option>';
                 rData.routes?.forEach(r => { let o = document.createElement('option'); o.value=r; o.innerText=r; sel.appendChild(o); });
 
-                // Driver Check
                 checkDriver();
 
-            } catch(e) { 
-                console.error(e);
-                // tg.showAlert("Ошибка загрузки данных. Проверьте сервер.");
-            }
+            } catch(e) { console.error(e); }
         }
 
-        // --- NAVIGATION ---
+        // --- NAV ---
         function nav(screen) {
             document.getElementById('screen-home').style.display = 'none';
             document.getElementById('screen-'+screen).classList.add('active');
-            tg.HapticFeedback.impactOccurred('light');
             if(screen === 'trucks') loadExchange();
         }
         function back() {
-            document.querySelectorAll('.screen').forEach(s => {
-                s.classList.remove('active');
-                s.style.display = 'none';
-            });
+            document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); s.style.display='none'; });
             document.getElementById('screen-home').style.display = 'block';
         }
 
-        // --- CHINA / PROFILE LOGIC ---
+        // --- LOGIC ---
         function toggleMode() {
             isOpt = document.getElementById('mode-toggle').checked;
             updateModeUI();
@@ -385,13 +334,12 @@
         }
 
         function updateModeUI() {
-            document.getElementById('mode-status').innerText = isOpt ? "Включен ОПТ (>100 кг)" : "Включена РОЗНИЦА";
+            // Если Опт: Показываем выбор города, скрываем Код C-87
+            document.getElementById('city-selector').style.display = isOpt ? 'block' : 'none';
+            document.getElementById('code-block').style.display = isOpt ? 'none' : 'block';
+            document.getElementById('addr-title').innerText = isOpt ? "Адрес (Опт)" : "Адрес (Иу, Розница)";
             
-            // Logic: Hide Code block if Wholesale
-            document.getElementById('block-retail').style.display = isOpt ? 'none' : 'block';
-            document.getElementById('block-wholesale').style.display = isOpt ? 'block' : 'none';
-            
-            // Calculator update
+            // Калькулятор
             document.getElementById('calc-opt-box').style.display = isOpt ? 'block' : 'none';
             
             renderAddress();
@@ -399,12 +347,12 @@
 
         function renderAddress() {
             if(isOpt) {
-                let city = document.getElementById('city-select').value;
+                let city = document.getElementById('origin-city-select').value;
                 let addr = config.warehouses?.wholesale?.[city]?.address;
-                document.getElementById('addr-wholesale').innerText = addr || "Нет данных";
+                document.getElementById('addr-text').innerText = addr || "Нет данных";
             } else {
                 let addr = config.warehouses?.retail?.address;
-                document.getElementById('addr-retail').innerText = addr || "Загрузка...";
+                document.getElementById('addr-text').innerText = addr || "Загрузка...";
             }
         }
 
@@ -421,17 +369,21 @@
                 </div>`;
             });
             document.getElementById('home-pkg-list').innerHTML = html;
-            document.getElementById('full-pkg-list').innerHTML = html; // Duplicate for inner page
+            document.getElementById('full-pkg-list').innerHTML = html;
         }
 
-        // --- EXCHANGE LOGIC ---
+        // --- EXCHANGE ---
         function switchTab(tab) {
             currentTab = tab;
+            // UI Toggle
             let t1 = document.getElementById('tab-trip');
             let t2 = document.getElementById('tab-cargo');
+            t1.classList.toggle('active', tab==='trips');
+            t2.classList.toggle('active', tab==='cargo');
             
-            if(tab === 'trips') { t1.style.background='var(--text-main)'; t1.style.color='white'; t2.style.background='#eee'; t2.style.color='#333'; }
-            else { t2.style.background='var(--text-main)'; t2.style.color='white'; t1.style.background='#eee'; t1.style.color='#333'; }
+            // Styles
+            if(tab==='trips') { t1.style.background='#fff'; t2.style.background='transparent'; } 
+            else { t2.style.background='#fff'; t1.style.background='transparent'; }
             
             updateActionButton();
             loadExchange();
@@ -501,7 +453,7 @@
         async function submitTrack() {
             let t=gid('n-track').value, d=gid('n-desc').value;
             let res = await fetch(`${API}/api/add_track`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({user_id:uid, track_number:t, description:d})});
-            if((await res.json()).status==='ok') { closeModal('add-modal'); init(); tg.showAlert("Трек добавлен!"); }
+            if((await res.json()).status==='ok') { closeModal('add-modal'); init(); tg.showAlert("Добавлено!"); }
         }
         async function doCalc() {
             let route = gid('calc-route').value;
