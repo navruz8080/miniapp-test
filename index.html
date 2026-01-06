@@ -13,24 +13,37 @@
         .container { padding: 16px; max-width: 480px; margin: 0 auto; padding-bottom: 100px; }
         .screen { display: none; width: 100%; padding-bottom: 80px; }
         .screen.active { display: block !important; }
+        
+        /* Header & Profile */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top: 10px; }
         .user-row { display: flex; align-items: center; gap: 10px; }
         .ava { width: 44px; height: 44px; border-radius: 50%; background: #ccc; object-fit: cover; }
         .lvl-badge { background: #FFD60A; color: #000; font-size: 10px; padding: 2px 6px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
+        
         .bonus-card { background: linear-gradient(135deg, #111 0%, #333 100%); border-radius: 20px; padding: 20px; color: white; margin-bottom: 24px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         .b-val { font-size: 32px; font-weight: 800; margin: 5px 0; }
         .b-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        
+        /* Grid Menu */
         .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 30px; }
         .grid-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
         .icon-box { width: 54px; height: 54px; background: var(--card); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
         .grid-lbl { font-size: 11px; font-weight: 600; color: var(--text); }
+        
+        /* UI Elements */
         .card { background: var(--card); padding: 16px; border-radius: var(--radius); margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .btn { width: 100%; padding: 14px; border-radius: 14px; border: none; background: var(--text); color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; }
+        .btn { width: 100%; padding: 14px; border-radius: 14px; border: none; background: var(--text); color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
         .btn-blue { background: var(--blue); }
-        input, select { width: 100%; padding: 14px; background: #F2F4F7; border: none; border-radius: 12px; margin-bottom: 10px; box-sizing: border-box; font-family: 'Inter'; font-size: 15px; }
-        .nav-head { background: rgba(255,255,255,0.95); position: sticky; top: 0; z-index: 90; padding: 12px 16px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 10px; }
+        input, select { width: 100%; padding: 14px; background: #F2F4F7; border: 1px solid transparent; border-radius: 12px; margin-bottom: 10px; box-sizing: border-box; font-family: 'Inter'; font-size: 15px; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--blue); background: #fff; }
+        
+        /* Navigation head */
+        .nav-head { background: rgba(255,255,255,0.95); position: sticky; top: 0; z-index: 90; padding: 12px 16px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); }
         .back-icon { font-size: 20px; cursor: pointer; padding: 5px; }
         .pg-title { font-size: 17px; font-weight: 700; }
+        
+        /* Switches & Tabs */
         .switch-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -38,17 +51,21 @@
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 2px; bottom: 2px; background-color: white; border-radius: 50%; transition: .2s; }
         input:checked + .slider { background-color: var(--blue); }
         input:checked + .slider:before { transform: translateX(20px); }
+        
         .tabs { background: #E5E5EA; padding: 4px; border-radius: 12px; display: flex; margin-bottom: 15px; }
         .tab { flex: 1; padding: 8px; text-align: center; font-size: 13px; font-weight: 600; border-radius: 9px; cursor: pointer; color: #8E8E93; }
         .tab.active { background: #fff; color: #000; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        
+        /* Modals */
         .modal-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; align-items: flex-end; }
         .modal { background: #fff; width: 100%; border-radius: 20px 20px 0 0; padding: 24px; animation: slideUp 0.2s; box-sizing: border-box; }
         @keyframes slideUp { from {transform:translateY(100%)} to {transform:translateY(0)} }
+        
+        /* Helpers */
         .empty { text-align: center; color: #999; padding: 30px; font-size: 13px; }
         .copy-box { background: #F0F2F5; padding: 14px; border-radius: 12px; position: relative; cursor: pointer; padding-right: 60px; }
         .copy-text { font-family: monospace; font-size: 13px; line-height: 1.4; color: #333; word-break: break-all; }
         .copy-btn { position: absolute; top: 50%; transform: translateY(-50%); right: 10px; width: 36px; height: 36px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--blue); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
-        #btn-order-confirm { display: none; margin-top: 10px; background: #34C759; }
     </style>
 </head>
 <body>
@@ -129,32 +146,55 @@
     <div id="screen-calc" class="screen">
         <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Калькулятор</div></div>
         <div class="container">
-            <div class="card">
-                <div class="switch-row"><b>Оптовый режим</b><label class="switch"><input type="checkbox" id="tg-calc" onchange="toggleMode()"><span class="slider"></span></label></div>
+            <div class="card" style="padding: 20px;">
+                <div class="switch-row" style="margin-bottom: 20px;">
+                    <b style="font-size: 16px;">Оптовый режим (>100 кг)</b>
+                    <label class="switch"><input type="checkbox" id="tg-calc" onchange="toggleMode()"><span class="slider"></span></label>
+                </div>
                 
-                <div id="box-calc-opt" style="display:none; margin-top:10px;">
-                    <label style="font-size:12px;">Маршрут</label>
-                    <select id="sel-route">
-                        <option value="🇨🇳 Китай (Урумчи) - 🇹🇯 Худжанд">Китай (Урумчи) -> Худжанд</option>
-                        <option value="🇨🇳 Китай (Иу) - 🇹🇯 Худжанд">Китай (Иу) -> Худжанд</option>
-                        <option value="🇨🇳 Китай (Урумчи) - 🇹🇯 Душанбе">Китай (Урумчи) -> Душанбе</option>
-                        <option value="🇨🇳 Китай (Иу) - 🇹🇯 Душанбе">Китай (Иу) -> Душанбе</option>
+                <div id="box-calc-opt" style="display:none; border-top: 1px solid #f0f0f0; padding-top: 15px;">
+                    <label style="font-size: 13px; color: var(--sec); font-weight: 500;">Маршрут перевозки</label>
+                    <select id="sel-route" style="margin-top: 5px;">
+                        <option value="🇨🇳 Китай (Урумчи) - 🇹🇯 Худжанд">🇨🇳 Китай (Урумчи) → 🇹🇯 Худжанд</option>
+                        <option value="🇨🇳 Китай (Иу) - 🇹🇯 Худжанд">🇨🇳 Китай (Иу) → 🇹🇯 Худжанд</option>
+                        <option value="🇨🇳 Китай (Урумчи) - 🇹🇯 Душанбе">🇨🇳 Китай (Урумчи) → 🇹🇯 Душанбе</option>
+                        <option value="🇨🇳 Китай (Иу) - 🇹🇯 Душанбе">🇨🇳 Китай (Иу) → 🇹🇯 Душанбе</option>
                     </select>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; margin-top:10px;">
-                        <div><label style="font-size:10px;">Длина(см)</label><input id="c-len" type="number" placeholder="L"></div>
-                        <div><label style="font-size:10px;">Ширина(см)</label><input id="c-wid" type="number" placeholder="W"></div>
-                        <div><label style="font-size:10px;">Высота(см)</label><input id="c-hei" type="number" placeholder="H"></div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; margin-top:15px;">
+                        <div>
+                            <label style="font-size: 11px; font-weight: 600; color: var(--sec);">Длина(см)</label>
+                            <input id="c-len" type="number" placeholder="0" style="margin-top:5px; text-align: center; background: #fff; border: 1px solid #e5e5e5;">
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; font-weight: 600; color: var(--sec);">Ширина(см)</label>
+                            <input id="c-wid" type="number" placeholder="0" style="margin-top:5px; text-align: center; background: #fff; border: 1px solid #e5e5e5;">
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; font-weight: 600; color: var(--sec);">Высота(см)</label>
+                            <input id="c-hei" type="number" placeholder="0" style="margin-top:5px; text-align: center; background: #fff; border: 1px solid #e5e5e5;">
+                        </div>
                     </div>
                 </div>
 
-                <div style="margin-top:10px;"><label style="font-size:12px;">Вес (кг)</label><input id="c-wg" type="number" placeholder="0.0"></div>
-                <div id="c-res-wrap" style="text-align:center; margin: 20px 0;">
-                    <div id="c-res" style="font-size: 32px; font-weight: 800; color: var(--blue);">0.00</div>
-                    <div id="c-cur" style="font-size: 14px; color: var(--sec); margin-top: -5px;">Выберите параметры</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:15px;">
+                    <div>
+                        <label style="font-size: 11px; font-weight: 600; color: var(--sec);">Вес 1 шт (кг)</label>
+                        <input id="c-wg" type="number" placeholder="0.0" style="margin-top:5px; font-weight: 600; background: #fff; border: 1px solid #e5e5e5;">
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; font-weight: 600; color: var(--sec);">Кол-во (шт)</label>
+                        <input id="c-qty" type="number" value="1" style="margin-top:5px; font-weight: 600; background: #fff; border: 1px solid #e5e5e5;">
+                    </div>
+                </div>
+
+                <div id="c-res-wrap" style="background: #f8f9fa; border-radius: 14px; padding: 20px; margin: 20px 0; text-align: center; border: 1px solid #eee;">
+                    <div id="c-res" style="font-size: 36px; font-weight: 800; color: var(--blue); letter-spacing: -1px;">0.00</div>
+                    <div id="c-cur" style="font-size: 14px; font-weight: 600; color: var(--sec); text-transform: uppercase;">Итого к оплате</div>
                 </div>
                 
-                <button class="btn btn-blue" onclick="doCalc()">Рассчитать</button>
-                <button id="btn-order-confirm" class="btn" onclick="submitOrder()">Оформить заказ</button>
+                <button class="btn btn-blue" onclick="doCalc()" style="height: 54px; font-size: 16px;">Рассчитать стоимость</button>
+                <button id="btn-order-confirm" class="btn" onclick="submitOrder()" style="height: 54px; font-size: 16px; background: #34C759; margin-top: 10px; display:none;">Оформить этот груз</button>
             </div>
         </div>
     </div>
@@ -207,7 +247,7 @@
 
         async function init() {
             try {
-                document.getElementById('u-ava').src = tg.initDataUnsafe?.user?.photo_url || "";
+                gid('u-ava').src = tg.initDataUnsafe?.user?.photo_url || "";
                 let r = await fetch(`${API}/api/dashboard/${uid}`, { headers: { 'ngrok-skip-browser-warning': 'true' } });
                 let d = await r.json();
                 config = d.app_config; 
@@ -282,7 +322,7 @@
             gid('box-code').style.display = isOpt ? 'none' : 'block';
             gid('box-calc-opt').style.display = isOpt ? 'block' : 'none';
             renderAddr();
-            gid('btn-order-confirm').style.display = 'none'; // Сброс кнопки заказа
+            gid('btn-order-confirm').style.display = 'none';
         }
 
         function renderAddr() {
@@ -296,29 +336,41 @@
         }
 
         async function doCalc() {
+            const weight = parseFloat(gid('c-wg').value) || 0;
+            const quantity = parseInt(gid('c-qty').value) || 1;
+            const length = parseFloat(gid('c-len').value) || 0;
+            const width = parseFloat(gid('c-wid').value) || 0;
+            const height = parseFloat(gid('c-hei').value) || 0;
+
             let p = { 
                 user_id: uid,
-                weight: parseFloat(gid('c-wg').value) || 0, 
-                quantity: 1, 
+                weight: weight, 
+                quantity: quantity, 
                 category: isOpt ? 'more_100' : 'less_100',
-                length: parseFloat(gid('c-len').value) || 0,
-                width: parseFloat(gid('c-wid').value) || 0,
-                height: parseFloat(gid('c-hei').value) || 0,
+                length: length, width: width, height: height,
                 route_from: isOpt ? gid('sel-route').value.split(' - ')[0] : "🇨🇳 Китай (Урумчи)",
                 route_to: isOpt ? gid('sel-route').value.split(' - ')[1] : "🇹🇯 Худжанд"
             };
             
+            gid('c-res').innerText = "---";
+            
             try {
-                let r = await fetch(`${API}/api/calculate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
+                let r = await fetch(`${API}/api/calculate`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(p) 
+                });
                 let j = await r.json();
+                
                 if (j.status === 'ok') {
-                    gid('c-res').innerText = `${j.price}`;
-                    gid('c-cur').innerText = j.currency;
+                    gid('c-res').innerText = j.price.toLocaleString();
+                    gid('c-cur').innerText = j.currency + " (за " + j.total_weight + " кг)";
                     gid('btn-order-confirm').style.display = 'block';
                     lastCalc = { ...p, price: j.price, route: `${p.route_from} - ${p.route_to}` };
+                    tg.HapticFeedback.impactOccurred('medium');
                 } else {
-                    gid('c-res').innerText = "Error";
-                    tg.showAlert("Ошибка расчета: " + j.message);
+                    gid('c-res').innerText = "0";
+                    tg.showAlert("Ошибка: " + j.message);
                 }
             } catch(e) { tg.showAlert("Ошибка связи с сервером"); }
         }
@@ -332,13 +384,13 @@
                     body: JSON.stringify({
                         user_id: uid,
                         route: lastCalc.route,
-                        weight: lastCalc.weight,
+                        weight: lastCalc.weight * lastCalc.quantity,
                         price: lastCalc.price
                     })
                 });
                 let j = await r.json();
                 if (j.status === 'ok') {
-                    tg.showAlert("✅ Заказ успешно оформлен! Менеджер свяжется с вами.");
+                    tg.showAlert("✅ Заказ успешно оформлен!");
                     gid('btn-order-confirm').style.display = 'none';
                 }
             } catch(e) { tg.showAlert("Ошибка при создании заказа"); }
@@ -358,7 +410,6 @@
             else { tg.showAlert(res.message); }
         }
 
-        // Вспомогательные функции
         function gid(id) { return document.getElementById(id); }
         function openM(id) { gid(id).style.display = 'flex'; }
         function closeM(id) { gid(id).style.display = 'none'; }
