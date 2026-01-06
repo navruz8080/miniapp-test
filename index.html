@@ -7,7 +7,6 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
     <style>
         :root { --bg: #F2F3F5; --card: #FFFFFF; --text: #1F1F1F; --sec: #8E8E93; --blue: #007AFF; --radius: 16px; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -56,22 +55,9 @@
         
         .empty { text-align: center; color: #999; padding: 30px; font-size: 13px; }
         
-        /* 🔥 КНОПКА КОПИРОВАНИЯ */
-        .copy-box { 
-            background: #F0F2F5; padding: 14px; border-radius: 12px; 
-            position: relative; cursor: pointer; 
-            padding-right: 60px; /* Место для кнопки */
-        }
-        .copy-text { 
-            font-family: monospace; font-size: 13px; line-height: 1.4; color: #333; 
-            word-break: break-all;
-        }
-        .copy-btn { 
-            position: absolute; top: 50%; transform: translateY(-50%); right: 10px; 
-            width: 36px; height: 36px; background: #fff; border-radius: 10px; 
-            display: flex; align-items: center; justify-content: center; 
-            color: var(--blue); box-shadow: 0 2px 6px rgba(0,0,0,0.08); 
-        }
+        .copy-box { background: #F0F2F5; padding: 14px; border-radius: 12px; position: relative; cursor: pointer; padding-right: 60px; }
+        .copy-text { font-family: monospace; font-size: 13px; line-height: 1.4; color: #333; word-break: break-all; }
+        .copy-btn { position: absolute; top: 50%; transform: translateY(-50%); right: 10px; width: 36px; height: 36px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--blue); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
     </style>
 </head>
 <body>
@@ -126,7 +112,7 @@
                 </div>
             </div>
             <div id="box-code" class="card">
-                <b>Ваш Код (Обязательно!)</b>
+                <b>Ваш Код (Для маркировки)</b>
                 <div class="copy-box" onclick="copy('txt-code')" style="margin-top:8px;">
                     <div id="txt-code" class="copy-text" style="font-weight:700; color:var(--blue);">...</div>
                     <div class="copy-btn"><i class="fa-regular fa-copy"></i></div>
@@ -162,198 +148,204 @@
         </div>
     </div>
 
-    <div id="screen-trucks" class="screen">
-        <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Биржа</div></div>
-        <div class="container">
-            <div class="tabs">
-                <div id="tab-tr-1" class="tab active" onclick="swTr('trips')">Доставить</div>
-                <div id="tab-tr-2" class="tab" onclick="swTr('cargo')">Я водитель</div>
-            </div>
-            <div id="list-trucks"></div>
-            <button id="btn-tr-act" class="btn btn-blue" style="position:fixed; bottom:20px; width:calc(100% - 32px); left:16px;" onclick="trAct()">Действие</button>
+    <div id="screen-trucks" class="screen"><div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Биржа</div></div><div class="container"><div id="list-trucks"></div></div></div>
+    <div id="screen-market" class="screen"><div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Маркет</div></div><div class="container"><div id="list-market"></div></div></div>
+    <div id="screen-rewards" class="screen"><div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Задания</div></div><div class="container"><div id="list-rewards"></div></div></div>
+
+    <div id="m-add" class="modal-wrap">
+        <div class="modal">
+            <h3>Добавить посылку</h3>
+            <input id="n-t" placeholder="Трек-номер">
+            <input id="n-d" placeholder="Описание (например: Кроссовки)">
+            <button class="btn btn-blue" onclick="subTrack()">Добавить</button>
+            <div style="text-align:center;padding:15px;color:var(--sec);" onclick="closeM('m-add')">Отмена</div>
         </div>
     </div>
 
-    <div id="screen-market" class="screen"><div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Маркет</div></div><div class="container"><div class="tabs"><div id="tab-buy" class="tab active" onclick="swMark('item')">Товары</div><div id="tab-joint" class="tab" onclick="swMark('joint')">Складчина</div></div><div id="list-market" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div><button class="btn btn-blue" style="position:fixed; bottom:20px; width:calc(100% - 32px); left:16px;" onclick="openM('m-prod')">Продать</button></div></div>
-    
-    <div id="screen-rewards" class="screen"><div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Награды</div></div><div class="container" id="list-rewards"></div></div>
-
-    <div id="m-add" class="modal-wrap"><div class="modal"><h3>Трек</h3><input id="n-t" placeholder="Номер"><input id="n-d" placeholder="Описание"><button class="btn btn-blue" onclick="subTrack()">OK</button><div style="text-align:center;padding:15px;" onclick="closeM('m-add')">X</div></div></div>
-    <div id="m-prod" class="modal-wrap"><div class="modal"><h3>Продать</h3><input id="p-t" placeholder="Название"><input id="p-d" placeholder="Описание"><input id="p-p" placeholder="Цена"><button class="btn btn-blue" onclick="subProd()">OK</button><div style="text-align:center;padding:15px;" onclick="closeM('m-prod')">X</div></div></div>
-    <div id="m-cargo" class="modal-wrap"><div class="modal"><h3>Груз</h3><input id="cg-f" placeholder="Откуда"><input id="cg-t" placeholder="Куда"><input id="cg-d" placeholder="Что"><input id="cg-w" placeholder="Вес"><input id="cg-p" placeholder="Цена"><button class="btn btn-blue" onclick="subCargo()">OK</button><div style="text-align:center;padding:15px;" onclick="closeM('m-cargo')">X</div></div></div>
-    <div id="m-trip" class="modal-wrap"><div class="modal"><h3>Рейс</h3><input id="tr-f" placeholder="Откуда"><input id="tr-t" placeholder="Куда"><input id="tr-p" placeholder="Цена кг"><button class="btn btn-blue" onclick="subTrip()">OK</button><div style="text-align:center;padding:15px;" onclick="closeM('m-trip')">X</div></div></div>
-    <div id="m-driver" class="modal-wrap"><div class="modal"><h3>Водитель</h3><input id="d-c" placeholder="Авто"><input id="d-n" placeholder="Номер"><input id="d-w" placeholder="Вес"><button class="btn btn-blue" onclick="subDriver()">OK</button><div style="text-align:center;padding:15px;" onclick="closeM('m-driver')">X</div></div></div>
-
     <script>
-        const tg = window.Telegram.WebApp; tg.expand();
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        
+        // ⚠️ ЗАМЕНИТЕ НА ВАШУ АКТУАЛЬНУЮ ССЫЛКУ NGROK
         const API = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
         const uid = tg.initDataUnsafe?.user?.id || 317295540;
         
-        let config = {}, user = {}, isOpt = false, tabTr = 'trips', tabMk = 'item', isDriver = false;
+        let config = {}, user = {}, isOpt = false;
 
         async function init() {
             try {
                 document.getElementById('u-ava').src = tg.initDataUnsafe?.user?.photo_url || "";
-                let r = await fetch(`${API}/api/dashboard/${uid}`, {headers:{'ngrok-skip-browser-warning':'true'}});
-                let d = await r.json();
-                config = d.app_config; user = d.user_info;
+                
+                let r = await fetch(`${API}/api/dashboard/${uid}`, {
+                    headers: { 'ngrok-skip-browser-warning': 'true' }
+                });
 
-                // UI Fill
-                gid('u-name').innerText = user.name || "Client";
-                gid('u-id').innerText = `ID: ${uid}`;
-                gid('u-lvl').innerText = user.level;
-                gid('u-bonus').innerText = user.bonus_kg;
+                // 🔥 Защита от ошибок iOS (проверка JSON)
+                if (!r.ok) {
+                    const errTxt = await r.text();
+                    throw new Error("Ошибка сервера: " + errTxt.substring(0, 50));
+                }
+
+                let d = await r.json();
+                config = d.app_config; 
+                user = d.user_info;
+
+                // Заполнение интерфейса
+                gid('u-name').innerText = user.name || "Клиент";
+                // 🔥 ИСПРАВЛЕНО: Убрано дублирование ID: ID:
+                gid('u-id').innerText = user.user_id; 
+                gid('u-lvl').innerText = user.level || "Новичок";
+                gid('u-bonus').innerText = user.bonus_kg || 0;
                 gid('txt-code').innerText = user.marking_code;
 
-                // Settings: Заполняем ПВЗ из конфига
+                // Настройки
+                gid('s-name').value = user.name || "";
+                gid('s-phone').value = user.phone || "";
                 renderPvzOptions(config.pvz_list, user.pvz_id);
-                gid('s-name').value = user.name;
-                gid('s-phone').value = user.marking_code.split('/').pop().trim();
 
-                // Packages
-                let h=''; d.packages.forEach(p=>h+=`<div class="card" style="padding:12px;"><div style="font-weight:700">${p.description}</div><div style="font-size:12px;color:#888">${p.track_number} • ${p.status_text}</div></div>`);
-                gid('home-pkg-list').innerHTML = h || '<div class="empty">Нет посылок</div>';
+                // Посылки
+                let h = '';
+                if (d.packages && d.packages.length > 0) {
+                    d.packages.forEach(p => {
+                        h += `<div class="card" style="padding:12px;">
+                                <div style="font-weight:700">${p.description || 'Без описания'}</div>
+                                <div style="font-size:12px;color:#888">${p.track_number} • ${p.status_text}</div>
+                              </div>`;
+                    });
+                } else {
+                    h = '<div class="empty">У вас пока нет посылок</div>';
+                }
+                gid('home-pkg-list').innerHTML = h;
 
-                // Routes
-                let rr = await fetch(`${API}/api/get_routes`); let rd = await rr.json();
-                let s = gid('sel-route'); s.innerHTML='<option>Маршрут...</option>';
-                if(rd.routes) rd.routes.forEach(r=>{let o=document.createElement('option');o.value=r;o.innerText=r;s.appendChild(o)});
-
+                // Категория
                 isOpt = (user.category === 'more_100');
-                updMode(); checkDriver();
+                updMode();
 
-            } catch(e) { console.error(e); tg.showAlert("Ошибка: " + e.message); }
+            } catch(e) {
+                console.error(e);
+                alert("Ошибка загрузки: " + e.message);
+            }
         }
 
         function renderPvzOptions(list, currentId) {
-            let sel = gid('s-pvz'); sel.innerHTML = '<option value="">Не выбран</option>';
-            if (list) list.forEach(p => {
-                let opt = document.createElement('option');
-                opt.value = p.id; opt.innerText = p.name;
-                // Сравниваем ID (оба могут быть числами)
-                if (p.id == currentId) opt.selected = true;
-                sel.appendChild(opt);
+            let sel = gid('s-pvz');
+            sel.innerHTML = '<option value="">Не выбран</option>';
+            if (list) {
+                list.forEach(p => {
+                    let opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.innerText = p.name;
+                    if (p.id == currentId) opt.selected = true;
+                    sel.appendChild(opt);
+                });
+            }
+        }
+
+        function nav(id) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            gid('screen-' + id).classList.add('active');
+        }
+
+        function goHome() {
+            nav('home');
+        }
+
+        function toggleMode() {
+            if (gid('screen-calc').classList.contains('active')) isOpt = gid('tg-calc').checked;
+            else isOpt = gid('tg-opt').checked;
+            updMode();
+            
+            fetch(`${API}/api/update_settings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: uid, category: isOpt ? 'more_100' : 'less_100' })
             });
         }
 
-        // --- NAV ---
-        function nav(id) {
-            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-            gid('screen-'+id).classList.add('active');
-            if(id==='trucks') ldTr(); if(id==='market') ldMk(); if(id==='rewards') ldRew();
-        }
-        function goHome() {
-            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-            gid('screen-home').classList.add('active');
-        }
-
-        // --- LOGIC ---
-        function toggleMode() {
-            if(gid('screen-calc').classList.contains('active')) isOpt=gid('tg-calc').checked;
-            else isOpt=gid('tg-opt').checked;
-            updMode();
-            fetch(`${API}/api/update_settings`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:uid, category:isOpt?'more_100':'less_100'})});
-        }
         function updMode() {
-            gid('tg-opt').checked = isOpt; gid('tg-calc').checked = isOpt;
+            gid('tg-opt').checked = isOpt;
+            gid('tg-calc').checked = isOpt;
             gid('box-city').style.display = isOpt ? 'block' : 'none';
             gid('box-code').style.display = isOpt ? 'none' : 'block';
             gid('box-calc-opt').style.display = isOpt ? 'block' : 'none';
             renderAddr();
         }
+
         function renderAddr() {
             let t = gid('txt-addr');
-            if(isOpt) {
+            if (isOpt) {
                 let c = gid('sel-city').value;
-                t.innerText = config.warehouses?.wholesale?.[c]?.address || "Нет адреса";
+                t.innerText = config.warehouses?.wholesale?.[c]?.address || "Адрес не найден";
             } else {
-                t.innerText = config.warehouses?.retail?.address || "Нет адреса";
+                t.innerText = config.warehouses?.retail?.address || "Адрес не найден";
             }
         }
 
-        // --- TRUCKS ---
-        function swTr(t) {
-            tabTr = t;
-            gid('tab-tr-1').className = t==='trips'?'tab active':'tab';
-            gid('tab-tr-2').className = t==='cargo'?'tab active':'tab';
-            let b = gid('btn-tr-act');
-            if(t==='trips') { b.innerText = "📦 Добавить груз"; b.onclick = ()=>openM('m-cargo'); }
-            else { b.innerText = isDriver ? "🚚 Создать рейс" : "👨‍✈️ Стать водителем"; b.onclick = isDriver ? ()=>openM('m-trip') : ()=>openM('m-driver'); }
-            ldTr();
-        }
-        async function ldTr() {
-            let c=gid('list-trucks'); c.innerHTML='<div class="empty">Загрузка...</div>';
-            try {
-                let r=await fetch(`${API}/api/trucking/list?type=${tabTr}`); let d=await r.json();
-                c.innerHTML=''; if(!d.items?.length) { c.innerHTML='<div class="empty">Пусто</div>'; return; }
-                d.items.forEach(i => {
-                    let brd = i.type==='trip'?'var(--blue)':'#FF9500';
-                    c.innerHTML += `<div class="card" style="border-left:4px solid ${brd};padding:14px;"><div style="font-weight:700">${i.title}</div><div style="font-size:12px;color:#888;margin-top:2px;">${i.subtitle}</div><div style="margin-top:8px;font-weight:700;font-size:13px;display:flex;justify-content:space-between;"><span style="color:${brd}">${i.details}</span><span>${i.extra}</span></div></div>`;
-                });
-            } catch(e) {}
-        }
-        async function checkDriver() { try { let r=await fetch(`${API}/api/trucking/status/${uid}`); let d=await r.json(); isDriver=d.is_driver; } catch(e){} }
-        function trAct() { /* Handled in swTr */ }
-
-        // --- MARKET ---
-        function swMark(t) {
-            tabMk = t;
-            gid('tab-buy').className = t==='item'?'tab active':'tab';
-            gid('tab-joint').className = t==='joint'?'tab active':'tab';
-            ldMk();
-        }
-        async function ldMk() {
-            let c=gid('list-market'); c.innerHTML='<div class="empty">Загрузка...</div>';
-            try {
-                let r=await fetch(`${API}/api/market/list?type=${tabMk}`); let d=await r.json();
-                c.innerHTML=''; if(!d.items?.length) { c.innerHTML='<div class="empty">Пусто</div>'; return; }
-                d.items.forEach(i => {
-                    c.innerHTML += `<div class="card" style="margin:0;padding:10px;"><img src="${i.image_url||'https://placehold.co/100'}" style="width:100%;height:100px;object-fit:cover;border-radius:10px;background:#eee;"><div style="font-weight:600;font-size:13px;margin-top:6px;">${i.title}</div><div style="font-weight:700;color:#007AFF;font-size:14px;">${i.price} TJS</div></div>`;
-                });
-            } catch(e) {}
+        async function saveSet() {
+            let data = {
+                user_id: uid,
+                full_name: gid('s-name').value,
+                phone: gid('s-phone').value,
+                pvz_id: parseInt(gid('s-pvz').value)
+            };
+            let r = await fetch(`${API}/api/update_settings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (r.ok) {
+                tg.showAlert("Настройки сохранены");
+                init();
+                goHome();
+            }
         }
 
-        // --- REWARDS ---
-        async function ldRew() {
-            let c=gid('list-rewards'); c.innerHTML='<div class="empty">Загрузка...</div>';
-            try {
-                let r=await fetch(`${API}/api/rewards/list/${uid}`); let d=await r.json();
-                c.innerHTML='';
-                d.tasks.forEach(t => {
-                    c.innerHTML += `<div class="card" style="display:flex;align-items:center;gap:15px;"><div style="font-size:24px;color:var(--blue);"><i class="fa-solid ${t.icon}"></i></div><div style="flex:1;"><b>${t.title}</b><div style="font-size:11px;color:#888;">${t.desc}</div></div><button class="btn btn-blue" style="width:auto;padding:8px 12px;font-size:12px;" onclick="claim(${t.id})">+${t.reward}кг</button></div>`;
-                });
-            } catch(e){}
-        }
-        async function claim(id) {
-            let r=await fetch(`${API}/api/rewards/claim`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:uid,task_id:id})});
-            let d=await r.json(); tg.showAlert(d.message); if(d.status==='ok') init();
+        async function subTrack() {
+            let data = {
+                user_id: uid,
+                track_number: gid('n-t').value,
+                description: gid('n-d').value
+            };
+            let r = await fetch(`${API}/api/add_track`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            let res = await r.json();
+            if (res.status === 'ok') {
+                closeM('m-add');
+                init();
+                tg.showAlert("Трек добавлен");
+            } else {
+                alert(res.message);
+            }
         }
 
-        // --- UTILS ---
-        function gid(id){return document.getElementById(id)}
-        function openM(id){gid(id).style.display='flex'}
-        function closeM(id){gid(id).style.display='none'}
-        function copy(id){navigator.clipboard.writeText(gid(id).innerText); tg.HapticFeedback.notificationOccurred('success'); tg.showAlert("Скопировано");}
-        async function post(url, data) {
-            data.user_id = uid;
-            let r = await fetch(`${API}/api/${url}`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
-            return await r.json();
-        }
-        async function subTrack() { await post('add_track', {track_number:gid('n-t').value, description:gid('n-d').value}); closeM('m-add'); init(); }
-        async function subProd() { await post('market/create', {title:gid('p-t').value, description:gid('p-d').value, price:parseFloat(gid('p-p').value), item_type:tabMk}); closeM('m-prod'); ldMk(); }
-        async function subCargo() { await post('trucking/create_cargo', {city_from:gid('cg-f').value, city_to:gid('cg-t').value, description:gid('cg-d').value, weight:parseFloat(gid('cg-w').value), price_offer:parseFloat(gid('cg-p').value)}); closeM('m-cargo'); swTr('trips'); }
-        async function subTrip() { await post('trucking/create_trip', {city_from:gid('tr-f').value, city_to:gid('tr-t').value, price_per_kg:parseFloat(gid('tr-p').value), date:'Скоро'}); closeM('m-trip'); ldTr(); }
-        async function subDriver() { await post('trucking/register', {car_model:gid('d-c').value, car_number:gid('d-n').value, max_weight_kg:parseFloat(gid('d-w').value)}); closeM('m-driver'); checkDriver(); tg.showAlert("Готово!"); }
-        async function saveSet() { await post('update_settings', {full_name:gid('s-name').value, phone:gid('s-phone').value, pvz_id:parseInt(gid('s-pvz').value)}); goHome(); init(); tg.showAlert("Сохранено"); }
         async function doCalc() {
-            let p={user_id:uid, category:isOpt?'more_100':'less_100', weight_per_item:parseFloat(gid('c-wg').value), quantity:1};
-            if(isOpt) { p.route_from=gid('sel-route').value.split(' - ')[0]; p.route_to=gid('sel-route').value.split(' - ')[1].split(' ')[0]; p.length=parseFloat(gid('c-l').value); p.width=parseFloat(gid('c-w').value); p.height=parseFloat(gid('c-h').value); }
-            let r=await fetch(`${API}/api/calculate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
-            let j=await r.json(); gid('c-res').innerText = j.status==='ok' ? `${j.price} ${j.currency}` : "Ошибка";
+            let p = {
+                weight: parseFloat(gid('c-wg').value) || 0,
+                quantity: 1,
+                category: isOpt ? 'more_100' : 'less_100'
+            };
+            let r = await fetch(`${API}/api/calculate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(p)
+            });
+            let j = await r.json();
+            gid('c-res').innerText = j.status === 'ok' ? `${j.price} ${j.currency}` : "Ошибка";
+        }
+
+        function gid(id) { return document.getElementById(id); }
+        function openM(id) { gid(id).style.display = 'flex'; }
+        function closeM(id) { gid(id).style.display = 'none'; }
+        function copy(id) { 
+            navigator.clipboard.writeText(gid(id).innerText); 
+            tg.HapticFeedback.notificationOccurred('success'); 
+            tg.showAlert("Скопировано в буфер"); 
         }
 
         init();
     </script>
 </body>
 </html>
-
