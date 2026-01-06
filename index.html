@@ -47,6 +47,7 @@ display:none;align-items:flex-end;z-index:1000}
 
 <body>
 
+<!-- ================= HOME ================= -->
 <div id="screen-home" class="screen active">
 <div class="container">
 <div class="header">
@@ -81,6 +82,7 @@ display:none;align-items:flex-end;z-index:1000}
 </div>
 </div>
 
+<!-- ================= PACKAGE ================= -->
 <div id="screen-package" class="screen">
 <div class="nav-head">
 <div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
@@ -95,6 +97,7 @@ display:none;align-items:flex-end;z-index:1000}
 </div>
 </div>
 
+<!-- ================= CHINA ================= -->
 <div id="screen-china" class="screen">
 <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><b>Мой Китай</b></div>
 <div class="container">
@@ -103,26 +106,17 @@ display:none;align-items:flex-end;z-index:1000}
 </div>
 </div>
 
+<!-- ================= CALC ================= -->
 <div id="screen-calc" class="screen">
 <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><b>Калькулятор</b></div>
 <div class="container">
-
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-    <span>Оптовый режим</span>
-    <input type="checkbox" id="tg-calc" onchange="toggleCalcMode()">
-</div>
-
-<div id="box-calc-opt" style="display:none; margin-bottom:10px;">
-    <label style="font-size:12px;color:var(--sec)">Маршрут</label>
-    <select id="sel-route" style="width:100%;padding:10px;border-radius:12px;border:none;background:#f2f4f7"></select>
-</div>
-
 <input id="c-wg" type="number" placeholder="Вес кг">
 <div id="c-res" style="font-size:28px;font-weight:800;text-align:center">0</div>
 <button class="btn btn-blue" onclick="doCalc()">Рассчитать</button>
 </div>
 </div>
 
+<!-- ================= TRUCKS ================= -->
 <div id="screen-trucks" class="screen">
 <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><b>Биржа</b></div>
 <div class="container">
@@ -134,6 +128,7 @@ display:none;align-items:flex-end;z-index:1000}
 </div>
 </div>
 
+<!-- ================= MARKET ================= -->
 <div id="screen-market" class="screen">
 <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><b>Маркет</b></div>
 <div class="container">
@@ -145,6 +140,7 @@ display:none;align-items:flex-end;z-index:1000}
 </div>
 </div>
 
+<!-- ================= REWARDS ================= -->
 <div id="screen-rewards" class="screen">
 <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><b>Задания</b></div>
 <div class="container">
@@ -152,6 +148,7 @@ display:none;align-items:flex-end;z-index:1000}
 </div>
 </div>
 
+<!-- ================= SETTINGS ================= -->
 <div id="screen-settings" class="screen">
 <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><b>Настройки</b></div>
 <div class="container">
@@ -161,6 +158,7 @@ display:none;align-items:flex-end;z-index:1000}
 </div>
 </div>
 
+<!-- ================= MODAL ================= -->
 <div id="m-add" class="modal-wrap">
 <div class="modal">
 <input id="n-t" placeholder="Трек">
@@ -172,10 +170,9 @@ display:none;align-items:flex-end;z-index:1000}
 
 <script>
 const tg = window.Telegram.WebApp; tg.expand();
-const API = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; // Убедитесь, что ссылка верна!
+const API = "http://localhost:8000";
 const uid = tg.initDataUnsafe?.user?.id || 1;
 let tabTr='trips',tabMk='item';
-let config = {}; // Глобальный конфиг
 
 function gid(id){return document.getElementById(id)}
 function nav(id){
@@ -188,31 +185,12 @@ if(id==='rewards')ldRew();
 function goHome(){nav('home')}
 
 async function init(){
-// Запрашиваем дашборд
-let r=await fetch(`${API}/api/dashboard/${uid}`, {headers:{'ngrok-skip-browser-warning':'true'}});
+let r=await fetch(`${API}/api/dashboard/${uid}`);
 let d=await r.json();
-
-config = d.app_config; // Сохраняем конфиг
-
 gid('u-name').innerText=d.user_info.name||'Клиент';
 gid('u-id').innerText=d.user_info.user_id;
 gid('u-lvl').innerText=d.user_info.level;
 gid('u-bonus').innerText=d.user_info.bonus_kg;
-
-// Заполняем селект маршрутов, если они есть
-if(config.routes) {
-    let rs = gid('sel-route'); rs.innerHTML = '';
-    config.routes.forEach(rt => {
-        let o = document.createElement('option'); o.value = rt.id; o.innerText = rt.name;
-        rs.appendChild(o);
-    });
-}
-
-// Если пользователь уже "Оптовик", включаем чекбокс
-if(d.user_info.category === 'more_100') {
-    gid('tg-calc').checked = true;
-    toggleCalcMode();
-}
 
 let h='';
 d.packages.forEach(p=>{
@@ -224,31 +202,25 @@ h+=`<div class="card" onclick="openPkg('${p.track_number}')">
 gid('home-pkg-list').innerHTML=h||'<div class="empty">Нет посылок</div>';
 }
 
-function toggleCalcMode() {
-    let isOpt = gid('tg-calc').checked;
-    gid('box-calc-opt').style.display = isOpt ? 'block' : 'none';
-}
-
 async function openPkg(track){
-let r=await fetch(`${API}/api/package/${track}`); // Убедитесь, что этот эндпоинт есть в API, если нет - используйте данные из dashboard
-// Если эндпоинта нет, можно временно заглушить или брать из кэша
-// Для простоты оставим как было, предполагая наличие логики
-// nav('package'); // Пока просто откроем, если API не реализован
+let r=await fetch(`${API}/api/package/${track}`);
+let d=await r.json();
+gid('pkg-title').innerText=d.package.track_number;
+gid('pkg-status').innerText=d.package.status;
+let h='';
+if(!d.history.length)h='<div class="empty">Истории нет</div>';
+d.history.forEach(s=>{
+h+=`<div class="card"><b>${s.status}</b><br><small>${new Date(s.timestamp).toLocaleString()}</small></div>`;
+});
+gid('pkg-history').innerHTML=h;
+nav('package');
 }
 
 async function doCalc(){
 let w=parseFloat(gid('c-wg').value)||0;
-let isOpt = gid('tg-calc').checked;
-let route = gid('sel-route').value;
-
 let r=await fetch(`${API}/api/calculate`,{
 method:'POST',headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-    weight:w,
-    quantity:1,
-    category: isOpt ? 'more_100' : 'less_100',
-    route_id: route // Отправляем маршрут
-})
+body:JSON.stringify({weight:w,quantity:1,category:'less_100'})
 });
 let j=await r.json();
 gid('c-res').innerText=j.price+' '+j.currency;
@@ -257,35 +229,29 @@ gid('c-res').innerText=j.price+' '+j.currency;
 async function ldTr(){
 let r=await fetch(`${API}/api/trucking/list?type=${tabTr}`);
 let d=await r.json();let h='';
-if(d.items){
-    d.items.forEach(i=>{
-    h+=`<div class="card"><b>${i.title}</b><br>${i.details}</div>`;
-    });
-}
+d.items.forEach(i=>{
+h+=`<div class="card"><b>${i.title}</b><br>${i.details}</div>`;
+});
 gid('list-trucks').innerHTML=h||'<div class="empty">Пусто</div>';
 }
 
 async function ldMk(){
 let r=await fetch(`${API}/api/market/list?type=${tabMk}`);
 let d=await r.json();let h='';
-if(d.items){
-    d.items.forEach(i=>{
-    h+=`<div class="card"><b>${i.title}</b><br>${i.price} TJS</div>`;
-    });
-}
+d.items.forEach(i=>{
+h+=`<div class="card"><b>${i.title}</b><br>${i.price} TJS</div>`;
+});
 gid('list-market').innerHTML=h||'<div class="empty">Пусто</div>';
 }
 
 async function ldRew(){
 let r=await fetch(`${API}/api/rewards/list/${uid}`);
 let d=await r.json();let h='';
-if(d.tasks){
-    d.tasks.forEach(t=>{
-    h+=`<div class="card" onclick="claimRew(${t.id})">
-    <b>${t.title}</b><br>+${t.reward} кг
-    </div>`;
-    });
-}
+d.tasks.forEach(t=>{
+h+=`<div class="card" onclick="claimRew(${t.id})">
+<b>${t.title}</b><br>+${t.reward} кг
+</div>`;
+});
 gid('list-rewards').innerHTML=h;
 }
 
