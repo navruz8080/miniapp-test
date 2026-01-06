@@ -1,290 +1,390 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Drop SuperApp</title>
-
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-<style>
-:root{
---bg:#F2F3F5;--card:#fff;--text:#1F1F1F;--sec:#8E8E93;
---blue:#007AFF;--radius:16px
-}
-body{margin:0;font-family:Inter,sans-serif;background:var(--bg);color:var(--text)}
-.container{padding:16px;max-width:480px;margin:0 auto;padding-bottom:100px}
-.screen{display:none}
-.screen.active{display:block}
-.card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px}
-.btn{width:100%;padding:14px;border-radius:14px;border:none;font-weight:700;font-size:15px}
-.btn-blue{background:var(--blue);color:#fff}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-.user-row{display:flex;gap:10px;align-items:center}
-.ava{width:44px;height:44px;border-radius:50%;background:#ccc}
-.lvl-badge{background:#FFD60A;font-size:10px;padding:2px 6px;border-radius:8px;font-weight:800}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:25px}
-.grid-item{text-align:center;cursor:pointer}
-.icon-box{width:54px;height:54px;border-radius:18px;background:#fff;
-display:flex;align-items:center;justify-content:center;font-size:22px}
-.nav-head{position:sticky;top:0;background:#fff;padding:12px 16px;
-display:flex;align-items:center;gap:15px;border-bottom:1px solid #eee;z-index:10}
-.back-icon{font-size:20px;cursor:pointer}
-.tabs{display:flex;background:#e5e5ea;border-radius:12px;padding:4px;margin-bottom:15px}
-.tab{flex:1;text-align:center;padding:8px;font-size:13px;font-weight:600;
-border-radius:9px;cursor:pointer;color:#888}
-.tab.active{background:#fff;color:#000}
-.empty{text-align:center;color:#999;padding:30px}
-.modal-wrap{position:fixed;inset:0;background:rgba(0,0,0,.5);
-display:none;align-items:flex-end;z-index:1000}
-.modal{background:#fff;width:100%;border-radius:20px 20px 0 0;padding:24px}
-.copy-box{background:#f0f2f5;padding:14px;border-radius:12px;position:relative}
-.copy-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%)}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Drop SuperApp</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #F2F3F5; --card: #FFFFFF; --text: #1F1F1F; --sec: #8E8E93; --blue: #007AFF; --radius: 16px; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        .container { padding: 16px; max-width: 480px; margin: 0 auto; padding-bottom: 100px; }
+        .screen { display: none; width: 100%; padding-bottom: 80px; }
+        .screen.active { display: block !important; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top: 10px; }
+        .user-row { display: flex; align-items: center; gap: 10px; }
+        .ava { width: 44px; height: 44px; border-radius: 50%; background: #ccc; object-fit: cover; }
+        .lvl-badge { background: #FFD60A; color: #000; font-size: 10px; padding: 2px 6px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
+        
+        .bonus-card { background: linear-gradient(135deg, #111 0%, #333 100%); border-radius: 20px; padding: 20px; color: white; margin-bottom: 24px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .b-val { font-size: 32px; font-weight: 800; margin: 5px 0; }
+        .b-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 30px; }
+        .grid-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
+        .icon-box { width: 54px; height: 54px; background: var(--card); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .grid-lbl { font-size: 11px; font-weight: 600; color: var(--text); }
+        
+        .card { background: var(--card); padding: 16px; border-radius: var(--radius); margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .btn { width: 100%; padding: 14px; border-radius: 14px; border: none; background: var(--text); color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; }
+        .btn-blue { background: var(--blue); }
+        input, select { width: 100%; padding: 14px; background: #F2F4F7; border: none; border-radius: 12px; margin-bottom: 10px; box-sizing: border-box; font-family: 'Inter'; font-size: 15px; }
+        
+        .nav-head { background: rgba(255,255,255,0.95); position: sticky; top: 0; z-index: 90; padding: 12px 16px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 10px; }
+        .back-icon { font-size: 20px; cursor: pointer; padding: 5px; }
+        .pg-title { font-size: 17px; font-weight: 700; }
+        
+        .switch-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 34px; transition: .2s; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 2px; bottom: 2px; background-color: white; border-radius: 50%; transition: .2s; }
+        input:checked + .slider { background-color: var(--blue); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        
+        .tabs { background: #E5E5EA; padding: 4px; border-radius: 12px; display: flex; margin-bottom: 15px; }
+        .tab { flex: 1; padding: 8px; text-align: center; font-size: 13px; font-weight: 600; border-radius: 9px; cursor: pointer; color: #8E8E93; }
+        .tab.active { background: #fff; color: #000; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        
+        .modal-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; align-items: flex-end; }
+        .modal { background: #fff; width: 100%; border-radius: 20px 20px 0 0; padding: 24px; animation: slideUp 0.2s; }
+        @keyframes slideUp { from {transform:translateY(100%)} to {transform:translateY(0)} }
+        
+        .empty { text-align: center; color: #999; padding: 30px; font-size: 13px; }
+        
+        .copy-box { background: #F0F2F5; padding: 14px; border-radius: 12px; position: relative; cursor: pointer; padding-right: 60px; }
+        .copy-text { font-family: monospace; font-size: 13px; line-height: 1.4; color: #333; word-break: break-all; }
+        .copy-btn { position: absolute; top: 50%; transform: translateY(-50%); right: 10px; width: 36px; height: 36px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--blue); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    </style>
 </head>
-
 <body>
 
-<!-- ================= HOME ================= -->
-<div id="screen-home" class="screen active">
-<div class="container">
-<div class="header">
-<div class="user-row">
-<img id="u-ava" class="ava">
-<div>
-<b id="u-name">...</b>
-<div><span id="u-lvl" class="lvl-badge">...</span></div>
-<div style="font-size:12px;color:var(--sec)">ID: <span id="u-id"></span></div>
-</div>
-</div>
-<div onclick="nav('settings')"><i class="fa-solid fa-gear"></i></div>
-</div>
+    <div id="screen-home" class="screen active">
+        <div class="container">
+            <div class="header">
+                <div class="user-row">
+                    <img id="u-ava" class="ava" src="">
+                    <div>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <b id="u-name">...</b>
+                            <span id="u-lvl" class="lvl-badge">...</span>
+                        </div>
+                        <div style="font-size:12px; color:var(--sec);">ID: <span id="u-id">...</span></div>
+                    </div>
+                </div>
+                <div onclick="nav('settings')" style="padding:10px;"><i class="fa-solid fa-gear"></i></div>
+            </div>
 
-<div class="card">
-<div style="opacity:.7;font-size:12px">БОНУСНЫЙ БАЛАНС</div>
-<div style="font-size:32px;font-weight:800">
-<span id="u-bonus">0</span> кг
-</div>
-<button class="btn btn-blue" onclick="nav('rewards')">Задания</button>
-</div>
+            <div class="bonus-card">
+                <div style="opacity:0.7; font-size:12px; text-transform:uppercase;">Бонусный баланс</div>
+                <div class="b-val"><span id="u-bonus">0</span> <span style="font-size:16px;">кг</span></div>
+                <button class="b-btn" onclick="nav('rewards')"><i class="fa-solid fa-star"></i> Задания</button>
+            </div>
 
-<div class="grid">
-<div class="grid-item" onclick="nav('china')"><div class="icon-box"><i class="fa-solid fa-box"></i></div>Китай</div>
-<div class="grid-item" onclick="nav('trucks')"><div class="icon-box"><i class="fa-solid fa-truck"></i></div>Биржа</div>
-<div class="grid-item" onclick="nav('market')"><div class="icon-box"><i class="fa-solid fa-bag-shopping"></i></div>Маркет</div>
-<div class="grid-item" onclick="nav('calc')"><div class="icon-box"><i class="fa-solid fa-calculator"></i></div>Расчет</div>
-</div>
+            <div style="font-weight:700; margin-bottom:15px;">Меню</div>
+            <div class="grid">
+                <div class="grid-item" onclick="nav('china')"><div class="icon-box" style="color: #FF2D55;"><i class="fa-brands fa-dhl"></i></div><span class="grid-lbl">Китай</span></div>
+                <div class="grid-item" onclick="nav('trucks')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-truck-fast"></i></div><span class="grid-lbl">Биржа</span></div>
+                <div class="grid-item" onclick="nav('market')"><div class="icon-box" style="color: #FF9500;"><i class="fa-solid fa-bag-shopping"></i></div><span class="grid-lbl">Маркет</span></div>
+                <div class="grid-item" onclick="nav('calc')"><div class="icon-box" style="color: #007AFF;"><i class="fa-solid fa-calculator"></i></div><span class="grid-lbl">Расчет</span></div>
+            </div>
 
-<b>Мои посылки</b>
-<div id="home-pkg-list"></div>
-</div>
-</div>
+            <div style="font-weight:700; margin-bottom:10px;">Мои посылки</div>
+            <div id="home-pkg-list"></div>
+        </div>
+    </div>
 
-<!-- ================= PACKAGE ================= -->
-<div id="screen-package" class="screen">
-<div class="nav-head">
-<div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
-<div><b>Посылка</b></div>
-</div>
-<div class="container">
-<div class="card">
-<b id="pkg-title"></b>
-<div id="pkg-status" style="color:#888"></div>
-</div>
-<div id="pkg-history"></div>
-</div>
-</div>
+    <div id="screen-china" class="screen">
+        <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Мой Китай</div></div>
+        <div class="container">
+            <div class="card">
+                <div class="switch-row"><b>Оптовый режим (>100 кг)</b><label class="switch"><input type="checkbox" id="tg-opt" onchange="toggleMode()"><span class="slider"></span></label></div>
+            </div>
+            <div class="card">
+                <b>Адрес Склада</b>
+                <div id="box-city" style="display:none; margin-top:10px;"><select id="sel-city" onchange="renderAddr()"><option value="yiwu">Иу (Yiwu)</option><option value="urumqi">Урумчи</option></select></div>
+                <div class="copy-box" onclick="copy('txt-addr')" style="margin-top:8px;">
+                    <div id="txt-addr" class="copy-text">...</div>
+                    <div class="copy-btn"><i class="fa-regular fa-copy"></i></div>
+                </div>
+            </div>
+            <div id="box-code" class="card">
+                <b>Ваш Код (Для маркировки)</b>
+                <div class="copy-box" onclick="copy('txt-code')" style="margin-top:8px;">
+                    <div id="txt-code" class="copy-text" style="font-weight:700; color:var(--blue);">...</div>
+                    <div class="copy-btn"><i class="fa-regular fa-copy"></i></div>
+                </div>
+            </div>
+            <button class="btn btn-blue" onclick="openM('m-add')">Добавить трек</button>
+            <div id="full-pkg-list" style="margin-top:20px;"></div>
+        </div>
+    </div>
 
-<!-- ================= CHINA ================= -->
-<div id="screen-china" class="screen">
-<div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><b>Мой Китай</b></div>
-<div class="container">
-<button class="btn btn-blue" onclick="openM('m-add')">Добавить трек</button>
-<div id="full-pkg-list"></div>
-</div>
-</div>
+    <div id="screen-settings" class="screen">
+        <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Настройки</div></div>
+        <div class="container">
+            <div class="card">
+                <label style="font-size:12px;">Ваше Имя</label><input id="s-name">
+                <label style="font-size:12px;">Телефон</label><input id="s-phone">
+                <label style="font-size:12px;">Выберите ПВЗ</label><select id="s-pvz"><option value="">Загрузка...</option></select>
+                <button class="btn btn-blue" onclick="saveSet()">Сохранить</button>
+            </div>
+        </div>
+    </div>
 
-<!-- ================= CALC ================= -->
-<div id="screen-calc" class="screen">
-<div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><b>Калькулятор</b></div>
-<div class="container">
-<input id="c-wg" type="number" placeholder="Вес кг">
-<div id="c-res" style="font-size:28px;font-weight:800;text-align:center">0</div>
-<button class="btn btn-blue" onclick="doCalc()">Рассчитать</button>
-</div>
-</div>
+    <div id="screen-calc" class="screen">
+        <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Калькулятор</div></div>
+        <div class="container">
+            <div class="card">
+                <div class="switch-row"><b>Оптовый режим</b><label class="switch"><input type="checkbox" id="tg-calc" onchange="toggleMode()"><span class="slider"></span></label></div>
+                <div id="box-calc-opt" style="display:none; margin-top:10px;"><label>Маршрут</label><select id="sel-route"><option>Маршрут...</option></select></div>
+                <div style="margin-top:10px;"><label>Вес (кг)</label><input id="c-wg" type="number" placeholder="0.0"></div>
+                <div id="c-res" style="text-align:center; font-size: 28px; font-weight: 800; margin: 20px 0; color: var(--blue);">0.00</div>
+                <button class="btn" onclick="doCalc()">Рассчитать</button>
+            </div>
+        </div>
+    </div>
 
-<!-- ================= TRUCKS ================= -->
-<div id="screen-trucks" class="screen">
-<div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><b>Биржа</b></div>
-<div class="container">
-<div class="tabs">
-<div class="tab active" onclick="swTr('trips',this)">Машины</div>
-<div class="tab" onclick="swTr('cargo',this)">Грузы</div>
-</div>
-<div id="list-trucks"></div>
-</div>
-</div>
+    <div id="screen-trucks" class="screen">
+        <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Биржа</div></div>
+        <div class="container">
+            <div class="tabs">
+                <div class="tab active" onclick="swTr('trips', this)">Машины</div>
+                <div class="tab" onclick="swTr('cargo', this)">Грузы</div>
+            </div>
+            <div id="list-trucks"></div>
+        </div>
+    </div>
 
-<!-- ================= MARKET ================= -->
-<div id="screen-market" class="screen">
-<div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><b>Маркет</b></div>
-<div class="container">
-<div class="tabs">
-<div class="tab active" onclick="swMk('item',this)">Товары</div>
-<div class="tab" onclick="swMk('joint',this)">Сборы</div>
-</div>
-<div id="list-market"></div>
-</div>
-</div>
+    <div id="screen-market" class="screen">
+        <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Маркет</div></div>
+        <div class="container">
+            <div class="tabs">
+                <div class="tab active" onclick="swMk('item', this)">Товары</div>
+                <div class="tab" onclick="swMk('joint', this)">Сборы</div>
+            </div>
+            <div id="list-market"></div>
+        </div>
+    </div>
 
-<!-- ================= REWARDS ================= -->
-<div id="screen-rewards" class="screen">
-<div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><b>Задания</b></div>
-<div class="container">
-<div id="list-rewards"></div>
-</div>
-</div>
+    <div id="screen-rewards" class="screen">
+        <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Задания</div></div>
+        <div class="container"><div id="list-rewards"></div></div>
+    </div>
 
-<!-- ================= SETTINGS ================= -->
-<div id="screen-settings" class="screen">
-<div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><b>Настройки</b></div>
-<div class="container">
-<input id="s-name" placeholder="Имя">
-<input id="s-phone" placeholder="Телефон">
-<button class="btn btn-blue" onclick="saveSet()">Сохранить</button>
-</div>
-</div>
+    <div id="m-add" class="modal-wrap">
+        <div class="modal">
+            <h3>Добавить посылку</h3>
+            <input id="n-t" placeholder="Трек-номер">
+            <input id="n-d" placeholder="Описание (например: Кроссовки)">
+            <button class="btn btn-blue" onclick="subTrack()">Добавить</button>
+            <div style="text-align:center;padding:15px;color:var(--sec);" onclick="closeM('m-add')">Отмена</div>
+        </div>
+    </div>
 
-<!-- ================= MODAL ================= -->
-<div id="m-add" class="modal-wrap">
-<div class="modal">
-<input id="n-t" placeholder="Трек">
-<input id="n-d" placeholder="Описание">
-<button class="btn btn-blue" onclick="subTrack()">Добавить</button>
-<div onclick="closeM('m-add')" style="text-align:center;padding:10px;color:#888">Отмена</div>
-</div>
-</div>
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        
+        const API = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
+        const uid = tg.initDataUnsafe?.user?.id || 317295540;
+        
+        let config = {}, user = {}, isOpt = false, tabTr = 'trips', tabMk = 'item';
 
-<script>
-const tg = window.Telegram.WebApp; tg.expand();
-const API = "http://localhost:8000";
-const uid = tg.initDataUnsafe?.user?.id || 1;
-let tabTr='trips',tabMk='item';
+        async function init() {
+            try {
+                document.getElementById('u-ava').src = tg.initDataUnsafe?.user?.photo_url || "";
+                
+                let r = await fetch(`${API}/api/dashboard/${uid}`, {
+                    headers: { 'ngrok-skip-browser-warning': 'true' }
+                });
 
-function gid(id){return document.getElementById(id)}
-function nav(id){
-document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-gid('screen-'+id).classList.add('active');
-if(id==='trucks')ldTr();
-if(id==='market')ldMk();
-if(id==='rewards')ldRew();
-}
-function goHome(){nav('home')}
+                if (!r.ok) {
+                    const errTxt = await r.text();
+                    throw new Error("Ошибка сервера: " + errTxt.substring(0, 50));
+                }
 
-async function init(){
-let r=await fetch(`${API}/api/dashboard/${uid}`);
-let d=await r.json();
-gid('u-name').innerText=d.user_info.name||'Клиент';
-gid('u-id').innerText=d.user_info.user_id;
-gid('u-lvl').innerText=d.user_info.level;
-gid('u-bonus').innerText=d.user_info.bonus_kg;
+                let d = await r.json();
+                config = d.app_config; 
+                user = d.user_info;
 
-let h='';
-d.packages.forEach(p=>{
-h+=`<div class="card" onclick="openPkg('${p.track_number}')">
-<b>${p.description||'Без описания'}</b><br>
-<small>${p.track_number} • ${p.status_text}</small>
-</div>`;
-});
-gid('home-pkg-list').innerHTML=h||'<div class="empty">Нет посылок</div>';
-}
+                // Основная инфо
+                gid('u-name').innerText = user.name || "Клиент";
+                gid('u-id').innerText = user.user_id; 
+                gid('u-lvl').innerText = user.level || "Новичок";
+                gid('u-bonus').innerText = user.bonus_kg || 0;
+                gid('txt-code').innerText = user.marking_code;
 
-async function openPkg(track){
-let r=await fetch(`${API}/api/package/${track}`);
-let d=await r.json();
-gid('pkg-title').innerText=d.package.track_number;
-gid('pkg-status').innerText=d.package.status;
-let h='';
-if(!d.history.length)h='<div class="empty">Истории нет</div>';
-d.history.forEach(s=>{
-h+=`<div class="card"><b>${s.status}</b><br><small>${new Date(s.timestamp).toLocaleString()}</small></div>`;
-});
-gid('pkg-history').innerHTML=h;
-nav('package');
-}
+                // Настройки
+                gid('s-name').value = user.name || "";
+                gid('s-phone').value = user.phone || "";
+                renderPvzOptions(config.pvz_list, user.pvz_id);
 
-async function doCalc(){
-let w=parseFloat(gid('c-wg').value)||0;
-let r=await fetch(`${API}/api/calculate`,{
-method:'POST',headers:{'Content-Type':'application/json'},
-body:JSON.stringify({weight:w,quantity:1,category:'less_100'})
-});
-let j=await r.json();
-gid('c-res').innerText=j.price+' '+j.currency;
-}
+                // Посылки
+                let h = '';
+                if (d.packages && d.packages.length > 0) {
+                    d.packages.forEach(p => {
+                        h += `<div class="card" style="padding:12px;">
+                                <div style="font-weight:700">${p.description || 'Без описания'}</div>
+                                <div style="font-size:12px;color:#888">${p.track_number} • ${p.status_text}</div>
+                              </div>`;
+                    });
+                } else {
+                    h = '<div class="empty">У вас пока нет посылок</div>';
+                }
+                gid('home-pkg-list').innerHTML = h;
 
-async function ldTr(){
-let r=await fetch(`${API}/api/trucking/list?type=${tabTr}`);
-let d=await r.json();let h='';
-d.items.forEach(i=>{
-h+=`<div class="card"><b>${i.title}</b><br>${i.details}</div>`;
-});
-gid('list-trucks').innerHTML=h||'<div class="empty">Пусто</div>';
-}
+                // Режим (Опт/Розница)
+                isOpt = (user.category === 'more_100');
+                updMode();
 
-async function ldMk(){
-let r=await fetch(`${API}/api/market/list?type=${tabMk}`);
-let d=await r.json();let h='';
-d.items.forEach(i=>{
-h+=`<div class="card"><b>${i.title}</b><br>${i.price} TJS</div>`;
-});
-gid('list-market').innerHTML=h||'<div class="empty">Пусто</div>';
-}
+            } catch(e) {
+                console.error(e);
+                alert("Ошибка загрузки: " + e.message);
+            }
+        }
 
-async function ldRew(){
-let r=await fetch(`${API}/api/rewards/list/${uid}`);
-let d=await r.json();let h='';
-d.tasks.forEach(t=>{
-h+=`<div class="card" onclick="claimRew(${t.id})">
-<b>${t.title}</b><br>+${t.reward} кг
-</div>`;
-});
-gid('list-rewards').innerHTML=h;
-}
+        function renderPvzOptions(list, currentId) {
+            let sel = gid('s-pvz');
+            sel.innerHTML = '<option value="">Не выбран</option>';
+            if (list) {
+                list.forEach(p => {
+                    let opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.innerText = p.name;
+                    if (p.id == currentId) opt.selected = true;
+                    sel.appendChild(opt);
+                });
+            }
+        }
 
-async function claimRew(id){
-await fetch(`${API}/api/rewards/claim`,{
-method:'POST',headers:{'Content-Type':'application/json'},
-body:JSON.stringify({user_id:uid,task_id:id})
-});
-init();
-}
+        function nav(id) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            gid('screen-' + id).classList.add('active');
+            if(id === 'trucks') ldTr();
+            if(id === 'market') ldMk();
+            if(id === 'rewards') ldRew();
+        }
 
-async function saveSet(){
-await fetch(`${API}/api/update_settings`,{
-method:'POST',headers:{'Content-Type':'application/json'},
-body:JSON.stringify({user_id:uid,full_name:gid('s-name').value,phone:gid('s-phone').value})
-});
-goHome();init();
-}
+        function goHome() { nav('home'); }
 
-async function subTrack(){
-await fetch(`${API}/api/add_track`,{
-method:'POST',headers:{'Content-Type':'application/json'},
-body:JSON.stringify({user_id:uid,track_number:gid('n-t').value,description:gid('n-d').value})
-});
-closeM('m-add');init();
-}
+        function toggleMode() {
+            if (gid('screen-calc').classList.contains('active')) isOpt = gid('tg-calc').checked;
+            else isOpt = gid('tg-opt').checked;
+            updMode();
+            
+            fetch(`${API}/api/update_settings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: uid, category: isOpt ? 'more_100' : 'less_100' })
+            });
+        }
 
-function swTr(t,e){tabTr=t;document.querySelectorAll('#screen-trucks .tab').forEach(x=>x.classList.remove('active'));e.classList.add('active');ldTr()}
-function swMk(t,e){tabMk=t;document.querySelectorAll('#screen-market .tab').forEach(x=>x.classList.remove('active'));e.classList.add('active');ldMk()}
-function openM(id){gid(id).style.display='flex'}
-function closeM(id){gid(id).style.display='none'}
+        function updMode() {
+            gid('tg-opt').checked = isOpt;
+            gid('tg-calc').checked = isOpt;
+            gid('box-city').style.display = isOpt ? 'block' : 'none';
+            gid('box-code').style.display = isOpt ? 'none' : 'block';
+            gid('box-calc-opt').style.display = isOpt ? 'block' : 'none';
+            renderAddr();
+        }
 
-init();
-</script>
+        function renderAddr() {
+            let t = gid('txt-addr');
+            if (isOpt) {
+                let c = gid('sel-city').value;
+                t.innerText = config.warehouses?.wholesale?.[c]?.address || "Адрес не найден";
+            } else {
+                t.innerText = config.warehouses?.retail?.address || "Адрес не найден";
+            }
+        }
+
+        async function ldTr() {
+            let c = gid('list-trucks'); c.innerHTML = 'Загрузка...';
+            let r = await fetch(`${API}/api/trucking/list?type=${tabTr}`);
+            let d = await r.json(); c.innerHTML = '';
+            if(!d.items || d.items.length === 0) { c.innerHTML = '<div class="empty">Объявлений пока нет</div>'; return; }
+            d.items.forEach(i => {
+                c.innerHTML += `<div class="card"><b>${i.title}</b><br><small>${i.subtitle}</small><div style="color:var(--blue); font-weight:700; margin-top:5px;">${i.details} • ${i.extra}</div></div>`;
+            });
+        }
+
+        async function ldMk() {
+            let c = gid('list-market'); c.innerHTML = 'Загрузка...';
+            let r = await fetch(`${API}/api/market/list?type=${tabMk}`);
+            let d = await r.json(); c.innerHTML = '';
+            if(!d.items || d.items.length === 0) { c.innerHTML = '<div class="empty">Товары не найдены</div>'; return; }
+            d.items.forEach(i => {
+                c.innerHTML += `<div class="card"><b>${i.title}</b><br><span style="color:var(--blue); font-weight:800;">${i.price} TJS</span></div>`;
+            });
+        }
+
+        async function ldRew() {
+            let c = gid('list-rewards'); c.innerHTML = 'Загрузка...';
+            let r = await fetch(`${API}/api/rewards/list/${uid}`);
+            let d = await r.json(); c.innerHTML = '';
+            d.tasks.forEach(t => {
+                c.innerHTML += `<div class="card" onclick="claimRew(${t.id})"><b>${t.title}</b><br><small>${t.desc}</small><div style="color:#FFD60A; font-weight:800;">+${t.reward} кг</div></div>`;
+            });
+        }
+
+        async function claimRew(id) {
+            let r = await fetch(`${API}/api/rewards/claim`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: uid, task_id: id })
+            });
+            let d = await r.json();
+            tg.showAlert(d.message || d.status);
+            init();
+        }
+
+        function swTr(t, el) { tabTr = t; document.querySelectorAll('#screen-trucks .tab').forEach(x=>x.classList.remove('active')); el.classList.add('active'); ldTr(); }
+        function swMk(t, el) { tabMk = t; document.querySelectorAll('#screen-market .tab').forEach(x=>x.classList.remove('active')); el.classList.add('active'); ldMk(); }
+
+        async function saveSet() {
+            let data = {
+                user_id: uid,
+                full_name: gid('s-name').value,
+                phone: gid('s-phone').value,
+                pvz_id: parseInt(gid('s-pvz').value)
+            };
+            let r = await fetch(`${API}/api/update_settings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (r.ok) { tg.showAlert("Настройки сохранены"); init(); goHome(); }
+        }
+
+        async function subTrack() {
+            let data = { user_id: uid, track_number: gid('n-t').value, description: gid('n-d').value };
+            let r = await fetch(`${API}/api/add_track`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            let res = await r.json();
+            if (res.status === 'ok') { closeM('m-add'); init(); tg.showAlert("Трек добавлен"); }
+            else { alert(res.message); }
+        }
+
+        async function doCalc() {
+            let p = { weight: parseFloat(gid('c-wg').value) || 0, quantity: 1, category: isOpt ? 'more_100' : 'less_100' };
+            let r = await fetch(`${API}/api/calculate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
+            let j = await r.json();
+            gid('c-res').innerText = j.status === 'ok' ? `${j.price} ${j.currency}` : "Ошибка";
+        }
+
+        function gid(id) { return document.getElementById(id); }
+        function openM(id) { gid(id).style.display = 'flex'; }
+        function closeM(id) { gid(id).style.display = 'none'; }
+        function copy(id) { 
+            navigator.clipboard.writeText(gid(id).innerText); 
+            tg.HapticFeedback.notificationOccurred('success'); 
+            tg.showAlert("Скопировано в буфер"); 
+        }
+
+        init();
+    </script>
 </body>
 </html>
