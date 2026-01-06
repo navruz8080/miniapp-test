@@ -8,64 +8,62 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #F2F3F5; --card: #FFFFFF; --text: #1F1F1F; --sec: #8E8E93; --blue: #007AFF; --radius: 16px; }
+        :root { --bg: #F2F3F5; --card: #FFFFFF; --text: #1F1F1F; --sec: #8E8E93; --blue: #007AFF; --green: #34C759; --radius: 16px; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         .container { padding: 16px; max-width: 480px; margin: 0 auto; padding-bottom: 100px; }
         .screen { display: none; width: 100%; padding-bottom: 80px; }
         .screen.active { display: block !important; }
         
-        /* Header & Profile */
+        /* Header */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top: 10px; }
         .user-row { display: flex; align-items: center; gap: 10px; }
         .ava { width: 44px; height: 44px; border-radius: 50%; background: #ccc; object-fit: cover; }
         .lvl-badge { background: #FFD60A; color: #000; font-size: 10px; padding: 2px 6px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
         
-        .bonus-card { background: linear-gradient(135deg, #111 0%, #333 100%); border-radius: 20px; padding: 20px; color: white; margin-bottom: 24px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .bonus-card { background: linear-gradient(135deg, #111 0%, #333 100%); border-radius: 20px; padding: 20px; color: white; margin-bottom: 24px; }
         .b-val { font-size: 32px; font-weight: 800; margin: 5px 0; }
-        .b-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
         
         /* Grid Menu */
-        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 30px; }
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
         .grid-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
         .icon-box { width: 54px; height: 54px; background: var(--card); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
-        .grid-lbl { font-size: 11px; font-weight: 600; color: var(--text); }
+        .grid-lbl { font-size: 11px; font-weight: 600; color: var(--text); text-align: center; }
         
-        /* UI Elements */
+        /* Cards */
         .card { background: var(--card); padding: 16px; border-radius: var(--radius); margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .btn { width: 100%; padding: 14px; border-radius: 14px; border: none; background: var(--text); color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); opacity: 0.9; }
+        .btn { width: 100%; padding: 14px; border-radius: 14px; border: none; background: var(--text); color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; }
         .btn-blue { background: var(--blue); }
-        input, select { width: 100%; padding: 14px; background: #F2F4F7; border: 1px solid transparent; border-radius: 12px; margin-bottom: 10px; box-sizing: border-box; font-family: 'Inter'; font-size: 15px; outline: none; transition: 0.2s; }
-        input:focus { border-color: var(--blue); background: #fff; }
         
-        /* Navigation head */
-        .nav-head { background: rgba(255,255,255,0.95); position: sticky; top: 0; z-index: 90; padding: 12px 16px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .back-icon { font-size: 20px; cursor: pointer; padding: 5px; }
+        /* Package List Styling */
+        .pkg-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+        .pkg-item:last-child { border-bottom: none; }
+        .pkg-info { display: flex; flex-direction: column; gap: 2px; }
+        .pkg-status { font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; background: #F2F3F5; color: var(--sec); text-transform: uppercase; white-space: nowrap; }
+        .status-ready { background: #E8F5E9; color: var(--green); }
+        .status-transit { background: #E3F2FD; color: var(--blue); }
+
+        /* Navigation */
+        .nav-head { background: #fff; position: sticky; top: 0; z-index: 90; padding: 12px 16px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #f0f0f0; }
+        .back-icon { font-size: 20px; cursor: pointer; }
         .pg-title { font-size: 17px; font-weight: 700; }
+
+        /* Inputs */
+        input, select { width: 100%; padding: 14px; background: #F2F4F7; border: 1px solid transparent; border-radius: 12px; margin-bottom: 10px; font-family: inherit; font-size: 15px; box-sizing: border-box; }
         
-        /* Switches & Tabs */
-        .switch-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .copy-box { background: #F0F2F5; padding: 14px; border-radius: 12px; position: relative; cursor: pointer; }
+        .copy-text { font-family: monospace; font-size: 13px; color: #333; }
+        
+        .switch-row { display: flex; justify-content: space-between; align-items: center; }
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 34px; transition: .2s; }
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 2px; bottom: 2px; background-color: white; border-radius: 50%; transition: .2s; }
         input:checked + .slider { background-color: var(--blue); }
         input:checked + .slider:before { transform: translateX(20px); }
-        
-        .tabs { background: #E5E5EA; padding: 4px; border-radius: 12px; display: flex; margin-bottom: 15px; }
-        .tab { flex: 1; padding: 8px; text-align: center; font-size: 13px; font-weight: 600; border-radius: 9px; cursor: pointer; color: #8E8E93; }
-        .tab.active { background: #fff; color: #000; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        
-        /* Modals */
+
         .modal-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; align-items: flex-end; }
-        .modal { background: #fff; width: 100%; border-radius: 20px 20px 0 0; padding: 24px; animation: slideUp 0.2s; box-sizing: border-box; }
+        .modal { background: #fff; width: 100%; border-radius: 20px 20px 0 0; padding: 24px; box-sizing: border-box; animation: slideUp 0.2s; }
         @keyframes slideUp { from {transform:translateY(100%)} to {transform:translateY(0)} }
-        
-        /* Helpers */
-        .empty { text-align: center; color: #999; padding: 30px; font-size: 13px; }
-        .copy-box { background: #F0F2F5; padding: 14px; border-radius: 12px; position: relative; cursor: pointer; padding-right: 60px; }
-        .copy-text { font-family: monospace; font-size: 13px; line-height: 1.4; color: #333; word-break: break-all; }
-        .copy-btn { position: absolute; top: 50%; transform: translateY(-50%); right: 10px; width: 36px; height: 36px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--blue); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
     </style>
 </head>
 <body>
@@ -92,53 +90,66 @@
                 <button class="b-btn" onclick="nav('rewards')"><i class="fa-solid fa-star"></i> Задания</button>
             </div>
 
-            <div style="font-weight:700; margin-bottom:15px;">Меню</div>
+            <div style="font-weight:700; margin-bottom:15px;">Сервисы</div>
             <div class="grid">
-                <div class="grid-item" onclick="nav('china')"><div class="icon-box" style="color: #FF2D55;"><i class="fa-brands fa-dhl"></i></div><span class="grid-lbl">Китай</span></div>
+                <div class="grid-item" onclick="nav('china')"><div class="icon-box" style="color: #FF2D55;"><i class="fa-brands fa-dhl"></i></div><span class="grid-lbl">Мой Китай</span></div>
                 <div class="grid-item" onclick="nav('trucks')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-truck-fast"></i></div><span class="grid-lbl">Биржа</span></div>
                 <div class="grid-item" onclick="nav('market')"><div class="icon-box" style="color: #FF9500;"><i class="fa-solid fa-bag-shopping"></i></div><span class="grid-lbl">Маркет</span></div>
                 <div class="grid-item" onclick="nav('calc')"><div class="icon-box" style="color: #007AFF;"><i class="fa-solid fa-calculator"></i></div><span class="grid-lbl">Расчет</span></div>
             </div>
 
-            <div style="font-weight:700; margin-bottom:10px;">Мои посылки</div>
-            <div id="home-pkg-list"></div>
+            <div class="card" style="display: flex; align-items: center; gap: 15px; padding: 20px; background: #E3F2FD;" onclick="nav('rewards')">
+                <div style="font-size: 24px;"><i class="fa-solid fa-gift" style="color: var(--blue);"></i></div>
+                <div>
+                    <div style="font-weight: 700;">Приглашайте друзей</div>
+                    <div style="font-size: 12px; color: #555;">Получайте бонусы за каждый кг</div>
+                </div>
+            </div>
         </div>
     </div>
 
     <div id="screen-china" class="screen">
         <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Мой Китай</div></div>
         <div class="container">
+            <button class="btn btn-blue" onclick="openM('m-add')" style="margin-bottom: 20px;"><i class="fa-solid fa-plus"></i> Добавить посылку</button>
+
             <div class="card">
                 <div class="switch-row"><b>Оптовый режим (>100 кг)</b><label class="switch"><input type="checkbox" id="tg-opt" onchange="toggleMode()"><span class="slider"></span></label></div>
             </div>
+            
             <div class="card">
-                <b>Адрес Склада</b>
-                <div id="box-city" style="display:none; margin-top:10px;"><select id="sel-city" onchange="renderAddr()"><option value="yiwu">Иу (Yiwu)</option><option value="urumqi">Урумчи</option></select></div>
-                <div class="copy-box" onclick="copy('txt-addr')" style="margin-top:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <b>Адрес Склада</b>
+                    <select id="sel-city" onchange="renderAddr()" style="width: auto; padding: 5px; margin: 0; font-size: 12px; height: auto; display:none;">
+                        <option value="yiwu">Иу</option>
+                        <option value="urumqi">Урумчи</option>
+                    </select>
+                </div>
+                <div class="copy-box" onclick="copy('txt-addr')" style="margin-top:10px;">
                     <div id="txt-addr" class="copy-text">...</div>
-                    <div class="copy-btn"><i class="fa-regular fa-copy"></i></div>
+                    <div style="position:absolute; right:12px; top:15px; color:var(--blue);"><i class="fa-regular fa-copy"></i></div>
+                </div>
+                <div id="box-code" style="margin-top: 15px;">
+                    <div style="font-size: 12px; color: var(--sec); margin-bottom: 5px;">Ваша маркировка:</div>
+                    <div class="copy-box" onclick="copy('txt-code')" style="background: #FFF9C4;">
+                        <div id="txt-code" class="copy-text" style="font-weight:800; color: #F57F17;">...</div>
+                        <div style="position:absolute; right:12px; top:15px; color:#F57F17;"><i class="fa-regular fa-copy"></i></div>
+                    </div>
                 </div>
             </div>
-            <div id="box-code" class="card">
-                <b>Ваш Код (Для маркировки)</b>
-                <div class="copy-box" onclick="copy('txt-code')" style="margin-top:8px;">
-                    <div id="txt-code" class="copy-text" style="font-weight:700; color:var(--blue);">...</div>
-                    <div class="copy-btn"><i class="fa-regular fa-copy"></i></div>
-                </div>
-            </div>
-            <button class="btn btn-blue" onclick="openM('m-add')">Добавить трек</button>
-            <div id="full-pkg-list" style="margin-top:20px;"></div>
-        </div>
-    </div>
 
-    <div id="screen-settings" class="screen">
-        <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Настройки</div></div>
-        <div class="container">
-            <div class="card">
-                <label style="font-size:12px;">Ваше Имя</label><input id="s-name">
-                <label style="font-size:12px;">Телефон</label><input id="s-phone">
-                <label style="font-size:12px;">Выберите ПВЗ</label><select id="s-pvz"><option value="">Загрузка...</option></select>
-                <button class="btn btn-blue" onclick="saveSet()">Сохранить</button>
+            <div style="font-weight:700; margin: 20px 0 10px;">Мои посылки</div>
+            <div class="card" id="full-pkg-list">
+                <div class="empty">Загрузка посылок...</div>
+            </div>
+
+            <div style="font-weight:700; margin: 25px 0 15px;">Информация</div>
+            <div class="grid" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="grid-item" onclick="tg.showAlert('Раздел в разработке')"><div class="icon-box"><i class="fa-solid fa-users"></i></div><span class="grid-lbl">Рефералы</span></div>
+                <div class="grid-item" onclick="tg.showAlert('Список запрещенных товаров...')"><div class="icon-box" style="color: #FF3B30;"><i class="fa-solid fa-ban"></i></div><span class="grid-lbl">Запрещено</span></div>
+                <div class="grid-item" onclick="tg.showAlert('О нас: Наша компания возит грузы...')"><div class="icon-box"><i class="fa-solid fa-circle-info"></i></div><span class="grid-lbl">О нас</span></div>
+                <div class="grid-item" onclick="tg.openLink('https://t.me/your_support')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-headset"></i></div><span class="grid-lbl">Помощь</span></div>
+                <div class="grid-item" onclick="tg.showAlert('Отзывы наших клиентов...')"><div class="icon-box" style="color: #FFD60A;"><i class="fa-solid fa-comment-dots"></i></div><span class="grid-lbl">Отзывы</span></div>
             </div>
         </div>
     </div>
@@ -146,109 +157,66 @@
     <div id="screen-calc" class="screen">
         <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Калькулятор</div></div>
         <div class="container">
-            <div class="card" style="padding: 20px;">
-                <div class="switch-row" style="margin-bottom: 20px;">
-                    <b style="font-size: 16px;">Оптовый режим (>100 кг)</b>
-                    <label class="switch"><input type="checkbox" id="tg-calc" onchange="toggleMode()"><span class="slider"></span></label>
-                </div>
+            <div class="card">
+                <div class="switch-row" style="margin-bottom:15px;"><b>Оптовый режим</b><label class="switch"><input type="checkbox" id="tg-calc" onchange="toggleMode()"><span class="slider"></span></label></div>
                 
-                <div id="box-calc-opt" style="display:none; border-top: 1px solid #f0f0f0; padding-top: 15px;">
-                    <label style="font-size: 13px; color: var(--sec); font-weight: 500;">Маршрут перевозки</label>
-                    <select id="sel-route" style="margin-top: 5px;">
-                        <option value="🇨🇳 Китай (Урумчи) - 🇹🇯 Худжанд">🇨🇳 Китай (Урумчи) → 🇹🇯 Худжанд</option>
-                        <option value="🇨🇳 Китай (Иу) - 🇹🇯 Худжанд">🇨🇳 Китай (Иу) → 🇹🇯 Худжанд</option>
-                        <option value="🇨🇳 Китай (Урумчи) - 🇹🇯 Душанбе">🇨🇳 Китай (Урумчи) → 🇹🇯 Душанбе</option>
-                        <option value="🇨🇳 Китай (Иу) - 🇹🇯 Душанбе">🇨🇳 Китай (Иу) → 🇹🇯 Душанбе</option>
+                <div id="box-calc-opt" style="display:none; border-top: 1px solid #eee; padding-top:15px;">
+                    <label style="font-size: 12px;">Маршрут</label>
+                    <select id="sel-route">
+                        <option value="🇨🇳 Китай (Урумчи) - 🇹🇯 Худжанд">Урумчи → Худжанд</option>
+                        <option value="🇨🇳 Китай (Иу) - 🇹🇯 Худжанд">Иу → Худжанд</option>
                     </select>
-
-                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; margin-top:15px;">
-                        <div>
-                            <label style="font-size: 11px; font-weight: 600; color: var(--sec);">Длина(см)</label>
-                            <input id="c-len" type="number" placeholder="0" style="margin-top:5px; text-align: center; background: #fff; border: 1px solid #e5e5e5;">
-                        </div>
-                        <div>
-                            <label style="font-size: 11px; font-weight: 600; color: var(--sec);">Ширина(см)</label>
-                            <input id="c-wid" type="number" placeholder="0" style="margin-top:5px; text-align: center; background: #fff; border: 1px solid #e5e5e5;">
-                        </div>
-                        <div>
-                            <label style="font-size: 11px; font-weight: 600; color: var(--sec);">Высота(см)</label>
-                            <input id="c-hei" type="number" placeholder="0" style="margin-top:5px; text-align: center; background: #fff; border: 1px solid #e5e5e5;">
-                        </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+                        <div><label style="font-size:10px;">Длина</label><input id="c-len" type="number" placeholder="см"></div>
+                        <div><label style="font-size:10px;">Ширина</label><input id="c-wid" type="number" placeholder="см"></div>
+                        <div><label style="font-size:10px;">Высота</label><input id="c-hei" type="number" placeholder="см"></div>
                     </div>
                 </div>
 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:15px;">
-                    <div>
-                        <label style="font-size: 11px; font-weight: 600; color: var(--sec);">Вес 1 шт (кг)</label>
-                        <input id="c-wg" type="number" placeholder="0.0" style="margin-top:5px; font-weight: 600; background: #fff; border: 1px solid #e5e5e5;">
-                    </div>
-                    <div>
-                        <label style="font-size: 11px; font-weight: 600; color: var(--sec);">Кол-во (шт)</label>
-                        <input id="c-qty" type="number" value="1" style="margin-top:5px; font-weight: 600; background: #fff; border: 1px solid #e5e5e5;">
-                    </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
+                    <div><label style="font-size:12px;">Вес (кг)</label><input id="c-wg" type="number" placeholder="0.0"></div>
+                    <div><label style="font-size:12px;">Кол-во (шт)</label><input id="c-qty" type="number" value="1"></div>
                 </div>
 
-                <div id="c-res-wrap" style="background: #f8f9fa; border-radius: 14px; padding: 20px; margin: 20px 0; text-align: center; border: 1px solid #eee;">
-                    <div id="c-res" style="font-size: 36px; font-weight: 800; color: var(--blue); letter-spacing: -1px;">0.00</div>
-                    <div id="c-cur" style="font-size: 14px; font-weight: 600; color: var(--sec); text-transform: uppercase;">Итого к оплате</div>
+                <div id="c-res-wrap" style="background:#f8f9fa; border-radius:14px; padding:20px; margin:20px 0; text-align:center;">
+                    <div id="c-res" style="font-size:32px; font-weight:800; color:var(--blue);">0.00</div>
+                    <div id="c-cur" style="font-size:14px; color:var(--sec);">Введите данные</div>
                 </div>
                 
-                <button class="btn btn-blue" onclick="doCalc()" style="height: 54px; font-size: 16px;">Рассчитать стоимость</button>
-                <button id="btn-order-confirm" class="btn" onclick="submitOrder()" style="height: 54px; font-size: 16px; background: #34C759; margin-top: 10px; display:none;">Оформить этот груз</button>
+                <button class="btn btn-blue" onclick="doCalc()">Рассчитать</button>
+                <button id="btn-order-confirm" class="btn" onclick="submitOrder()" style="display:none; background:#34C759; margin-top:10px;">Оформить заказ</button>
             </div>
         </div>
     </div>
 
-    <div id="screen-trucks" class="screen">
-        <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Биржа</div></div>
+    <div id="screen-settings" class="screen">
+        <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Настройки</div></div>
         <div class="container">
-            <div class="tabs">
-                <div class="tab active" onclick="swTr('trips', this)">Машины</div>
-                <div class="tab" onclick="swTr('cargo', this)">Грузы</div>
+            <div class="card">
+                <label style="font-size:12px;">Имя</label><input id="s-name">
+                <label style="font-size:12px;">Телефон</label><input id="s-phone">
+                <label style="font-size:12px;">ПВЗ</label><select id="s-pvz"></select>
+                <button class="btn btn-blue" onclick="saveSet()">Сохранить</button>
             </div>
-            <div id="list-trucks"></div>
         </div>
     </div>
 
-    <div id="screen-market" class="screen">
-        <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Маркет</div></div>
-        <div class="container">
-            <div class="tabs">
-                <div class="tab active" onclick="swMk('item', this)">Товары</div>
-                <div class="tab" onclick="swMk('joint', this)">Сборы</div>
-            </div>
-            <div id="list-market"></div>
-        </div>
-    </div>
+    <div id="screen-trucks" class="screen"><div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Биржа</div></div><div class="container"><div class="tabs"><div class="tab active" onclick="swTr('trips', this)">Машины</div><div class="tab" onclick="swTr('cargo', this)">Грузы</div></div><div id="list-trucks"></div></div></div>
+    <div id="screen-market" class="screen"><div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Маркет</div></div><div class="container"><div class="tabs"><div class="tab active" onclick="swMk('item', this)">Товары</div><div class="tab" onclick="swMk('joint', this)">Сборы</div></div><div id="list-market"></div></div></div>
+    <div id="screen-rewards" class="screen"><div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Задания</div></div><div class="container"><div id="list-rewards"></div></div></div>
 
-    <div id="screen-rewards" class="screen">
-        <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Задания</div></div>
-        <div class="container"><div id="list-rewards"></div></div>
-    </div>
-
-    <div id="m-add" class="modal-wrap">
-        <div class="modal">
-            <h3>Добавить посылку</h3>
-            <input id="n-t" placeholder="Трек-номер">
-            <input id="n-d" placeholder="Описание (например: Кроссовки)">
-            <button class="btn btn-blue" onclick="subTrack()">Добавить</button>
-            <div style="text-align:center;padding:15px;color:var(--sec);" onclick="closeM('m-add')">Отмена</div>
-        </div>
-    </div>
+    <div id="m-add" class="modal-wrap"><div class="modal"><h3>Добавить посылку</h3><input id="n-t" placeholder="Трек-номер"><input id="n-d" placeholder="Описание"><button class="btn btn-blue" onclick="subTrack()">Добавить</button><div style="text-align:center;padding:15px;color:var(--sec);" onclick="closeM('m-add')">Отмена</div></div></div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand();
-        
         const API = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
         const uid = tg.initDataUnsafe?.user?.id || 317295540;
-        
         let config = {}, user = {}, isOpt = false, lastCalc = null;
 
         async function init() {
             try {
                 gid('u-ava').src = tg.initDataUnsafe?.user?.photo_url || "";
-                let r = await fetch(`${API}/api/dashboard/${uid}`, { headers: { 'ngrok-skip-browser-warning': 'true' } });
+                let r = await fetch(`${API}/api/dashboard/${uid}`, { headers: { 'ngrok-skip-browser-warning': 'true' }});
                 let d = await r.json();
                 config = d.app_config; 
                 user = d.user_info;
@@ -258,55 +226,56 @@
                 gid('u-lvl').innerText = user.level || "Новичок";
                 gid('u-bonus').innerText = user.bonus_kg || 0;
                 gid('txt-code').innerText = user.marking_code;
-
                 gid('s-name').value = user.name || "";
                 gid('s-phone').value = user.phone || "";
+                
                 renderPvzOptions(config.pvz_list, user.pvz_id);
-
-                let h = '';
-                if (d.packages && d.packages.length > 0) {
-                    d.packages.forEach(p => {
-                        h += `<div class="card" style="padding:12px;">
-                                <div style="font-weight:700">${p.description || 'Без описания'}</div>
-                                <div style="font-size:12px;color:#888">${p.track_number} • ${p.status_text}</div>
-                              </div>`;
-                    });
-                } else {
-                    h = '<div class="empty">У вас пока нет посылок</div>';
-                }
-                gid('home-pkg-list').innerHTML = h;
+                renderPackageList(d.packages);
 
                 isOpt = (user.category === 'more_100');
                 updMode();
-
             } catch(e) { console.error(e); }
+        }
+
+        function renderPackageList(pkgs) {
+            let h = '';
+            if (pkgs && pkgs.length > 0) {
+                pkgs.forEach(p => {
+                    let stClass = p.status_text.includes('Прибыл') ? 'status-ready' : '';
+                    h += `<div class="pkg-item">
+                            <div class="pkg-info">
+                                <b style="font-size:14px;">${p.description || 'Посылка'}</b>
+                                <span style="font-size:11px; color:var(--sec);">${p.track_number}</span>
+                            </div>
+                            <div class="pkg-status ${stClass}">${p.status_text}</div>
+                          </div>`;
+                });
+            } else {
+                h = '<div class="empty">У вас пока нет посылок</div>';
+            }
+            gid('full-pkg-list').innerHTML = h;
         }
 
         function renderPvzOptions(list, currentId) {
             let sel = gid('s-pvz'); sel.innerHTML = '<option value="">Не выбран</option>';
-            if (list) {
-                list.forEach(p => {
-                    let opt = document.createElement('option');
-                    opt.value = p.id; opt.innerText = p.name;
-                    if (p.id == currentId) opt.selected = true;
-                    sel.appendChild(opt);
-                });
-            }
+            if (list) { list.forEach(p => {
+                let opt = document.createElement('option');
+                opt.value = p.id; opt.innerText = p.name;
+                if (p.id == currentId) opt.selected = true;
+                sel.appendChild(opt);
+            });}
         }
 
         function nav(id) {
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
             gid('screen-' + id).classList.add('active');
-            if(id === 'trucks') ldTr();
-            if(id === 'market') ldMk();
-            if(id === 'rewards') ldRew();
+            window.scrollTo(0,0);
         }
 
         function goHome() { nav('home'); }
 
         function toggleMode() {
-            if (gid('screen-calc').classList.contains('active')) isOpt = gid('tg-calc').checked;
-            else isOpt = gid('tg-opt').checked;
+            isOpt = gid('screen-calc').classList.contains('active') ? gid('tg-calc').checked : gid('tg-opt').checked;
             updMode();
             fetch(`${API}/api/update_settings`, {
                 method: 'POST',
@@ -318,103 +287,62 @@
         function updMode() {
             gid('tg-opt').checked = isOpt;
             gid('tg-calc').checked = isOpt;
-            gid('box-city').style.display = isOpt ? 'block' : 'none';
+            gid('sel-city').style.display = isOpt ? 'block' : 'none';
             gid('box-code').style.display = isOpt ? 'none' : 'block';
             gid('box-calc-opt').style.display = isOpt ? 'block' : 'none';
             renderAddr();
-            gid('btn-order-confirm').style.display = 'none';
         }
 
         function renderAddr() {
             let t = gid('txt-addr');
-            if (isOpt) {
-                let c = gid('sel-city').value;
-                t.innerText = config.warehouses?.wholesale?.[c]?.address || "Адрес не найден";
-            } else {
-                t.innerText = config.warehouses?.retail?.address || "Адрес не найден";
-            }
+            if (isOpt) t.innerText = config.warehouses?.wholesale?.[gid('sel-city').value]?.address || "Выберите город";
+            else t.innerText = config.warehouses?.retail?.address || "Адрес не найден";
         }
 
         async function doCalc() {
-            const weight = parseFloat(gid('c-wg').value) || 0;
-            const quantity = parseInt(gid('c-qty').value) || 1;
-            const length = parseFloat(gid('c-len').value) || 0;
-            const width = parseFloat(gid('c-wid').value) || 0;
-            const height = parseFloat(gid('c-hei').value) || 0;
-
             let p = { 
-                user_id: uid,
-                weight: weight, 
-                quantity: quantity, 
+                user_id: uid, weight: parseFloat(gid('c-wg').value), quantity: parseInt(gid('c-qty').value),
                 category: isOpt ? 'more_100' : 'less_100',
-                length: length, width: width, height: height,
-                route_from: isOpt ? gid('sel-route').value.split(' - ')[0] : "🇨🇳 Китай (Урумчи)",
-                route_to: isOpt ? gid('sel-route').value.split(' - ')[1] : "🇹🇯 Худжанд"
+                length: parseFloat(gid('c-len').value) || 0, width: parseFloat(gid('c-wid').value) || 0, height: parseFloat(gid('c-hei').value) || 0,
+                route_from: isOpt ? gid('sel-route').value.split(' - ')[0] : "🇨🇳 Китай", route_to: isOpt ? gid('sel-route').value.split(' - ')[1] : "🇹🇯 Худжанд"
             };
-            
-            gid('c-res').innerText = "---";
-            
             try {
-                let r = await fetch(`${API}/api/calculate`, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify(p) 
-                });
+                let r = await fetch(`${API}/api/calculate`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(p)});
                 let j = await r.json();
-                
-                if (j.status === 'ok') {
-                    gid('c-res').innerText = j.price.toLocaleString();
-                    gid('c-cur').innerText = j.currency + " (за " + j.total_weight + " кг)";
+                if(j.status==='ok') {
+                    gid('c-res').innerText = j.price; gid('c-cur').innerText = j.currency;
                     gid('btn-order-confirm').style.display = 'block';
-                    lastCalc = { ...p, price: j.price, route: `${p.route_from} - ${p.route_to}` };
-                    tg.HapticFeedback.impactOccurred('medium');
-                } else {
-                    gid('c-res').innerText = "0";
-                    tg.showAlert("Ошибка: " + j.message);
+                    lastCalc = {...p, price: j.price, route: `${p.route_from} - ${p.route_to}`};
                 }
-            } catch(e) { tg.showAlert("Ошибка связи с сервером"); }
+            } catch(e) { tg.showAlert("Ошибка расчета"); }
         }
 
         async function submitOrder() {
-            if (!lastCalc) return;
             try {
                 let r = await fetch(`${API}/api/create_order`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_id: uid,
-                        route: lastCalc.route,
-                        weight: lastCalc.weight * lastCalc.quantity,
-                        price: lastCalc.price
-                    })
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({user_id: uid, route: lastCalc.route, weight: lastCalc.weight*lastCalc.quantity, price: lastCalc.price})
                 });
-                let j = await r.json();
-                if (j.status === 'ok') {
-                    tg.showAlert("✅ Заказ успешно оформлен!");
-                    gid('btn-order-confirm').style.display = 'none';
-                }
-            } catch(e) { tg.showAlert("Ошибка при создании заказа"); }
+                if((await r.json()).status==='ok') { tg.showAlert("Заказ оформлен!"); gid('btn-order-confirm').style.display='none'; }
+            } catch(e) { tg.showAlert("Ошибка"); }
         }
 
         async function saveSet() {
-            let data = { user_id: uid, full_name: gid('s-name').value, phone: gid('s-phone').value, pvz_id: parseInt(gid('s-pvz').value) };
-            let r = await fetch(`${API}/api/update_settings`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-            if (r.ok) { tg.showAlert("Настройки сохранены"); init(); goHome(); }
+            let data = {user_id: uid, full_name: gid('s-name').value, phone: gid('s-phone').value, pvz_id: parseInt(gid('s-pvz').value)};
+            await fetch(`${API}/api/update_settings`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+            tg.showAlert("Сохранено"); init(); goHome();
         }
 
         async function subTrack() {
-            let data = { user_id: uid, track_number: gid('n-t').value, description: gid('n-d').value };
-            let r = await fetch(`${API}/api/add_track`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-            let res = await r.json();
-            if (res.status === 'ok') { closeM('m-add'); init(); tg.showAlert("Трек добавлен"); }
-            else { tg.showAlert(res.message); }
+            let data = {user_id: uid, track_number: gid('n-t').value, description: gid('n-d').value};
+            await fetch(`${API}/api/add_track`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+            closeM('m-add'); init(); tg.showAlert("Добавлено");
         }
 
         function gid(id) { return document.getElementById(id); }
         function openM(id) { gid(id).style.display = 'flex'; }
         function closeM(id) { gid(id).style.display = 'none'; }
-        function copy(id) { navigator.clipboard.writeText(gid(id).innerText); tg.HapticFeedback.notificationOccurred('success'); tg.showAlert("Скопировано"); }
-
+        function copy(t) { navigator.clipboard.writeText(gid(t).innerText); tg.HapticFeedback.impactOccurred('light'); tg.showAlert("Скопировано"); }
         init();
     </script>
 </body>
