@@ -2,73 +2,287 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Drop SuperApp</title>
+
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 <style>
-body{margin:0;font-family:Inter,Arial;background:#f2f3f5}
+:root{
+--bg:#F2F3F5;--card:#fff;--text:#1F1F1F;--sec:#8E8E93;
+--blue:#007AFF;--radius:16px
+}
+body{margin:0;font-family:Inter,sans-serif;background:var(--bg);color:var(--text)}
+.container{padding:16px;max-width:480px;margin:0 auto;padding-bottom:100px}
 .screen{display:none}
 .screen.active{display:block}
-.card{background:#fff;margin:12px;padding:14px;border-radius:14px}
-.btn{padding:12px;border-radius:12px;border:none;background:#007AFF;color:#fff;width:100%}
+.card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.btn{width:100%;padding:14px;border-radius:14px;border:none;font-weight:700;font-size:15px}
+.btn-blue{background:var(--blue);color:#fff}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.user-row{display:flex;gap:10px;align-items:center}
+.ava{width:44px;height:44px;border-radius:50%;background:#ccc}
+.lvl-badge{background:#FFD60A;font-size:10px;padding:2px 6px;border-radius:8px;font-weight:800}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:25px}
+.grid-item{text-align:center;cursor:pointer}
+.icon-box{width:54px;height:54px;border-radius:18px;background:#fff;
+display:flex;align-items:center;justify-content:center;font-size:22px}
+.nav-head{position:sticky;top:0;background:#fff;padding:12px 16px;
+display:flex;align-items:center;gap:15px;border-bottom:1px solid #eee;z-index:10}
+.back-icon{font-size:20px;cursor:pointer}
+.tabs{display:flex;background:#e5e5ea;border-radius:12px;padding:4px;margin-bottom:15px}
+.tab{flex:1;text-align:center;padding:8px;font-size:13px;font-weight:600;
+border-radius:9px;cursor:pointer;color:#888}
+.tab.active{background:#fff;color:#000}
+.empty{text-align:center;color:#999;padding:30px}
+.modal-wrap{position:fixed;inset:0;background:rgba(0,0,0,.5);
+display:none;align-items:flex-end;z-index:1000}
+.modal{background:#fff;width:100%;border-radius:20px 20px 0 0;padding:24px}
+.copy-box{background:#f0f2f5;padding:14px;border-radius:12px;position:relative}
+.copy-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%)}
 </style>
 </head>
+
 <body>
 
+<!-- ================= HOME ================= -->
 <div id="screen-home" class="screen active">
-    <div class="card"><b>Мои посылки</b></div>
-    <div id="home-pkg-list"></div>
+<div class="container">
+<div class="header">
+<div class="user-row">
+<img id="u-ava" class="ava">
+<div>
+<b id="u-name">...</b>
+<div><span id="u-lvl" class="lvl-badge">...</span></div>
+<div style="font-size:12px;color:var(--sec)">ID: <span id="u-id"></span></div>
+</div>
+</div>
+<div onclick="nav('settings')"><i class="fa-solid fa-gear"></i></div>
 </div>
 
+<div class="card">
+<div style="opacity:.7;font-size:12px">БОНУСНЫЙ БАЛАНС</div>
+<div style="font-size:32px;font-weight:800">
+<span id="u-bonus">0</span> кг
+</div>
+<button class="btn btn-blue" onclick="nav('rewards')">Задания</button>
+</div>
+
+<div class="grid">
+<div class="grid-item" onclick="nav('china')"><div class="icon-box"><i class="fa-solid fa-box"></i></div>Китай</div>
+<div class="grid-item" onclick="nav('trucks')"><div class="icon-box"><i class="fa-solid fa-truck"></i></div>Биржа</div>
+<div class="grid-item" onclick="nav('market')"><div class="icon-box"><i class="fa-solid fa-bag-shopping"></i></div>Маркет</div>
+<div class="grid-item" onclick="nav('calc')"><div class="icon-box"><i class="fa-solid fa-calculator"></i></div>Расчет</div>
+</div>
+
+<b>Мои посылки</b>
+<div id="home-pkg-list"></div>
+</div>
+</div>
+
+<!-- ================= PACKAGE ================= -->
 <div id="screen-package" class="screen">
-    <div class="card"><button onclick="nav('home')">← Назад</button></div>
-    <div class="card">
-        <b id="pkg-title"></b>
-        <div id="pkg-status" style="color:#888"></div>
-    </div>
-    <div id="pkg-history"></div>
+<div class="nav-head">
+<div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
+<div><b>Посылка</b></div>
+</div>
+<div class="container">
+<div class="card">
+<b id="pkg-title"></b>
+<div id="pkg-status" style="color:#888"></div>
+</div>
+<div id="pkg-history"></div>
+</div>
+</div>
+
+<!-- ================= CHINA ================= -->
+<div id="screen-china" class="screen">
+<div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><b>Мой Китай</b></div>
+<div class="container">
+<button class="btn btn-blue" onclick="openM('m-add')">Добавить трек</button>
+<div id="full-pkg-list"></div>
+</div>
+</div>
+
+<!-- ================= CALC ================= -->
+<div id="screen-calc" class="screen">
+<div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><b>Калькулятор</b></div>
+<div class="container">
+<input id="c-wg" type="number" placeholder="Вес кг">
+<div id="c-res" style="font-size:28px;font-weight:800;text-align:center">0</div>
+<button class="btn btn-blue" onclick="doCalc()">Рассчитать</button>
+</div>
+</div>
+
+<!-- ================= TRUCKS ================= -->
+<div id="screen-trucks" class="screen">
+<div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><b>Биржа</b></div>
+<div class="container">
+<div class="tabs">
+<div class="tab active" onclick="swTr('trips',this)">Машины</div>
+<div class="tab" onclick="swTr('cargo',this)">Грузы</div>
+</div>
+<div id="list-trucks"></div>
+</div>
+</div>
+
+<!-- ================= MARKET ================= -->
+<div id="screen-market" class="screen">
+<div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><b>Маркет</b></div>
+<div class="container">
+<div class="tabs">
+<div class="tab active" onclick="swMk('item',this)">Товары</div>
+<div class="tab" onclick="swMk('joint',this)">Сборы</div>
+</div>
+<div id="list-market"></div>
+</div>
+</div>
+
+<!-- ================= REWARDS ================= -->
+<div id="screen-rewards" class="screen">
+<div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><b>Задания</b></div>
+<div class="container">
+<div id="list-rewards"></div>
+</div>
+</div>
+
+<!-- ================= SETTINGS ================= -->
+<div id="screen-settings" class="screen">
+<div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><b>Настройки</b></div>
+<div class="container">
+<input id="s-name" placeholder="Имя">
+<input id="s-phone" placeholder="Телефон">
+<button class="btn btn-blue" onclick="saveSet()">Сохранить</button>
+</div>
+</div>
+
+<!-- ================= MODAL ================= -->
+<div id="m-add" class="modal-wrap">
+<div class="modal">
+<input id="n-t" placeholder="Трек">
+<input id="n-d" placeholder="Описание">
+<button class="btn btn-blue" onclick="subTrack()">Добавить</button>
+<div onclick="closeM('m-add')" style="text-align:center;padding:10px;color:#888">Отмена</div>
+</div>
 </div>
 
 <script>
-const tg = window.Telegram.WebApp;
-tg.expand();
-
+const tg = window.Telegram.WebApp; tg.expand();
 const API = "http://localhost:8000";
 const uid = tg.initDataUnsafe?.user?.id || 1;
+let tabTr='trips',tabMk='item';
 
 function gid(id){return document.getElementById(id)}
-
 function nav(id){
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-    gid('screen-'+id).classList.add('active');
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+gid('screen-'+id).classList.add('active');
+if(id==='trucks')ldTr();
+if(id==='market')ldMk();
+if(id==='rewards')ldRew();
 }
+function goHome(){nav('home')}
 
 async function init(){
-    let r = await fetch(`${API}/api/dashboard/${uid}`);
-    let d = await r.json();
-    let h = '';
-    d.packages.forEach(p=>{
-        h += `<div class="card" onclick="openPkg('${p.track_number}')">
-                <b>${p.description||'Без описания'}</b><br>
-                <small>${p.track_number} • ${p.status_text}</small>
-              </div>`;
-    });
-    gid('home-pkg-list').innerHTML = h || '<div class="card">Нет посылок</div>';
+let r=await fetch(`${API}/api/dashboard/${uid}`);
+let d=await r.json();
+gid('u-name').innerText=d.user_info.name||'Клиент';
+gid('u-id').innerText=d.user_info.user_id;
+gid('u-lvl').innerText=d.user_info.level;
+gid('u-bonus').innerText=d.user_info.bonus_kg;
+
+let h='';
+d.packages.forEach(p=>{
+h+=`<div class="card" onclick="openPkg('${p.track_number}')">
+<b>${p.description||'Без описания'}</b><br>
+<small>${p.track_number} • ${p.status_text}</small>
+</div>`;
+});
+gid('home-pkg-list').innerHTML=h||'<div class="empty">Нет посылок</div>';
 }
 
 async function openPkg(track){
-    let r = await fetch(`${API}/api/package/${track}`);
-    let d = await r.json();
-    gid('pkg-title').innerText = d.package.track_number;
-    gid('pkg-status').innerText = d.package.status;
-    let h='';
-    if(d.history.length===0) h='<div class="card">Истории нет</div>';
-    d.history.forEach(s=>{
-        h+=`<div class="card"><b>${s.status}</b><br><small>${new Date(s.timestamp).toLocaleString()}</small></div>`;
-    });
-    gid('pkg-history').innerHTML=h;
-    nav('package');
+let r=await fetch(`${API}/api/package/${track}`);
+let d=await r.json();
+gid('pkg-title').innerText=d.package.track_number;
+gid('pkg-status').innerText=d.package.status;
+let h='';
+if(!d.history.length)h='<div class="empty">Истории нет</div>';
+d.history.forEach(s=>{
+h+=`<div class="card"><b>${s.status}</b><br><small>${new Date(s.timestamp).toLocaleString()}</small></div>`;
+});
+gid('pkg-history').innerHTML=h;
+nav('package');
 }
+
+async function doCalc(){
+let w=parseFloat(gid('c-wg').value)||0;
+let r=await fetch(`${API}/api/calculate`,{
+method:'POST',headers:{'Content-Type':'application/json'},
+body:JSON.stringify({weight:w,quantity:1,category:'less_100'})
+});
+let j=await r.json();
+gid('c-res').innerText=j.price+' '+j.currency;
+}
+
+async function ldTr(){
+let r=await fetch(`${API}/api/trucking/list?type=${tabTr}`);
+let d=await r.json();let h='';
+d.items.forEach(i=>{
+h+=`<div class="card"><b>${i.title}</b><br>${i.details}</div>`;
+});
+gid('list-trucks').innerHTML=h||'<div class="empty">Пусто</div>';
+}
+
+async function ldMk(){
+let r=await fetch(`${API}/api/market/list?type=${tabMk}`);
+let d=await r.json();let h='';
+d.items.forEach(i=>{
+h+=`<div class="card"><b>${i.title}</b><br>${i.price} TJS</div>`;
+});
+gid('list-market').innerHTML=h||'<div class="empty">Пусто</div>';
+}
+
+async function ldRew(){
+let r=await fetch(`${API}/api/rewards/list/${uid}`);
+let d=await r.json();let h='';
+d.tasks.forEach(t=>{
+h+=`<div class="card" onclick="claimRew(${t.id})">
+<b>${t.title}</b><br>+${t.reward} кг
+</div>`;
+});
+gid('list-rewards').innerHTML=h;
+}
+
+async function claimRew(id){
+await fetch(`${API}/api/rewards/claim`,{
+method:'POST',headers:{'Content-Type':'application/json'},
+body:JSON.stringify({user_id:uid,task_id:id})
+});
+init();
+}
+
+async function saveSet(){
+await fetch(`${API}/api/update_settings`,{
+method:'POST',headers:{'Content-Type':'application/json'},
+body:JSON.stringify({user_id:uid,full_name:gid('s-name').value,phone:gid('s-phone').value})
+});
+goHome();init();
+}
+
+async function subTrack(){
+await fetch(`${API}/api/add_track`,{
+method:'POST',headers:{'Content-Type':'application/json'},
+body:JSON.stringify({user_id:uid,track_number:gid('n-t').value,description:gid('n-d').value})
+});
+closeM('m-add');init();
+}
+
+function swTr(t,e){tabTr=t;document.querySelectorAll('#screen-trucks .tab').forEach(x=>x.classList.remove('active'));e.classList.add('active');ldTr()}
+function swMk(t,e){tabMk=t;document.querySelectorAll('#screen-market .tab').forEach(x=>x.classList.remove('active'));e.classList.add('active');ldMk()}
+function openM(id){gid(id).style.display='flex'}
+function closeM(id){gid(id).style.display='none'}
 
 init();
 </script>
