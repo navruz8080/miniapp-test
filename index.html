@@ -3,676 +3,357 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Drop Ecosystem</title>
+    <title>Drop SuperApp</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        /* --- НАСТРОЙКИ ТЕМЫ (iOS Style) --- */
-        :root {
-            --bg-body: #F2F2F7;
-            --bg-card: #FFFFFF;
-            --text-main: #000000;
-            --text-sec: #8E8E93;
-            --accent: #1ae2c7; /* Tiffany */
-            --accent-dark: #00b39d;
-            --danger: #FF3B30;
-            --success: #34C759;
-            --border: rgba(0,0,0,0.08);
-            --shadow: 0 4px 12px rgba(0,0,0,0.06);
-            --font-main: 'Inter', sans-serif;
-            --font-code: 'JetBrains Mono', monospace; /* Для адресов и кодов */
-        }
-
-        [data-theme="dark"] {
-            --bg-body: #000000;
-            --bg-card: #1C1C1E;
-            --text-main: #FFFFFF;
-            --text-sec: #98989F;
-            --border: rgba(255,255,255,0.12);
-        }
-
-        body {
-            font-family: var(--font-main);
-            background: var(--bg-body); color: var(--text-main);
-            margin: 0; padding: 0 0 110px 0;
-            -webkit-tap-highlight-color: transparent;
-            transition: background 0.3s, color 0.3s;
-        }
-
-        .container { padding: 0 16px; max-width: 600px; margin: 0 auto; }
+        :root { --bg: #F2F3F5; --card: #FFFFFF; --text: #1F1F1F; --sec: #8E8E93; --blue: #007AFF; --radius: 16px; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        .container { padding: 16px; max-width: 480px; margin: 0 auto; padding-bottom: 100px; }
+        .screen { display: none; width: 100%; padding-bottom: 80px; }
+        .screen.active { display: block !important; }
         
-        /* HEADER */
-        .app-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
-        h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
-        .theme-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow); cursor: pointer; border: 1px solid var(--border); }
-
-        /* CARDS */
-        .card { background: var(--bg-card); border-radius: 20px; padding: 20px; margin-bottom: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); position: relative; overflow: hidden; }
-
-        /* --- UI ЭЛЕМЕНТЫ --- */
-        .btn-main { background: var(--accent); color: #000; width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px; transition: 0.2s; }
-        .btn-main:active { transform: scale(0.98); opacity: 0.9; }
-
-        input, select { background: var(--bg-body); border: 1px solid transparent; color: var(--text-main); padding: 16px; border-radius: 14px; width: 100%; box-sizing: border-box; font-size: 15px; outline: none; margin-bottom: 10px; font-family: var(--font-main); }
-        input:focus { background: var(--bg-card); border-color: var(--accent); }
-
-        /* --- ТУМБЛЕР (IOS TOGGLE) --- */
-        .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .toggle-label { font-weight: 600; font-size: 15px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top: 10px; }
+        .user-row { display: flex; align-items: center; gap: 10px; }
+        .ava { width: 44px; height: 44px; border-radius: 50%; background: #ccc; object-fit: cover; }
+        .lvl-badge { background: #FFD60A; color: #000; font-size: 10px; padding: 2px 6px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
         
-        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .bonus-card { background: linear-gradient(135deg, #111 0%, #333 100%); border-radius: 20px; padding: 20px; color: white; margin-bottom: 24px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .b-val { font-size: 32px; font-weight: 800; margin: 5px 0; }
+        .b-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 30px; }
+        .grid-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
+        .icon-box { width: 54px; height: 54px; background: var(--card); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .grid-lbl { font-size: 11px; font-weight: 600; color: var(--text); }
+        
+        .card { background: var(--card); padding: 16px; border-radius: var(--radius); margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .btn { width: 100%; padding: 14px; border-radius: 14px; border: none; background: var(--text); color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; }
+        .btn-blue { background: var(--blue); }
+        input, select { width: 100%; padding: 14px; background: #F2F4F7; border: none; border-radius: 12px; margin-bottom: 10px; box-sizing: border-box; font-family: 'Inter'; font-size: 15px; }
+        
+        .nav-head { background: rgba(255,255,255,0.95); position: sticky; top: 0; z-index: 90; padding: 12px 16px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 10px; }
+        .back-icon { font-size: 20px; cursor: pointer; padding: 5px; }
+        .pg-title { font-size: 17px; font-weight: 700; }
+        
+        .switch-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 24px; width: 24px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        input:checked + .slider { background-color: var(--accent); }
-        input:checked + .slider:before { transform: translateX(22px); }
-
-        /* --- ПРОФИЛЬ (HERO CARD) --- */
-        .id-card {
-            background: linear-gradient(135deg, #1ae2c7 0%, #009e8a 100%);
-            border-radius: 20px;
-            padding: 20px;
-            color: #fff;
-            box-shadow: 0 8px 20px rgba(26, 226, 199, 0.3);
-            margin-bottom: 20px;
-            position: relative;
-        }
-        .id-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .id-label { font-size: 10px; text-transform: uppercase; opacity: 0.8; letter-spacing: 1px; }
-        .id-avatar { width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; object-fit: cover; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 34px; transition: .2s; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 2px; bottom: 2px; background-color: white; border-radius: 50%; transition: .2s; }
+        input:checked + .slider { background-color: var(--blue); }
+        input:checked + .slider:before { transform: translateX(20px); }
         
-        .id-code { 
-            font-family: var(--font-code); 
-            font-size: 20px; 
-            font-weight: 700; 
-            letter-spacing: 0.5px; 
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-            cursor: pointer;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .id-code:active { opacity: 0.7; }
+        .tabs { background: #E5E5EA; padding: 4px; border-radius: 12px; display: flex; margin-bottom: 15px; }
+        .tab { flex: 1; padding: 8px; text-align: center; font-size: 13px; font-weight: 600; border-radius: 9px; cursor: pointer; color: #8E8E93; }
+        .tab.active { background: #fff; color: #000; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
-        .id-name { font-size: 14px; font-weight: 600; margin-top: 5px; opacity: 0.95; }
-
-        /* --- АДРЕСА (COPY BLOCKS) --- */
-        .address-box {
-            background: var(--bg-body);
-            border-radius: 12px;
-            padding: 15px;
-            margin-top: 10px;
-            cursor: pointer;
-            position: relative;
-            border: 1px solid transparent;
-            transition: 0.2s;
-        }
-        .address-box:active {
-            transform: scale(0.98);
-            border-color: var(--accent);
-            background: rgba(26, 226, 199, 0.05);
-        }
-        .addr-row { display: flex; margin-bottom: 8px; }
-        .addr-key { width: 80px; font-size: 12px; color: var(--text-sec); font-weight: 500; }
-        .addr-val { flex: 1; font-size: 13px; font-weight: 600; color: var(--text-main); font-family: var(--font-code); line-height: 1.4; word-break: break-all; }
+        .modal-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; align-items: flex-end; }
+        .modal { background: #fff; width: 100%; border-radius: 20px 20px 0 0; padding: 24px; animation: slideUp 0.2s; }
+        @keyframes slideUp { from {transform:translateY(100%)} to {transform:translateY(0)} }
         
-        .copy-hint { 
-            position: absolute; top: 10px; right: 10px; 
-            font-size: 10px; color: var(--accent); 
-            background: rgba(26, 226, 199, 0.1); padding: 4px 8px; border-radius: 10px; 
-        }
-
-        /* --- НИЖНИЙ БАР (DOCK) --- */
-        .dock-container { position: fixed; bottom: 20px; left: 0; right: 0; display: flex; justify-content: center; z-index: 1000; }
-        .dock { background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 32px; padding: 12px 25px; display: flex; gap: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border: 1px solid var(--border); }
-        .dock-item { display: flex; flex-direction: column; align-items: center; color: var(--text-sec); cursor: pointer; transition: 0.3s; width: 48px; }
-        .dock-icon { font-size: 22px; margin-bottom: 4px; }
-        .dock-label { font-size: 10px; font-weight: 600; opacity: 0; transform: translateY(5px); transition: 0.3s; }
-        .dock-item.active { color: var(--accent-dark); transform: translateY(-3px); }
-        .dock-item.active .dock-label { opacity: 1; transform: translateY(0); }
-
-        [data-theme="dark"] .dock { background: rgba(28,28,30,0.95); border-color: rgba(255,255,255,0.1); }
-        [data-theme="dark"] .dock-item.active { color: var(--accent); }
-
-        /* UTILS & MODALS */
-        .screen { display: none; animation: fadeIn 0.3s; }
-        .screen.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .fab { position: fixed; bottom: 100px; right: 20px; width: 56px; height: 56px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #000; font-size: 24px; box-shadow: 0 4px 15px rgba(26, 226, 199, 0.4); cursor: pointer; z-index: 900; transition: 0.2s; }
-        .fab:active { transform: scale(0.9); }
-
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: none; align-items: flex-end; backdrop-filter: blur(4px); }
-        .modal-overlay.active { display: flex; animation: slideUp 0.3s; }
-        .modal-box { background: var(--bg-card); width: 100%; border-radius: 24px 24px 0 0; padding: 30px 20px 50px 20px; border-top: 1px solid var(--border); }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .empty { text-align: center; color: #999; padding: 30px; font-size: 13px; }
         
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 20px; font-size: 12px; z-index: 11000; opacity: 0; transition: 0.3s; pointer-events: none; }
-        .toast.show { opacity: 1; top: 30px; }
+        /* 🔥 КНОПКА КОПИРОВАНИЯ */
+        .copy-box { 
+            background: #F0F2F5; padding: 14px; border-radius: 12px; 
+            position: relative; cursor: pointer; 
+            padding-right: 60px; /* Место для кнопки */
+        }
+        .copy-text { 
+            font-family: monospace; font-size: 13px; line-height: 1.4; color: #333; 
+            word-break: break-all;
+        }
+        .copy-btn { 
+            position: absolute; top: 50%; transform: translateY(-50%); right: 10px; 
+            width: 36px; height: 36px; background: #fff; border-radius: 10px; 
+            display: flex; align-items: center; justify-content: center; 
+            color: var(--blue); box-shadow: 0 2px 6px rgba(0,0,0,0.08); 
+        }
     </style>
 </head>
-<body data-theme="light">
+<body>
 
-    <div id="toast" class="toast"><i class="fa-solid fa-check"></i> Скопировано</div>
-
-    <div class="container">
-        <div class="app-header">
-            <h1>Drop Eco</h1>
-            <div class="theme-btn" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="theme-icon"></i></div>
-        </div>
-    </div>
-
-    <div id="fab-add" class="fab" style="display: none;" onclick="openModal('add-modal')">
-        <i class="fa-solid fa-plus"></i>
-    </div>
-
-    <div id="add-modal" class="modal-overlay">
-        <div class="modal-box">
-            <h2>Новая посылка</h2>
-            <input type="text" id="new-track" placeholder="Трек-номер">
-            <input type="text" id="new-desc" placeholder="Описание">
-            <button class="btn-main" onclick="submitTrack()">Добавить</button>
-            <div style="text-align:center; margin-top:15px; color:var(--text-sec);" onclick="closeModal('add-modal')">Отмена</div>
-        </div>
-    </div>
-    
-    <div id="driver-modal" class="modal-overlay">
-        <div class="modal-box">
-            <h2>Регистрация водителя</h2>
-            <input type="text" id="d-car" placeholder="Машина (напр. Porter)">
-            <input type="text" id="d-num" placeholder="Гос. номер">
-            <input type="number" id="d-weight" placeholder="Грузоподъемность (кг)">
-            <button class="btn-main" onclick="registerDriver()">Зарегистрироваться</button>
-            <div style="text-align:center; margin-top:15px; color:var(--text-sec);" onclick="closeModal('driver-modal')">Отмена</div>
-        </div>
-    </div>
-
-    <div id="trip-modal" class="modal-overlay">
-        <div class="modal-box">
-            <h2>Новый рейс</h2>
-            <input type="text" id="t-from" placeholder="Откуда">
-            <input type="text" id="t-to" placeholder="Куда">
-            <input type="number" id="t-price" placeholder="Цена за кг">
-            <input type="text" id="t-desc" placeholder="Комментарий">
-            <button class="btn-main" onclick="createTrip()">Опубликовать</button>
-            <div style="text-align:center; margin-top:15px; color:var(--text-sec);" onclick="closeModal('trip-modal')">Отмена</div>
-        </div>
-    </div>
-
-    <div id="screen-profile" class="screen active">
+    <div id="screen-home" class="screen active">
         <div class="container">
-            
-            <div class="id-card">
-                <div class="id-card-top">
+            <div class="header">
+                <div class="user-row">
+                    <img id="u-ava" class="ava" src="">
                     <div>
-                        <div class="id-label">MEMBER CARD</div>
-                        <div class="id-name" id="user-name">Загрузка...</div>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <b id="u-name">...</b>
+                            <span id="u-lvl" class="lvl-badge">...</span>
+                        </div>
+                        <div style="font-size:12px; color:var(--sec);">ID: <span id="u-id">...</span></div>
                     </div>
-                    <img id="user-avatar" class="id-avatar" src="" alt="">
                 </div>
-                
-                <div class="id-label" style="margin-bottom: 5px;">ВАШ КОД (Нажмите для копирования)</div>
-                <div class="id-code" onclick="copyMarking()">
-                    <span id="marking-text">C-87/...</span>
-                    <i class="fa-regular fa-copy" style="font-size: 16px; opacity: 0.8;"></i>
-                </div>
+                <div onclick="nav('settings')" style="padding:10px;"><i class="fa-solid fa-gear"></i></div>
             </div>
 
-            <div class="card">
-                <div class="toggle-row">
-                    <div class="toggle-label">Режим работы</div>
-                    <label class="switch">
-                        <input type="checkbox" id="mode-toggle" onchange="toggleMode()">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div style="font-size: 12px; color: var(--text-sec);" id="mode-desc">
-                    Включен режим РОЗНИЦА (до 100 кг)
-                </div>
+            <div class="bonus-card">
+                <div style="opacity:0.7; font-size:12px; text-transform:uppercase;">Бонусный баланс</div>
+                <div class="b-val"><span id="u-bonus">0</span> <span style="font-size:16px;">кг</span></div>
+                <button class="b-btn" onclick="nav('rewards')"><i class="fa-solid fa-star"></i> Задания</button>
             </div>
 
-            <div class="card">
-                <div style="font-weight: 700; margin-bottom: 10px; display:flex; justify-content:space-between;">
-                    <span id="addr-title">Склад Иу (Розница)</span>
-                    <select id="origin-city-select" onchange="renderAddress()" style="width: auto; padding: 4px; font-size: 12px; display:none;">
-                        <option value="yiwu">Иу</option>
-                        <option value="urumqi">Урумчи</option>
-                    </select>
-                </div>
-
-                <div class="address-box" onclick="copyAddress()">
-                    <div class="copy-hint">Копировать</div>
-                    
-                    <div class="addr-row">
-                        <div class="addr-key">Получатель:</div>
-                        <div class="addr-val" id="addr-name">阿吉买买提·买买提</div>
-                    </div>
-                    <div class="addr-row">
-                        <div class="addr-key">Телефон:</div>
-                        <div class="addr-val" id="addr-phone">18967433111</div>
-                    </div>
-                    <div class="addr-row">
-                        <div class="addr-key">Адрес:</div>
-                        <div class="addr-val" id="addr-street">浙江省金华市义乌市福田街道...</div>
-                    </div>
-                    <div style="margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 8px;">
-                        <div style="font-size: 10px; color: var(--accent-dark); font-weight: 700;">НЕ ЗАБУДЬТЕ ДОБАВИТЬ ВАШ КОД:</div>
-                        <div class="addr-val" id="addr-code-suffix" style="color: var(--accent-dark);">C-87/...</div>
-                    </div>
-                </div>
+            <div style="font-weight:700; margin-bottom:15px;">Меню</div>
+            <div class="grid">
+                <div class="grid-item" onclick="nav('china')"><div class="icon-box" style="color: #FF2D55;"><i class="fa-brands fa-dhl"></i></div><span class="grid-lbl">Китай</span></div>
+                <div class="grid-item" onclick="nav('trucks')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-truck-fast"></i></div><span class="grid-lbl">Биржа</span></div>
+                <div class="grid-item" onclick="nav('market')"><div class="icon-box" style="color: #FF9500;"><i class="fa-solid fa-bag-shopping"></i></div><span class="grid-lbl">Маркет</span></div>
+                <div class="grid-item" onclick="nav('calc')"><div class="icon-box" style="color: #007AFF;"><i class="fa-solid fa-calculator"></i></div><span class="grid-lbl">Расчет</span></div>
             </div>
 
-            <div class="card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center;">
-                <div>
-                    <div style="font-size: 20px; font-weight: 700;" id="stat-bonus">0.0</div>
-                    <div style="font-size: 10px; color: var(--text-sec); text-transform: uppercase;">Бонусы (кг)</div>
-                </div>
-                <div>
-                    <div style="font-size: 20px; font-weight: 700;" id="stat-count">0</div>
-                    <div style="font-size: 10px; color: var(--text-sec); text-transform: uppercase;">Заказов</div>
-                </div>
-            </div>
-
+            <div style="font-weight:700; margin-bottom:10px;">Мои посылки</div>
+            <div id="home-pkg-list"></div>
         </div>
     </div>
 
-    <div id="screen-pkgs" class="screen">
+    <div id="screen-china" class="screen">
+        <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Мой Китай</div></div>
         <div class="container">
-            <h2 style="margin-bottom: 15px;">Мои посылки</h2>
-            <div id="orders-container">
-                <div style="text-align: center; padding: 40px; color: var(--text-sec);">Загрузка...</div>
+            <div class="card">
+                <div class="switch-row"><b>Оптовый режим (>100 кг)</b><label class="switch"><input type="checkbox" id="tg-opt" onchange="toggleMode()"><span class="slider"></span></label></div>
+            </div>
+            <div class="card">
+                <b>Адрес Склада</b>
+                <div id="box-city" style="display:none; margin-top:10px;"><select id="sel-city" onchange="renderAddr()"><option value="yiwu">Иу (Yiwu)</option><option value="urumqi">Урумчи</option></select></div>
+                <div class="copy-box" onclick="copy('txt-addr')" style="margin-top:8px;">
+                    <div id="txt-addr" class="copy-text">...</div>
+                    <div class="copy-btn"><i class="fa-regular fa-copy"></i></div>
+                </div>
+            </div>
+            <div id="box-code" class="card">
+                <b>Ваш Код (Обязательно!)</b>
+                <div class="copy-box" onclick="copy('txt-code')" style="margin-top:8px;">
+                    <div id="txt-code" class="copy-text" style="font-weight:700; color:var(--blue);">...</div>
+                    <div class="copy-btn"><i class="fa-regular fa-copy"></i></div>
+                </div>
+            </div>
+            <button class="btn btn-blue" onclick="openM('m-add')">Добавить трек</button>
+            <div id="full-pkg-list" style="margin-top:20px;"></div>
+        </div>
+    </div>
+
+    <div id="screen-settings" class="screen">
+        <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Настройки</div></div>
+        <div class="container">
+            <div class="card">
+                <label style="font-size:12px;">Ваше Имя</label><input id="s-name">
+                <label style="font-size:12px;">Телефон</label><input id="s-phone">
+                <label style="font-size:12px;">Выберите ПВЗ</label><select id="s-pvz"><option value="">Загрузка...</option></select>
+                <button class="btn btn-blue" onclick="saveSet()">Сохранить</button>
             </div>
         </div>
     </div>
 
     <div id="screen-calc" class="screen">
+        <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Калькулятор</div></div>
         <div class="container">
             <div class="card">
-                <h2>Калькулятор</h2>
-                <div id="calc-route-box" style="display: none;">
-                    <select id="calc-route"><option>Загрузка...</option></select>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <input type="number" id="c-l" placeholder="Дл" class="opt-only" style="display:none">
-                    <input type="number" id="c-w" placeholder="Шир" class="opt-only" style="display:none">
-                    <input type="number" id="c-h" placeholder="Выс" class="opt-only" style="display:none">
-                    <input type="number" id="c-weight" placeholder="Вес (кг)" style="grid-column: span 2;">
-                    <input type="number" id="c-qty" placeholder="Кол-во" value="1" style="grid-column: span 2;">
-                </div>
-
-                <div id="retail-info" style="margin-top: 10px; font-size: 13px; color: var(--text-sec); line-height: 1.5;">
-                    <div>до 0.5 кг — <b>13 TJS</b></div>
-                    <div>0.5 - 1 кг — <b>23 TJS</b></div>
-                    <div>1 - 50 кг — <b>23 TJS/кг</b></div>
-                </div>
-
-                <div id="calc-result-box" style="display: none; margin-top: 15px; background: var(--bg-body); padding: 15px; border-radius: 12px; text-align: center;">
-                    <div style="font-size: 12px; color: var(--text-sec);">Примерная стоимость</div>
-                    <div style="font-size: 24px; font-weight: 800; color: var(--accent-dark);">
-                        <span id="res-price">0.00</span> <span id="res-currency" style="font-size: 16px;">TJS</span>
-                    </div>
-                </div>
-
-                <button class="btn-main" onclick="calculateServer()">Рассчитать</button>
+                <div class="switch-row"><b>Оптовый режим</b><label class="switch"><input type="checkbox" id="tg-calc" onchange="toggleMode()"><span class="slider"></span></label></div>
+                <div id="box-calc-opt" style="display:none; margin-top:10px;"><label>Маршрут</label><select id="sel-route"><option>Маршрут...</option></select></div>
+                <div style="margin-top:10px;"><label>Вес (кг)</label><input id="c-wg" type="number" placeholder="0.0"></div>
+                <div id="c-res" style="text-align:center; font-size: 28px; font-weight: 800; margin: 20px 0; color: var(--blue);">0.00</div>
+                <button class="btn" onclick="doCalc()">Рассчитать</button>
             </div>
         </div>
     </div>
 
     <div id="screen-trucks" class="screen">
+        <div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Биржа</div></div>
         <div class="container">
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h2 style="margin:0;">Биржа</h2>
-                    <button id="btn-driver-action" style="background:transparent; border:1px solid var(--accent); color:var(--accent-dark); padding:8px 12px; border-radius:12px; font-weight:600;" onclick="openModal('driver-modal')">Водитель</button>
-                </div>
+            <div class="tabs">
+                <div id="tab-tr-1" class="tab active" onclick="swTr('trips')">Доставить</div>
+                <div id="tab-tr-2" class="tab" onclick="swTr('cargo')">Я водитель</div>
             </div>
-            <div id="trips-container">
-                 <div style="text-align: center; padding: 40px; color: var(--text-sec);">Загрузка рейсов...</div>
-            </div>
+            <div id="list-trucks"></div>
+            <button id="btn-tr-act" class="btn btn-blue" style="position:fixed; bottom:20px; width:calc(100% - 32px); left:16px;" onclick="trAct()">Действие</button>
         </div>
     </div>
 
-    <div class="dock-container">
-        <div class="dock">
-            <div class="dock-item active" onclick="nav('profile', this)">
-                <i class="dock-icon fa-regular fa-id-card"></i>
-                <div class="dock-label">Профиль</div>
-            </div>
-            <div class="dock-item" onclick="nav('pkgs', this)">
-                <i class="dock-icon fa-solid fa-box"></i>
-                <div class="dock-label">Посылки</div>
-            </div>
-            <div class="dock-item" onclick="nav('calc', this)">
-                <i class="dock-icon fa-solid fa-calculator"></i>
-                <div class="dock-label">Расчет</div>
-            </div>
-            <div class="dock-item" onclick="nav('trucks', this)">
-                <i class="dock-icon fa-solid fa-truck-fast"></i>
-                <div class="dock-label">Биржа</div>
-            </div>
-        </div>
-    </div>
+    <div id="screen-market" class="screen"><div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Маркет</div></div><div class="container"><div class="tabs"><div id="tab-buy" class="tab active" onclick="swMark('item')">Товары</div><div id="tab-joint" class="tab" onclick="swMark('joint')">Складчина</div></div><div id="list-market" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div><button class="btn btn-blue" style="position:fixed; bottom:20px; width:calc(100% - 32px); left:16px;" onclick="openM('m-prod')">Продать</button></div></div>
+    
+    <div id="screen-rewards" class="screen"><div class="nav-head"><div class="back-icon" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Награды</div></div><div class="container" id="list-rewards"></div></div>
+
+    <div id="m-add" class="modal-wrap"><div class="modal"><h3>Трек</h3><input id="n-t" placeholder="Номер"><input id="n-d" placeholder="Описание"><button class="btn btn-blue" onclick="subTrack()">OK</button><div style="text-align:center;padding:15px;" onclick="closeM('m-add')">X</div></div></div>
+    <div id="m-prod" class="modal-wrap"><div class="modal"><h3>Продать</h3><input id="p-t" placeholder="Название"><input id="p-d" placeholder="Описание"><input id="p-p" placeholder="Цена"><button class="btn btn-blue" onclick="subProd()">OK</button><div style="text-align:center;padding:15px;" onclick="closeM('m-prod')">X</div></div></div>
+    <div id="m-cargo" class="modal-wrap"><div class="modal"><h3>Груз</h3><input id="cg-f" placeholder="Откуда"><input id="cg-t" placeholder="Куда"><input id="cg-d" placeholder="Что"><input id="cg-w" placeholder="Вес"><input id="cg-p" placeholder="Цена"><button class="btn btn-blue" onclick="subCargo()">OK</button><div style="text-align:center;padding:15px;" onclick="closeM('m-cargo')">X</div></div></div>
+    <div id="m-trip" class="modal-wrap"><div class="modal"><h3>Рейс</h3><input id="tr-f" placeholder="Откуда"><input id="tr-t" placeholder="Куда"><input id="tr-p" placeholder="Цена кг"><button class="btn btn-blue" onclick="subTrip()">OK</button><div style="text-align:center;padding:15px;" onclick="closeM('m-trip')">X</div></div></div>
+    <div id="m-driver" class="modal-wrap"><div class="modal"><h3>Водитель</h3><input id="d-c" placeholder="Авто"><input id="d-n" placeholder="Номер"><input id="d-w" placeholder="Вес"><button class="btn btn-blue" onclick="subDriver()">OK</button><div style="text-align:center;padding:15px;" onclick="closeM('m-driver')">X</div></div></div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+        const tg = window.Telegram.WebApp; tg.expand();
+        const API = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
+        const uid = tg.initDataUnsafe?.user?.id || 317295540;
         
-        // ⚠️⚠️⚠️ ССЫЛКА NGROK ⚠️⚠️⚠️
-        const API_BASE = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
+        let config = {}, user = {}, isOpt = false, tabTr = 'trips', tabMk = 'item', isDriver = false;
 
-        const userId = tg.initDataUnsafe?.user?.id || 317295540; 
-        const userPhoto = tg.initDataUnsafe?.user?.photo_url || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-
-        let APP_CONFIG = { rates: {}, warehouses: { retail: {}, wholesale: {} } };
-        let userData = { category: 'less_100', pvz: '...', bonus: 0, packages: [], marking: '...', name: 'User' };
-        
-        // СОСТОЯНИЕ
-        let isWholesale = false; 
-
-        // --- INIT ---
         async function init() {
-            document.getElementById('user-avatar').src = userPhoto;
-            loadRoutes();
             try {
-                const response = await fetch(`${API_BASE}/api/dashboard/${userId}`, { method: 'GET', headers: { 'ngrok-skip-browser-warning': 'true' } });
-                const data = await response.json();
-                if (data.app_config) APP_CONFIG = data.app_config;
-                if (data.user_info) {
-                    userData = { ...userData, ...data.user_info, packages: data.packages || [], name: tg.initDataUnsafe?.user?.first_name || "Клиент" };
-                }
-                
-                // Устанавливаем режим из базы
-                isWholesale = (userData.category === 'more_100');
-                document.getElementById('mode-toggle').checked = isWholesale;
-                updateModeUI();
+                document.getElementById('u-ava').src = tg.initDataUnsafe?.user?.photo_url || "";
+                let r = await fetch(`${API}/api/dashboard/${uid}`, {headers:{'ngrok-skip-browser-warning':'true'}});
+                let d = await r.json();
+                config = d.app_config; user = d.user_info;
 
-                renderProfile();
-                renderPackages();
-                
-                // Биржа
-                checkDriverStatus();
-                loadTrips();
+                // UI Fill
+                gid('u-name').innerText = user.name || "Client";
+                gid('u-id').innerText = `ID: ${uid}`;
+                gid('u-lvl').innerText = user.level;
+                gid('u-bonus').innerText = user.bonus_kg;
+                gid('txt-code').innerText = user.marking_code;
 
-            } catch (e) { console.error(e); }
+                // Settings: Заполняем ПВЗ из конфига
+                renderPvzOptions(config.pvz_list, user.pvz_id);
+                gid('s-name').value = user.name;
+                gid('s-phone').value = user.marking_code.split('/').pop().trim();
+
+                // Packages
+                let h=''; d.packages.forEach(p=>h+=`<div class="card" style="padding:12px;"><div style="font-weight:700">${p.description}</div><div style="font-size:12px;color:#888">${p.track_number} • ${p.status_text}</div></div>`);
+                gid('home-pkg-list').innerHTML = h || '<div class="empty">Нет посылок</div>';
+
+                // Routes
+                let rr = await fetch(`${API}/api/get_routes`); let rd = await rr.json();
+                let s = gid('sel-route'); s.innerHTML='<option>Маршрут...</option>';
+                if(rd.routes) rd.routes.forEach(r=>{let o=document.createElement('option');o.value=r;o.innerText=r;s.appendChild(o)});
+
+                isOpt = (user.category === 'more_100');
+                updMode(); checkDriver();
+
+            } catch(e) { console.error(e); tg.showAlert("Ошибка: " + e.message); }
         }
 
-        // --- ЛОГИКА ПРОФИЛЯ ---
+        function renderPvzOptions(list, currentId) {
+            let sel = gid('s-pvz'); sel.innerHTML = '<option value="">Не выбран</option>';
+            if (list) list.forEach(p => {
+                let opt = document.createElement('option');
+                opt.value = p.id; opt.innerText = p.name;
+                // Сравниваем ID (оба могут быть числами)
+                if (p.id == currentId) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
+
+        // --- NAV ---
+        function nav(id) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            gid('screen-'+id).classList.add('active');
+            if(id==='trucks') ldTr(); if(id==='market') ldMk(); if(id==='rewards') ldRew();
+        }
+        function goHome() {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            gid('screen-home').classList.add('active');
+        }
+
+        // --- LOGIC ---
         function toggleMode() {
-            isWholesale = document.getElementById('mode-toggle').checked;
-            updateModeUI();
-            
-            // Сохраняем на сервер
-            const cat = isWholesale ? 'more_100' : 'less_100';
-            userData.category = cat;
-            fetch(`${API_BASE}/api/update_settings`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ user_id: userId, category: cat }) });
-            
-            tg.HapticFeedback.selectionChanged();
+            if(gid('screen-calc').classList.contains('active')) isOpt=gid('tg-calc').checked;
+            else isOpt=gid('tg-opt').checked;
+            updMode();
+            fetch(`${API}/api/update_settings`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:uid, category:isOpt?'more_100':'less_100'})});
         }
-
-        function updateModeUI() {
-            const desc = document.getElementById('mode-desc');
-            const addrTitle = document.getElementById('addr-title');
-            const citySelect = document.getElementById('origin-city-select');
-            
-            if (isWholesale) {
-                desc.innerText = "Включен режим ОПТ (от 100 кг). Доступны маршруты и доллары.";
-                addrTitle.innerText = "Оптовый склад";
-                citySelect.style.display = "block";
+        function updMode() {
+            gid('tg-opt').checked = isOpt; gid('tg-calc').checked = isOpt;
+            gid('box-city').style.display = isOpt ? 'block' : 'none';
+            gid('box-code').style.display = isOpt ? 'none' : 'block';
+            gid('box-calc-opt').style.display = isOpt ? 'block' : 'none';
+            renderAddr();
+        }
+        function renderAddr() {
+            let t = gid('txt-addr');
+            if(isOpt) {
+                let c = gid('sel-city').value;
+                t.innerText = config.warehouses?.wholesale?.[c]?.address || "Нет адреса";
             } else {
-                desc.innerText = "Включен режим РОЗНИЦА (до 100 кг). Фиксированные цены.";
-                addrTitle.innerText = "Склад Иу (Розница)";
-                citySelect.style.display = "none";
-            }
-            renderAddress();
-            updateCalcUI();
-        }
-
-        function renderProfile() {
-            document.getElementById('user-name').innerText = userData.name;
-            document.getElementById('marking-text').innerText = userData.marking_code;
-            document.getElementById('addr-code-suffix').innerText = userData.marking_code;
-            document.getElementById('stat-bonus').innerText = userData.bonus;
-            document.getElementById('stat-count').innerText = userData.packages.length;
-        }
-
-        function renderAddress() {
-            // Берем данные из конфига
-            let addressObj = null;
-
-            if (!isWholesale) {
-                // Розница
-                addressObj = APP_CONFIG.warehouses?.retail; 
-            } else {
-                // Опт
-                const city = document.getElementById('origin-city-select').value;
-                addressObj = APP_CONFIG.warehouses?.wholesale?.[city];
-            }
-
-            if (addressObj && addressObj.address) {
-                // Пытаемся распарсить адрес (ожидаем формат: Имя\nТелефон\nАдрес)
-                // Если формат сложный, просто выводим всё в поле адреса
-                const parts = addressObj.address.split('\n');
-                
-                if (parts.length >= 2) {
-                    document.getElementById('addr-name').innerText = "см. Маркировку"; // Китайцы часто просят писать имя из маркировки
-                    document.getElementById('addr-phone').innerText = parts[1] || "---"; // Предполагаем телефон во 2 строке
-                    document.getElementById('addr-street').innerText = addressObj.address; // Весь текст
-                } else {
-                    document.getElementById('addr-name').innerText = "---";
-                    document.getElementById('addr-phone').innerText = "---";
-                    document.getElementById('addr-street').innerText = addressObj.address;
-                }
-            } else {
-                document.getElementById('addr-street').innerText = "Адрес загружается...";
+                t.innerText = config.warehouses?.retail?.address || "Нет адреса";
             }
         }
 
-        function copyAddress() {
-            const fullText = document.getElementById('addr-street').innerText + "\nCode: " + userData.marking_code;
-            navigator.clipboard.writeText(fullText).then(() => {
-                showToast();
-                tg.HapticFeedback.notificationOccurred('success');
-            });
+        // --- TRUCKS ---
+        function swTr(t) {
+            tabTr = t;
+            gid('tab-tr-1').className = t==='trips'?'tab active':'tab';
+            gid('tab-tr-2').className = t==='cargo'?'tab active':'tab';
+            let b = gid('btn-tr-act');
+            if(t==='trips') { b.innerText = "📦 Добавить груз"; b.onclick = ()=>openM('m-cargo'); }
+            else { b.innerText = isDriver ? "🚚 Создать рейс" : "👨‍✈️ Стать водителем"; b.onclick = isDriver ? ()=>openM('m-trip') : ()=>openM('m-driver'); }
+            ldTr();
         }
-        
-        function copyMarking() {
-            navigator.clipboard.writeText(userData.marking_code).then(() => {
-                showToast();
-                tg.HapticFeedback.notificationOccurred('success');
-            });
-        }
-
-        function showToast() {
-            const t = document.getElementById('toast');
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 2000);
-        }
-
-        // --- КАЛЬКУЛЯТОР ---
-        function updateCalcUI() {
-            document.getElementById('calc-route-box').style.display = isWholesale ? 'block' : 'none';
-            document.getElementById('retail-info').style.display = isWholesale ? 'none' : 'block';
-            document.querySelectorAll('.opt-only').forEach(el => el.style.display = isWholesale ? 'block' : 'none');
-        }
-
-        async function loadRoutes() {
+        async function ldTr() {
+            let c=gid('list-trucks'); c.innerHTML='<div class="empty">Загрузка...</div>';
             try {
-                const res = await fetch(`${API_BASE}/api/get_routes`, {headers: { 'ngrok-skip-browser-warning': 'true' }});
-                const data = await res.json();
-                if(data.status === 'ok') {
-                    const select = document.getElementById('calc-route');
-                    select.innerHTML = '<option>Выберите маршрут...</option>';
-                    data.routes.forEach(r => {
-                        const opt = document.createElement('option'); opt.value = r; opt.innerText = r; select.appendChild(opt);
-                    });
-                }
-            } catch(e) {}
-        }
-        
-        async function calculateServer() {
-            const btn = document.querySelector('button[onclick="calculateServer()"]');
-            const resBox = document.getElementById('calc-result-box');
-            btn.innerText = "..."; btn.disabled = true;
-
-            const payload = {
-                user_id: userId, category: isWholesale ? 'more_100' : 'less_100',
-                weight_per_item: parseFloat(document.getElementById('c-weight').value) || 0,
-                quantity: parseInt(document.getElementById('c-qty').value) || 1
-            };
-
-            if (isWholesale) {
-                const routeFull = document.getElementById('calc-route').value;
-                const parts = routeFull.split(" - ");
-                if (parts.length < 2) { tg.showAlert("Выберите маршрут!"); btn.innerText = "Рассчитать"; btn.disabled = false; return; }
-                payload.route_from = parts[0]; payload.route_to = parts[1];
-                payload.length = parseFloat(document.getElementById('c-l').value) || 0;
-                payload.width = parseFloat(document.getElementById('c-w').value) || 0;
-                payload.height = parseFloat(document.getElementById('c-h').value) || 0;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/api/calculate`, { method: 'POST', headers: {'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'}, body: JSON.stringify(payload) });
-                const result = await response.json();
-                if(result.status === 'ok') {
-                    document.getElementById('res-price').innerText = result.price.toFixed(2);
-                    document.getElementById('res-currency').innerText = result.currency;
-                    resBox.style.display = 'block';
-                } else { tg.showAlert(result.message); }
-            } catch (e) { tg.showAlert("Ошибка сети"); } 
-            finally { btn.innerText = "Рассчитать"; btn.disabled = false; }
-        }
-
-        // --- ПОСЫЛКИ ---
-        function renderPackages() {
-            const cont = document.getElementById('orders-container');
-            cont.innerHTML = '';
-            if(!userData.packages || userData.packages.length === 0) {
-                cont.innerHTML = '<div style="text-align:center; color:var(--text-sec); padding:40px;">История пуста.<br>Нажмите +, чтобы добавить трек.</div>';
-            } else {
-                userData.packages.forEach(p => {
-                    let stColor = '#8E8E93';
-                    if(p.status_text.includes('Прибыл') || p.status_text.includes('Готов')) stColor = '#00AA95';
-                    
-                    cont.innerHTML += `
-                        <div class="card" style="padding: 15px; margin-bottom: 10px;">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                                <div style="font-weight:600;">${p.description || 'Посылка'}</div>
-                                <div style="font-size:12px; font-weight:700; color:${stColor}">${p.status_text}</div>
-                            </div>
-                            <div style="font-family:var(--font-code); font-size:13px; color:var(--text-sec);">${p.track_number}</div>
-                        </div>`;
-                });
-            }
-        }
-
-        // --- БИРЖА ---
-        async function checkDriverStatus() {
-            try {
-                const res = await fetch(`${API_BASE}/api/trucking/status/${userId}`);
-                const data = await res.json();
-                const btn = document.getElementById('btn-driver-action');
-                if (data.is_driver) {
-                    btn.innerText = "Создать рейс";
-                    btn.onclick = () => openModal('trip-modal');
-                    btn.style.borderColor = "var(--accent)";
-                    btn.style.color = "var(--accent-dark)";
-                } else {
-                    btn.innerText = "Стать водителем";
-                    btn.onclick = () => openModal('driver-modal');
-                }
-            } catch(e) {}
-        }
-        
-        async function loadTrips() {
-            const cont = document.getElementById('trips-container');
-            try {
-                const res = await fetch(`${API_BASE}/api/trucking/trips`);
-                const data = await res.json();
-                cont.innerHTML = '';
-                if(!data.trips || data.trips.length === 0) {
-                    cont.innerHTML = '<div style="text-align:center; color:var(--text-sec); padding:20px;">Нет активных рейсов</div>';
-                    return;
-                }
-                data.trips.forEach(t => {
-                    cont.innerHTML += `
-                        <div class="card" style="border-left: 4px solid var(--accent); padding:15px; margin-bottom:10px;">
-                            <div style="font-weight: 700; font-size:16px;">${t.route}</div>
-                            <div style="font-size:12px; color:var(--text-sec); margin-top:4px;">${t.car} • ${t.date}</div>
-                            <div style="margin-top: 10px; display:flex; justify-content:space-between; align-items:center;">
-                                <span style="font-weight: 700; color: var(--success);">${t.price}</span>
-                                <span style="font-size:11px; background:var(--bg-body); padding:4px 8px; border-radius:6px;">Мест: ${t.capacity}</span>
-                            </div>
-                        </div>`;
+                let r=await fetch(`${API}/api/trucking/list?type=${tabTr}`); let d=await r.json();
+                c.innerHTML=''; if(!d.items?.length) { c.innerHTML='<div class="empty">Пусто</div>'; return; }
+                d.items.forEach(i => {
+                    let brd = i.type==='trip'?'var(--blue)':'#FF9500';
+                    c.innerHTML += `<div class="card" style="border-left:4px solid ${brd};padding:14px;"><div style="font-weight:700">${i.title}</div><div style="font-size:12px;color:#888;margin-top:2px;">${i.subtitle}</div><div style="margin-top:8px;font-weight:700;font-size:13px;display:flex;justify-content:space-between;"><span style="color:${brd}">${i.details}</span><span>${i.extra}</span></div></div>`;
                 });
             } catch(e) {}
         }
-        
-        // --- ДЕЙСТВИЯ (ВОДИТЕЛЬ) ---
-        async function registerDriver() {
-            const car = document.getElementById('d-car').value;
-            const num = document.getElementById('d-num').value;
-            const w = document.getElementById('d-weight').value;
-            if(!car || !num) return tg.showAlert("Заполните поля!");
-            try {
-                const res = await fetch(`${API_BASE}/api/trucking/register`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ user_id: userId, car_model: car, car_number: num, max_weight_kg: parseFloat(w) }) });
-                const ans = await res.json();
-                if(ans.status === 'ok') { tg.showAlert("Вы теперь водитель!"); closeModal('driver-modal'); checkDriverStatus(); }
-                else tg.showAlert(ans.message);
-            } catch(e) { tg.showAlert("Ошибка"); }
-        }
+        async function checkDriver() { try { let r=await fetch(`${API}/api/trucking/status/${uid}`); let d=await r.json(); isDriver=d.is_driver; } catch(e){} }
+        function trAct() { /* Handled in swTr */ }
 
-        async function createTrip() {
-            const from = document.getElementById('t-from').value;
-            const to = document.getElementById('t-to').value;
-            const price = document.getElementById('t-price').value;
-            const desc = document.getElementById('t-desc').value;
-            if(!from || !to) return tg.showAlert("Заполните маршрут!");
+        // --- MARKET ---
+        function swMark(t) {
+            tabMk = t;
+            gid('tab-buy').className = t==='item'?'tab active':'tab';
+            gid('tab-joint').className = t==='joint'?'tab active':'tab';
+            ldMk();
+        }
+        async function ldMk() {
+            let c=gid('list-market'); c.innerHTML='<div class="empty">Загрузка...</div>';
             try {
-                const res = await fetch(`${API_BASE}/api/trucking/create_trip`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ user_id: userId, city_from: from, city_to: to, date: "Скоро", price_per_kg: parseFloat(price), description: desc }) });
-                const ans = await res.json();
-                if(ans.status === 'ok') { tg.showAlert("Рейс создан!"); closeModal('trip-modal'); loadTrips(); }
-                else tg.showAlert(ans.message);
-            } catch(e) { tg.showAlert("Ошибка"); }
-        }
-
-        // --- ОБЩИЕ ---
-        function toggleTheme() {
-            const body = document.body;
-            const icon = document.getElementById('theme-icon');
-            if (body.getAttribute('data-theme') === 'light') {
-                body.setAttribute('data-theme', 'dark'); icon.className = 'fa-solid fa-sun';
-            } else {
-                body.setAttribute('data-theme', 'light'); icon.className = 'fa-solid fa-moon';
-            }
-        }
-        
-        function nav(screenId, el) {
-            document.querySelectorAll('.dock-item').forEach(i => i.classList.remove('active'));
-            if(el) el.classList.add('active');
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('screen-' + screenId).classList.add('active');
-            tg.HapticFeedback.impactOccurred('light');
-            
-            const fab = document.getElementById('fab-add');
-            if(screenId === 'pkgs') fab.style.display = 'flex'; else fab.style.display = 'none';
-        }
-
-        function openModal(id) { document.getElementById(id).classList.add('active'); tg.HapticFeedback.impactOccurred('medium'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-        
-        async function submitTrack() {
-            const track = document.getElementById('new-track').value;
-            const desc = document.getElementById('new-desc').value;
-            if(!track) return tg.showAlert("Введите трек!");
-            try {
-                const res = await fetch(`${API_BASE}/api/add_track`, { method: 'POST', headers: {'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'}, body: JSON.stringify({ user_id: userId, track_number: track, description: desc }) });
-                const r = await res.json();
-                if(r.status === 'ok') { tg.showAlert("Успешно!"); closeModal('add-modal'); init(); } else tg.showAlert(r.message);
+                let r=await fetch(`${API}/api/market/list?type=${tabMk}`); let d=await r.json();
+                c.innerHTML=''; if(!d.items?.length) { c.innerHTML='<div class="empty">Пусто</div>'; return; }
+                d.items.forEach(i => {
+                    c.innerHTML += `<div class="card" style="margin:0;padding:10px;"><img src="${i.image_url||'https://placehold.co/100'}" style="width:100%;height:100px;object-fit:cover;border-radius:10px;background:#eee;"><div style="font-weight:600;font-size:13px;margin-top:6px;">${i.title}</div><div style="font-weight:700;color:#007AFF;font-size:14px;">${i.price} TJS</div></div>`;
+                });
             } catch(e) {}
+        }
+
+        // --- REWARDS ---
+        async function ldRew() {
+            let c=gid('list-rewards'); c.innerHTML='<div class="empty">Загрузка...</div>';
+            try {
+                let r=await fetch(`${API}/api/rewards/list/${uid}`); let d=await r.json();
+                c.innerHTML='';
+                d.tasks.forEach(t => {
+                    c.innerHTML += `<div class="card" style="display:flex;align-items:center;gap:15px;"><div style="font-size:24px;color:var(--blue);"><i class="fa-solid ${t.icon}"></i></div><div style="flex:1;"><b>${t.title}</b><div style="font-size:11px;color:#888;">${t.desc}</div></div><button class="btn btn-blue" style="width:auto;padding:8px 12px;font-size:12px;" onclick="claim(${t.id})">+${t.reward}кг</button></div>`;
+                });
+            } catch(e){}
+        }
+        async function claim(id) {
+            let r=await fetch(`${API}/api/rewards/claim`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:uid,task_id:id})});
+            let d=await r.json(); tg.showAlert(d.message); if(d.status==='ok') init();
+        }
+
+        // --- UTILS ---
+        function gid(id){return document.getElementById(id)}
+        function openM(id){gid(id).style.display='flex'}
+        function closeM(id){gid(id).style.display='none'}
+        function copy(id){navigator.clipboard.writeText(gid(id).innerText); tg.HapticFeedback.notificationOccurred('success'); tg.showAlert("Скопировано");}
+        async function post(url, data) {
+            data.user_id = uid;
+            let r = await fetch(`${API}/api/${url}`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+            return await r.json();
+        }
+        async function subTrack() { await post('add_track', {track_number:gid('n-t').value, description:gid('n-d').value}); closeM('m-add'); init(); }
+        async function subProd() { await post('market/create', {title:gid('p-t').value, description:gid('p-d').value, price:parseFloat(gid('p-p').value), item_type:tabMk}); closeM('m-prod'); ldMk(); }
+        async function subCargo() { await post('trucking/create_cargo', {city_from:gid('cg-f').value, city_to:gid('cg-t').value, description:gid('cg-d').value, weight:parseFloat(gid('cg-w').value), price_offer:parseFloat(gid('cg-p').value)}); closeM('m-cargo'); swTr('trips'); }
+        async function subTrip() { await post('trucking/create_trip', {city_from:gid('tr-f').value, city_to:gid('tr-t').value, price_per_kg:parseFloat(gid('tr-p').value), date:'Скоро'}); closeM('m-trip'); ldTr(); }
+        async function subDriver() { await post('trucking/register', {car_model:gid('d-c').value, car_number:gid('d-n').value, max_weight_kg:parseFloat(gid('d-w').value)}); closeM('m-driver'); checkDriver(); tg.showAlert("Готово!"); }
+        async function saveSet() { await post('update_settings', {full_name:gid('s-name').value, phone:gid('s-phone').value, pvz_id:parseInt(gid('s-pvz').value)}); goHome(); init(); tg.showAlert("Сохранено"); }
+        async function doCalc() {
+            let p={user_id:uid, category:isOpt?'more_100':'less_100', weight_per_item:parseFloat(gid('c-wg').value), quantity:1};
+            if(isOpt) { p.route_from=gid('sel-route').value.split(' - ')[0]; p.route_to=gid('sel-route').value.split(' - ')[1].split(' ')[0]; p.length=parseFloat(gid('c-l').value); p.width=parseFloat(gid('c-w').value); p.height=parseFloat(gid('c-h').value); }
+            let r=await fetch(`${API}/api/calculate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+            let j=await r.json(); gid('c-res').innerText = j.status==='ok' ? `${j.price} ${j.currency}` : "Ошибка";
         }
 
         init();
     </script>
 </body>
 </html>
+
