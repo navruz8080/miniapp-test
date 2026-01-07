@@ -169,33 +169,12 @@
         <div class="container">
             <div class="card">
                 <h3 style="margin:0 0 15px 0; color:var(--blue);">📦 Розничные тарифы</h3>
-                
-                <div class="rate-row" style="border-bottom: 1px solid #f2f2f2; padding: 10px 0;">
-                    <span>До 0.5 кг</span>
-                    <b style="color:var(--text);">13 TJS <small>(фикс)</small></b>
-                </div>
-                
-                <div class="rate-row" style="border-bottom: 1px solid #f2f2f2; padding: 10px 0;">
-                    <span>от 0.5 до 1 кг</span>
-                    <b style="color:var(--text);">23 TJS <small>(фикс)</small></b>
-                </div>
-
-                <div class="rate-row" style="border-bottom: 1px solid #f2f2f2; padding: 10px 0;">
-                    <span>от 1 до 50 кг</span>
-                    <b style="color:var(--text);">23 TJS / кг</b>
-                </div>
-
-                <div class="rate-row" style="padding: 10px 0;">
-                    <span>от 50 до 99 кг</span>
-                    <b style="color:var(--green);">20 TJS / кг</b>
-                </div>
-                
-                <p style="font-size:12px; color:var(--sec); margin-top:10px; line-height: 1.4;">
-                    * Срок авиа-доставки: 10-15 дней.<br>
-                    * Вес округляется согласно правилам авиаперевозок.
-                </p>
+                <div class="rate-row" style="border-bottom: 1px solid #f2f2f2; padding: 10px 0;"><span>До 0.5 кг</span><b style="color:var(--text);">13 TJS <small>(фикс)</small></b></div>
+                <div class="rate-row" style="border-bottom: 1px solid #f2f2f2; padding: 10px 0;"><span>от 0.5 до 1 кг</span><b style="color:var(--text);">23 TJS <small>(фикс)</small></b></div>
+                <div class="rate-row" style="border-bottom: 1px solid #f2f2f2; padding: 10px 0;"><span>от 1 до 50 кг</span><b style="color:var(--text);">23 TJS / кг</b></div>
+                <div class="rate-row" style="padding: 10px 0;"><span>от 50 до 99 кг</span><b style="color:var(--green);">20 TJS / кг</b></div>
+                <p style="font-size:12px; color:var(--sec); margin-top:10px; line-height: 1.4;">* Срок авиа-доставки: 10-15 дней.<br>* Вес округляется согласно правилам авиаперевозок.</p>
             </div>
-
             <div class="card" style="background: #F8F9FB;">
                 <h3 style="margin:0 0 12px 0;">🏢 Оптовые тарифы</h3>
                 <p style="font-size: 14px; margin-bottom: 15px;">Для грузов весом <b>от 100 кг</b> действуют специальные условия:</p>
@@ -322,158 +301,259 @@
     <div id="m-add" class="modal-wrap"><div class="modal"><h3>Новый трек</h3><input id="n-t" placeholder="Трек-номер"><input id="n-d" placeholder="Описание"><button class="btn btn-blue" onclick="subTrack()">Добавить</button><div style="text-align:center;padding:15px;color:var(--sec);" onclick="closeM('m-add')">Отмена</div></div></div>
 
     <script>
-const tg = window.Telegram.WebApp;
-const API = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
-const uid = tg.initDataUnsafe?.user?.id || 317295540;
+        const tg = window.Telegram.WebApp;
+        const API = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
+        const uid = tg.initDataUnsafe?.user?.id || 317295540;
 
-let config = {}, user = {}, isOpt = false, lastCalc = null, tabTr = 'trips', tabMk = 'item';
+        let config = {}, user = {}, isOpt = false, lastCalc = null, tabTr = 'trips', tabMk = 'item';
 
-/* ================= SAFE HELPERS ================= */
-function gid(id) { return document.getElementById(id); }
+        /* ================= SAFE HELPERS ================= */
+        function gid(id) { return document.getElementById(id); }
 
-function safe(id, cb) {
-    const el = gid(id);
-    if (el) cb(el);
-}
-
-/* ================= INIT ================= */
-async function init() {
-    try {
-        const photo = tg.initDataUnsafe?.user?.photo_url || "";
-        const firstName = tg.initDataUnsafe?.user?.first_name || "Client";
-        const ava = photo || `https://ui-avatars.com/api/?name=${firstName}`;
-
-        safe('u-ava', el => el.src = ava);
-        safe('p-ava', el => el.src = ava);
-
-        const r = await fetch(`${API}/api/dashboard/${uid}`, {
-            headers: { 'ngrok-skip-browser-warning': 'true' }
-        });
-        const d = await r.json();
-
-        config = d.app_config;
-        user = d.user_info;
-
-        safe('u-name', el => el.innerText = user.name || firstName);
-        safe('u-lvl', el => el.innerText = user.level || 'Новичок');
-        safe('u-bonus', el => el.innerText = user.bonus_kg || 0);
-        safe('txt-code', el => el.innerText = user.marking_code || '—');
-
-        safe('p-name', el => el.innerText = user.name || firstName);
-        safe('p-id', el => el.innerText = user.user_id);
-        safe('p-bonus', el => el.innerText = user.bonus_kg || 0);
-        safe('p-lvl-tag', el => el.innerText = user.level || 'Новичок');
-        safe('p-status-name', el => el.innerText = user.level || 'Новичок');
-
-        renderPvzOptions(config.pvz_list, user.pvz_id);
-        renderPackageList(d.packages);
-
-        if (config.routes) renderRoutes(config.routes);
-
-        isOpt = user.category === 'more_100';
-        updMode();
-    } catch (e) {
-        console.error('INIT ERROR:', e);
-    }
-}
-
-/* ================= MODE ================= */
-function toggleMode() {
-    const calcActive = gid('screen-calc')?.classList.contains('active');
-    const src = calcActive ? gid('tg-calc') : gid('tg-opt');
-
-    isOpt = src ? src.checked : isOpt;
-    updMode();
-
-    fetch(`${API}/api/update_settings`, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({
-            user_id: uid,
-            category: isOpt ? 'more_100' : 'less_100'
-        })
-    });
-}
-
-function updMode() {
-    safe('tg-opt', el => el.checked = isOpt);
-    safe('tg-calc', el => el.checked = isOpt);
-    safe('sel-city', el => el.style.display = isOpt ? 'block' : 'none');
-    safe('box-code', el => el.style.display = isOpt ? 'none' : 'block');
-    safe('box-calc-opt', el => el.style.display = isOpt ? 'block' : 'none');
-
-    if (gid('screen-addresses')?.classList.contains('active')) {
-        renderAddr();
-    }
-}
-
-/* ================= ADDRESSES ================= */
-function renderAddr() {
-    if (!config.warehouses) return;
-    if (!gid('screen-addresses')?.classList.contains('active')) return;
-
-    safe('txt-addr', el => {
-        if (isOpt) {
-            const city = gid('sel-city')?.value;
-            el.innerText = config.warehouses?.wholesale?.[city]?.address || 'Выберите город';
-        } else {
-            el.innerText = config.warehouses?.retail?.address || 'Адрес не найден';
+        function safe(id, cb) {
+            const el = gid(id);
+            if (el) cb(el);
         }
-    });
-}
 
-/* ================= CALC ================= */
-async function doCalc() {
-    const wg = parseFloat(gid('c-wg')?.value || 0);
-    const qty = parseInt(gid('c-qty')?.value || 1);
+        /* ================= INIT ================= */
+        async function init() {
+            try {
+                const photo = tg.initDataUnsafe?.user?.photo_url || "";
+                const firstName = tg.initDataUnsafe?.user?.first_name || "Client";
+                const ava = photo || `https://ui-avatars.com/api/?name=${firstName}`;
 
-    if (!wg) return tg.showAlert('Введите вес');
+                safe('u-ava', el => el.src = ava);
+                safe('p-ava', el => el.src = ava);
 
-    let routeFrom = "🇨🇳 Китай";
-    let routeTo = "🇹🇯 Худжанд";
+                const r = await fetch(`${API}/api/dashboard/${uid}`, {
+                    headers: { 'ngrok-skip-browser-warning': 'true' }
+                });
+                const d = await r.json();
 
-    if (isOpt) {
-        const route = gid('sel-route')?.value;
-        if (route && route.includes(' - ')) {
-            [routeFrom, routeTo] = route.split(' - ');
+                config = d.app_config;
+                user = d.user_info;
+
+                safe('u-name', el => el.innerText = user.name || firstName);
+                safe('u-lvl', el => el.innerText = user.level || 'Новичок');
+                safe('u-bonus', el => el.innerText = user.bonus_kg || 0);
+                safe('txt-code', el => el.innerText = user.marking_code || '—');
+
+                safe('p-name', el => el.innerText = user.name || firstName);
+                safe('p-id', el => el.innerText = user.user_id);
+                safe('p-bonus', el => el.innerText = user.bonus_kg || 0);
+                safe('p-lvl-tag', el => el.innerText = user.level || 'Новичок');
+                safe('p-status-name', el => el.innerText = user.level || 'Новичок');
+
+                renderPvzOptions(config.pvz_list, user.pvz_id);
+                renderPackageList(d.packages);
+
+                if (config.routes) renderRoutes(config.routes);
+
+                isOpt = user.category === 'more_100';
+                updMode();
+            } catch (e) {
+                console.error('INIT ERROR:', e);
+            }
         }
-    }
 
-    const p = {
-        user_id: uid,
-        weight: wg,
-        quantity: qty,
-        category: isOpt ? 'more_100' : 'less_100',
-        length: parseFloat(gid('c-len')?.value || 0),
-        width: parseFloat(gid('c-wid')?.value || 0),
-        height: parseFloat(gid('c-hei')?.value || 0),
-        route_from: routeFrom,
-        route_to: routeTo
-    };
+        /* ================= MODE ================= */
+        function toggleMode() {
+            const calcActive = gid('screen-calc')?.classList.contains('active');
+            const src = calcActive ? gid('tg-calc') : gid('tg-opt');
 
-    try {
-        const r = await fetch(`${API}/api/calculate`, {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify(p)
-        });
-        const j = await r.json();
+            isOpt = src ? src.checked : isOpt;
+            updMode();
 
-        if (j.status === 'ok') {
-            safe('c-res', el => el.innerText = j.price.toLocaleString());
-            safe('c-cur', el => el.innerText = j.currency);
-            safe('btn-order-confirm', el => el.style.display = 'block');
-            lastCalc = {...p, price: j.price, route: `${routeFrom} - ${routeTo}`};
+            fetch(`${API}/api/update_settings`, {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({
+                    user_id: uid,
+                    category: isOpt ? 'more_100' : 'less_100'
+                })
+            });
         }
-    } catch {
-        tg.showAlert('Ошибка расчета');
-    }
-}
 
-/* ================= START ================= */
-init();
-</script>
+        function updMode() {
+            safe('tg-opt', el => el.checked = isOpt);
+            safe('tg-calc', el => el.checked = isOpt);
+            safe('sel-city', el => el.style.display = isOpt ? 'block' : 'none');
+            safe('box-code', el => el.style.display = isOpt ? 'none' : 'block');
+            safe('box-calc-opt', el => el.style.display = isOpt ? 'block' : 'none');
 
+            if (gid('screen-addresses')?.classList.contains('active')) {
+                renderAddr();
+            }
+        }
+
+        /* ================= ADDRESSES ================= */
+        function renderAddr() {
+            if (!config.warehouses) return;
+            if (!gid('screen-addresses')?.classList.contains('active')) return;
+
+            safe('txt-addr', el => {
+                if (isOpt) {
+                    const city = gid('sel-city')?.value;
+                    el.innerText = config.warehouses?.wholesale?.[city]?.address || 'Выберите город';
+                } else {
+                    el.innerText = config.warehouses?.retail?.address || 'Адрес не найден';
+                }
+            });
+        }
+
+        /* ================= CALC ================= */
+        async function doCalc() {
+            const wg = parseFloat(gid('c-wg')?.value || 0);
+            const qty = parseInt(gid('c-qty')?.value || 1);
+
+            if (!wg) return tg.showAlert('Введите вес');
+
+            let routeFrom = "🇨🇳 Китай";
+            let routeTo = "🇹🇯 Худжанд";
+
+            if (isOpt) {
+                const route = gid('sel-route')?.value;
+                if (route && route.includes(' - ')) {
+                    [routeFrom, routeTo] = route.split(' - ');
+                }
+            }
+
+            const p = {
+                user_id: uid,
+                weight: wg,
+                quantity: qty,
+                category: isOpt ? 'more_100' : 'less_100',
+                length: parseFloat(gid('c-len')?.value || 0),
+                width: parseFloat(gid('c-wid')?.value || 0),
+                height: parseFloat(gid('c-hei')?.value || 0),
+                route_from: routeFrom,
+                route_to: routeTo
+            };
+
+            try {
+                const r = await fetch(`${API}/api/calculate`, {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify(p)
+                });
+                const j = await r.json();
+
+                if (j.status === 'ok') {
+                    safe('c-res', el => el.innerText = j.price.toLocaleString());
+                    safe('c-cur', el => el.innerText = j.currency);
+                    safe('btn-order-confirm', el => el.style.display = 'block');
+                    lastCalc = {...p, price: j.price, route: `${routeFrom} - ${routeTo}`};
+                }
+            } catch {
+                tg.showAlert('Ошибка расчета');
+            }
+        }
+
+        /* ================= HELPERS ================= */
+        function renderPackageList(pkgs) {
+            let h = '';
+            if (pkgs && pkgs.length > 0) {
+                pkgs.forEach(p => {
+                    let stClass = p.status_text.includes('Прибыл') ? 'status-ready' : '';
+                    h += `<div class="pkg-item"><div class="pkg-info"><div class="pkg-name">${p.description || 'Посылка'}</div><div class="pkg-sub">${p.track_number}</div></div><div class="pkg-status ${stClass}">${p.status_text}</div></div>`;
+                });
+            } else { h = '<div style="text-align:center;padding:20px;color:#8e8e93;">Посылок пока нет</div>'; }
+            safe('full-pkg-list', el => el.innerHTML = h);
+        }
+
+        function renderPvzOptions(list, currentId) {
+            safe('s-pvz', sel => {
+                sel.innerHTML = '<option value="">Не выбран</option>';
+                if (list) list.forEach(p => {
+                    let opt = document.createElement('option'); opt.value = p.id; opt.innerText = p.name;
+                    if (p.id == currentId) opt.selected = true;
+                    sel.appendChild(opt);
+                });
+            });
+        }
+
+        function renderRoutes(routes) {
+            safe('sel-route', sel => {
+                sel.innerHTML = '';
+                routes.forEach(r => {
+                    let opt = document.createElement('option');
+                    opt.value = r; opt.innerText = r;
+                    sel.appendChild(opt);
+                });
+            });
+        }
+
+        function nav(id) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            safe('screen-' + id, el => el.classList.add('active'));
+            if(id === 'trucks') ldTr();
+            if(id === 'market') ldMk();
+            if(id === 'rewards') ldRew();
+            window.scrollTo(0,0);
+        }
+
+        function goHome() { nav('home'); }
+        function openM(id) { safe(id, el => el.style.display = 'flex'); }
+        function closeM(id) { safe(id, el => el.style.display = 'none'); }
+        function copy(t) { safe(t, el => { navigator.clipboard.writeText(el.innerText); tg.HapticFeedback.impactOccurred('light'); tg.showAlert("Скопировано"); }); }
+
+        async function ldTr() {
+            safe('list-trucks', async c => {
+                c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
+                try {
+                    let r = await fetch(`${API}/api/trucking/list?type=${tabTr}`, { headers: { 'ngrok-skip-browser-warning': 'true' }});
+                    let d = await r.json(); c.innerHTML = '';
+                    if(!d.items || d.items.length === 0) { c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Объявлений нет</div>'; return; }
+                    d.items.forEach(i => { c.innerHTML += `<div class="card"><div style="font-weight:700;">${i.title}</div><div style="font-size:13px;color:#8e8e93;">${i.subtitle}</div><div style="color:var(--blue); font-weight:800; margin-top:8px;">${i.details}</div></div>`; });
+                } catch { c.innerHTML = 'Ошибка загрузки'; }
+            });
+        }
+
+        async function ldMk() {
+            safe('list-market', async c => {
+                c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
+                try {
+                    let r = await fetch(`${API}/api/market/list?type=${tabMk}`, { headers: { 'ngrok-skip-browser-warning': 'true' }});
+                    let d = await r.json(); c.innerHTML = '';
+                    if(!d.items || d.items.length === 0) { c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Товары не найдены</div>'; return; }
+                    let h = '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">';
+                    d.items.forEach(i => { h += `<div class="card" style="padding:10px;margin-bottom:0;"><img src="${i.img}" style="width:100%;height:100px;object-fit:cover;border-radius:10px;"><div style="font-weight:600;font-size:13px;">${i.title}</div><div style="color:var(--blue); font-weight:800;">${i.price}</div></div>`; });
+                    c.innerHTML = h + '</div>';
+                } catch { c.innerHTML = 'Ошибка'; }
+            });
+        }
+
+        async function ldRew() {
+            safe('list-rewards', async c => {
+                c.innerHTML = 'Загрузка...';
+                try {
+                    let r = await fetch(`${API}/api/rewards/list/${uid}`, { headers: { 'ngrok-skip-browser-warning': 'true' }});
+                    let d = await r.json(); c.innerHTML = '';
+                    if(!d.tasks) return;
+                    d.tasks.forEach(t => { c.innerHTML += `<div class="card" onclick="claimRew(${t.id})"><b>${t.title}</b><br><small>${t.desc}</small><div style="color:#F57F17; font-weight:800;">+${t.reward} кг</div></div>`; });
+                } catch { c.innerHTML = 'Ошибка'; }
+            });
+        }
+
+        async function saveSet() {
+            const sn = gid('s-name'); const sp = gid('s-phone'); const sv = gid('s-pvz');
+            let d = {user_id:uid, full_name:sn?sn.value:"", phone:sp?sp.value:"", pvz_id:parseInt(sv?sv.value:0)};
+            await fetch(`${API}/api/update_settings`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(d)});
+            tg.showAlert("Сохранено"); init(); goHome();
+        }
+
+        async function subTrack() {
+            const nt = gid('n-t'); const nd = gid('n-d');
+            let d = {user_id:uid, track_number:nt?nt.value:"", description:nd?nd.value:""};
+            await fetch(`${API}/api/add_track`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(d)});
+            closeM('m-add'); init();
+        }
+
+        function swTr(t, el) { tabTr = t; document.querySelectorAll('#screen-trucks .tab').forEach(x=>x.classList.remove('active')); el.classList.add('active'); ldTr(); }
+        function swMk(t, el) { tabMk = t; document.querySelectorAll('#screen-market .tab').forEach(x=>x.classList.remove('active')); el.classList.add('active'); ldMk(); }
+
+        /* ================= START ================= */
+        init();
+    </script>
 </body>
 </html>
-
