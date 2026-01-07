@@ -61,6 +61,11 @@
 
         .modal-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; display: none; align-items: flex-end; }
         .modal { background: #fff; width: 100%; border-radius: 24px 24px 0 0; padding: 24px; box-sizing: border-box; }
+        
+        .info-list { list-style: none; padding: 0; margin: 0; }
+        .info-list li { padding: 12px 0; border-bottom: 1px solid #f2f2f2; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+        .info-list li:last-child { border-bottom: none; }
+        .rate-row { display: flex; justify-content: space-between; padding: 8px 0; }
     </style>
 </head>
 <body>
@@ -109,12 +114,69 @@
                 <div class="grid-item" onclick="nav('addresses')"><div class="icon-box" style="color: #34C759;"><i class="fa-solid fa-map-location-dot"></i></div><span class="grid-lbl">Адреса</span></div>
                 <div class="grid-item" onclick="nav('rewards')"><div class="icon-box" style="color: #FF9500;"><i class="fa-solid fa-users"></i></div><span class="grid-lbl">Рефералы</span></div>
                 
-                <div class="grid-item" onclick="showInfo('prohibited')"><div class="icon-box" style="color: #FF3B30;"><i class="fa-solid fa-hand"></i></div><span class="grid-lbl">Запрещено</span></div>
-                <div class="grid-item" onclick="showInfo('rates')"><div class="icon-box" style="color: #007AFF;"><i class="fa-solid fa-tags"></i></div><span class="grid-lbl">Тарифы</span></div>
+                <div class="grid-item" onclick="nav('prohibited')"><div class="icon-box" style="color: #FF3B30;"><i class="fa-solid fa-hand"></i></div><span class="grid-lbl">Запрещено</span></div>
+                <div class="grid-item" onclick="nav('rates')"><div class="icon-box" style="color: #007AFF;"><i class="fa-solid fa-tags"></i></div><span class="grid-lbl">Тарифы</span></div>
                 <div class="grid-item" onclick="tg.openLink('https://t.me/your_support')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-comment-dots"></i></div><span class="grid-lbl">Помощь</span></div>
                 
-                <div class="grid-item" onclick="showInfo('about')"><div class="icon-box"><i class="fa-solid fa-building"></i></div><span class="grid-lbl">О нас</span></div>
+                <div class="grid-item" onclick="nav('about')"><div class="icon-box"><i class="fa-solid fa-building"></i></div><span class="grid-lbl">О нас</span></div>
                 <div class="grid-item" onclick="tg.showAlert('Читайте отзывы в нашем канале!')"><div class="icon-box" style="color: #FFD60A;"><i class="fa-solid fa-star-half-stroke"></i></div><span class="grid-lbl">Отзывы</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-prohibited" class="screen">
+        <div class="nav-head"><div onclick="nav('china')"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Запрещено</div></div>
+        <div class="container">
+            <div class="card" style="border-left: 4px solid #FF3B30;">
+                <b style="color:#FF3B30;">Внимание!</b><br>
+                <small>Эти товары не принимаются к перевозке:</small>
+            </div>
+            <div class="card">
+                <ul class="info-list">
+                    <li>🚫 <span>Аккумуляторы и PowerBank отдельно</span></li>
+                    <li>🚫 <span>Жидкости, масла, духи, лаки</span></li>
+                    <li>🚫 <span>Порошки и хим. вещества</span></li>
+                    <li>🚫 <span>Оружие и имитация оружия</span></li>
+                    <li>🚫 <span>Наркотические средства</span></li>
+                    <li>🚫 <span>Скоропортящиеся продукты</span></li>
+                    <li>🚫 <span>Семена и растения</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-rates" class="screen">
+        <div class="nav-head"><div onclick="nav('china')"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Тарифы</div></div>
+        <div class="container">
+            <div class="card">
+                <h3 style="margin:0 0 12px 0;">📦 Розница</h3>
+                <div class="rate-row"><span>До 100 кг</span> <b>23 TJS / кг</b></div>
+                <small style="color:var(--sec);">Срок: 10-15 дней</small>
+            </div>
+            <div class="card">
+                <h3 style="margin:0 0 12px 0;">🏢 Опт (от 100 кг)</h3>
+                <div class="rate-row"><span>Хозтовары</span> <b>$0.55 - $0.65 / кг</b></div>
+                <div class="rate-row"><span>Одежда</span> <b>$0.75 - $0.85 / кг</b></div>
+                <div class="rate-row"><span>Обувь</span> <b>$0.80 - $0.90 / кг</b></div>
+                <small style="color:var(--sec);">* Цены зависят от плотности груза</small>
+            </div>
+            <button class="btn btn-blue" onclick="nav('calc')">Перейти в калькулятор</button>
+        </div>
+    </div>
+
+    <div id="screen-about" class="screen">
+        <div class="nav-head"><div onclick="nav('china')"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">О нас</div></div>
+        <div class="container">
+            <div class="card" style="text-align:center;">
+                <div style="font-size:40px;margin-bottom:10px;">🚀</div>
+                <h2 style="margin:0;">Drop Logistics</h2>
+                <p style="color:var(--sec);font-size:14px;">Ваша доставка из Китая</p>
+            </div>
+            <div class="card">
+                <p style="margin-top:0;">Мы — современный логистический сервис, обеспечивающий надежную доставку грузов из Китая в Таджикистан.</p>
+                <p>✅ <b>Собственные склады</b> в Иу и Урумчи.</p>
+                <p>✅ <b>Прозрачные тарифы</b> и честный вес.</p>
+                <p>✅ <b>Быстрая поддержка</b> в Telegram.</p>
             </div>
         </div>
     </div>
@@ -227,21 +289,6 @@
                 opt.value = r; opt.innerText = r;
                 sel.appendChild(opt);
             });
-        }
-
-        function showInfo(type) {
-            let title = "", msg = "";
-            if (type === 'prohibited') {
-                title = "🚫 Запрещено к перевозке";
-                msg = "• Аккумуляторы и PowerBank (отдельно)\n• Жидкости, масла и краски\n• Порошки и химические вещества\n• Оружие и его имитация\n• Наркотические средства\n• Скоропортящиеся продукты";
-            } else if (type === 'rates') {
-                title = "📊 Наши Тарифы";
-                msg = "📦 РОЗНИЦА (до 100 кг):\n- 23 TJS за кг\n\n🏢 ОПТ (от 100 кг):\n- От $0.55 до $0.75 за кг\n- Индивидуальный расчет";
-            } else if (type === 'about') {
-                title = "🏢 О Drop Logistics";
-                msg = "Мы — современный логистический сервис доставки товаров из Китая в Таджикистан.\n\nСклады в Иу и Урумчи гарантируют контроль каждого этапа.";
-            }
-            tg.showConfirm(msg, (ok) => { if(ok && type === 'rates') nav('calc'); });
         }
 
         function renderPackageList(pkgs) {
