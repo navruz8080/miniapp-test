@@ -160,9 +160,7 @@
                 <div class="switch-row" style="margin-bottom:15px;"><b>Оптовый тариф</b><label class="switch"><input type="checkbox" id="tg-calc" onchange="toggleMode()"><span class="slider"></span></label></div>
                 <div id="box-calc-opt" style="display:none; border-top:1px solid #eee; padding-top:10px;">
                     <select id="sel-route">
-                        <option value="🇨🇳 Китай (Урумчи) - 🇹🇯 Худжанд">Китай → Худжанд</option>
-                        <option value="🇨🇳 Китай (Иу) - 🇹🇯 Худжанд">Иу → Худжанд</option>
-                    </select>
+                        </select>
                     <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;">
                         <input id="c-len" type="number" placeholder="Длина">
                         <input id="c-wid" type="number" placeholder="Ширина">
@@ -204,15 +202,34 @@
                 });
                 let d = await r.json();
                 config = d.app_config; user = d.user_info;
+                
                 gid('u-name').innerText = user.name || "Клиент";
                 gid('u-id').innerText = user.user_id; gid('u-lvl').innerText = user.level || "Новичок";
                 gid('u-bonus').innerText = user.bonus_kg || 0; gid('txt-code').innerText = user.marking_code;
                 gid('s-name').value = user.name || ""; gid('s-phone').value = user.phone || "";
+                
                 renderPvzOptions(config.pvz_list, user.pvz_id);
                 renderPackageList(d.packages);
+                
+                // Динамическая загрузка маршрутов в калькулятор
+                if (config.routes) renderRoutes(config.routes);
+
                 isOpt = (user.category === 'more_100');
                 updMode();
             } catch(e) { console.error(e); }
+        }
+
+        // Новая функция отрисовки маршрутов
+        function renderRoutes(routes) {
+            const sel = gid('sel-route');
+            if (!sel || !routes) return;
+            sel.innerHTML = '';
+            routes.forEach(r => {
+                let opt = document.createElement('option');
+                opt.value = r;
+                opt.innerText = r;
+                sel.appendChild(opt);
+            });
         }
 
         function renderPackageList(pkgs) {
