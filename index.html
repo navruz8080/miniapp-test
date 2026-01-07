@@ -108,10 +108,12 @@
                 <div class="grid-item" onclick="nav('packages')"><div class="icon-box" style="color: #FF2D55;"><i class="fa-solid fa-box-open"></i></div><span class="grid-lbl">Посылки</span></div>
                 <div class="grid-item" onclick="nav('addresses')"><div class="icon-box" style="color: #34C759;"><i class="fa-solid fa-map-location-dot"></i></div><span class="grid-lbl">Адреса</span></div>
                 <div class="grid-item" onclick="nav('rewards')"><div class="icon-box" style="color: #FF9500;"><i class="fa-solid fa-users"></i></div><span class="grid-lbl">Рефералы</span></div>
-                <div class="grid-item" onclick="tg.showAlert('Запрещено к ввозу: жидкости, аккумуляторы отдельно, горючие материалы...')"><div class="icon-box" style="color: #FF3B30;"><i class="fa-solid fa-hand"></i></div><span class="grid-lbl">Запрещено</span></div>
-                <div class="grid-item" onclick="tg.showAlert('Тарифы:\nРозница: 23 сомони/кг\nОпт: от $0.55/кг')"><div class="icon-box" style="color: #007AFF;"><i class="fa-solid fa-tags"></i></div><span class="grid-lbl">Тарифы</span></div>
+                
+                <div class="grid-item" onclick="showInfo('prohibited')"><div class="icon-box" style="color: #FF3B30;"><i class="fa-solid fa-hand"></i></div><span class="grid-lbl">Запрещено</span></div>
+                <div class="grid-item" onclick="showInfo('rates')"><div class="icon-box" style="color: #007AFF;"><i class="fa-solid fa-tags"></i></div><span class="grid-lbl">Тарифы</span></div>
                 <div class="grid-item" onclick="tg.openLink('https://t.me/your_support')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-comment-dots"></i></div><span class="grid-lbl">Помощь</span></div>
-                <div class="grid-item" onclick="tg.showAlert('Drop Logistics - ваш надежный партнер в доставке из Китая.')"><div class="icon-box"><i class="fa-solid fa-building"></i></div><span class="grid-lbl">О нас</span></div>
+                
+                <div class="grid-item" onclick="showInfo('about')"><div class="icon-box"><i class="fa-solid fa-building"></i></div><span class="grid-lbl">О нас</span></div>
                 <div class="grid-item" onclick="tg.showAlert('Читайте отзывы в нашем канале!')"><div class="icon-box" style="color: #FFD60A;"><i class="fa-solid fa-star-half-stroke"></i></div><span class="grid-lbl">Отзывы</span></div>
             </div>
         </div>
@@ -159,8 +161,7 @@
             <div class="card">
                 <div class="switch-row" style="margin-bottom:15px;"><b>Оптовый тариф</b><label class="switch"><input type="checkbox" id="tg-calc" onchange="toggleMode()"><span class="slider"></span></label></div>
                 <div id="box-calc-opt" style="display:none; border-top:1px solid #eee; padding-top:10px;">
-                    <select id="sel-route">
-                        </select>
+                    <select id="sel-route"></select>
                     <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;">
                         <input id="c-len" type="number" placeholder="Длина">
                         <input id="c-wid" type="number" placeholder="Ширина">
@@ -210,8 +211,6 @@
                 
                 renderPvzOptions(config.pvz_list, user.pvz_id);
                 renderPackageList(d.packages);
-                
-                // Динамическая загрузка маршрутов в калькулятор
                 if (config.routes) renderRoutes(config.routes);
 
                 isOpt = (user.category === 'more_100');
@@ -219,17 +218,30 @@
             } catch(e) { console.error(e); }
         }
 
-        // Новая функция отрисовки маршрутов
         function renderRoutes(routes) {
             const sel = gid('sel-route');
             if (!sel || !routes) return;
             sel.innerHTML = '';
             routes.forEach(r => {
                 let opt = document.createElement('option');
-                opt.value = r;
-                opt.innerText = r;
+                opt.value = r; opt.innerText = r;
                 sel.appendChild(opt);
             });
+        }
+
+        function showInfo(type) {
+            let title = "", msg = "";
+            if (type === 'prohibited') {
+                title = "🚫 Запрещено к перевозке";
+                msg = "• Аккумуляторы и PowerBank (отдельно)\n• Жидкости, масла и краски\n• Порошки и химические вещества\n• Оружие и его имитация\n• Наркотические средства\n• Скоропортящиеся продукты";
+            } else if (type === 'rates') {
+                title = "📊 Наши Тарифы";
+                msg = "📦 РОЗНИЦА (до 100 кг):\n- 23 TJS за кг\n\n🏢 ОПТ (от 100 кг):\n- От $0.55 до $0.75 за кг\n- Индивидуальный расчет";
+            } else if (type === 'about') {
+                title = "🏢 О Drop Logistics";
+                msg = "Мы — современный логистический сервис доставки товаров из Китая в Таджикистан.\n\nСклады в Иу и Урумчи гарантируют контроль каждого этапа.";
+            }
+            tg.showConfirm(msg, (ok) => { if(ok && type === 'rates') nav('calc'); });
         }
 
         function renderPackageList(pkgs) {
@@ -288,17 +300,11 @@
         async function ldTr() {
             let c = gid('list-trucks'); c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
             try {
-                let r = await fetch(`${API}/api/trucking/list?type=${tabTr}`, { 
-                    headers: { 'ngrok-skip-browser-warning': 'true' }
-                });
+                let r = await fetch(`${API}/api/trucking/list?type=${tabTr}`, { headers: { 'ngrok-skip-browser-warning': 'true' }});
                 let d = await r.json(); c.innerHTML = '';
                 if(!d.items || d.items.length === 0) { c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Объявлений пока нет</div>'; return; }
                 d.items.forEach(i => { 
-                    c.innerHTML += `<div class="card">
-                        <div style="font-weight:700;font-size:16px;">${i.title}</div>
-                        <div style="font-size:13px;color:#8e8e93;margin:4px 0;">${i.subtitle}</div>
-                        <div style="color:var(--blue); font-weight:800; font-size:15px; margin-top:8px;">${i.details}</div>
-                    </div>`; 
+                    c.innerHTML += `<div class="card"><div style="font-weight:700;font-size:16px;">${i.title}</div><div style="font-size:13px;color:#8e8e93;margin:4px 0;">${i.subtitle}</div><div style="color:var(--blue); font-weight:800; font-size:15px; margin-top:8px;">${i.details}</div></div>`; 
                 });
             } catch(e) { c.innerHTML = '<div style="text-align:center;padding:20px;color:red;">Ошибка загрузки</div>'; }
         }
@@ -306,19 +312,12 @@
         async function ldMk() {
             let c = gid('list-market'); c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
             try {
-                let r = await fetch(`${API}/api/market/list?type=${tabMk}`, { 
-                    headers: { 'ngrok-skip-browser-warning': 'true' }
-                });
+                let r = await fetch(`${API}/api/market/list?type=${tabMk}`, { headers: { 'ngrok-skip-browser-warning': 'true' }});
                 let d = await r.json(); c.innerHTML = '';
                 if(!d.items || d.items.length === 0) { c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Товары не найдены</div>'; return; }
-                
                 let h = '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">';
                 d.items.forEach(i => { 
-                    h += `<div class="card" style="padding:10px;margin-bottom:0;">
-                        <img src="${i.img}" style="width:100%; height:120px; object-fit:cover; border-radius:12px; margin-bottom:8px;" onerror="this.src='https://via.placeholder.com/150'">
-                        <div style="font-weight:600; font-size:13px; height:32px; overflow:hidden; line-height:1.2;">${i.title}</div>
-                        <div style="color:var(--blue); font-weight:800; margin-top:6px;">${i.price}</div>
-                    </div>`; 
+                    h += `<div class="card" style="padding:10px;margin-bottom:0;"><img src="${i.img}" style="width:100%; height:120px; object-fit:cover; border-radius:12px; margin-bottom:8px;" onerror="this.src='https://via.placeholder.com/150'"><div style="font-weight:600; font-size:13px; height:32px; overflow:hidden; line-height:1.2;">${i.title}</div><div style="color:var(--blue); font-weight:800; margin-top:6px;">${i.price}</div></div>`; 
                 });
                 c.innerHTML = h + '</div>';
             } catch(e) { c.innerHTML = '<div style="text-align:center;padding:20px;color:red;">Ошибка соединения</div>'; }
@@ -327,9 +326,7 @@
         async function ldRew() {
             let c = gid('list-rewards'); c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
             try {
-                let r = await fetch(`${API}/api/rewards/list/${uid}`, { 
-                    headers: { 'ngrok-skip-browser-warning': 'true' }
-                });
+                let r = await fetch(`${API}/api/rewards/list/${uid}`, { headers: { 'ngrok-skip-browser-warning': 'true' }});
                 let d = await r.json(); c.innerHTML = '';
                 if(!d.tasks || d.tasks.length === 0) { c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Заданий нет</div>'; return; }
                 d.tasks.forEach(t => { c.innerHTML += `<div class="card" onclick="claimRew(${t.id})"><b>${t.title}</b><br><small>${t.desc}</small><div style="color:#F57F17; font-weight:800;">+${t.reward} кг</div></div>`; });
