@@ -16,7 +16,7 @@
         @keyframes fadeIn { from {opacity:0} to {opacity:1} }
         
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top: 10px; }
-        .user-row { display: flex; align-items: center; gap: 10px; }
+        .user-row { display: flex; align-items: center; gap: 10px; cursor: pointer; } /* Добавили курсор */
         .ava { width: 44px; height: 44px; border-radius: 50%; background: #eee; object-fit: cover; }
         .lvl-badge { background: #FFD60A; color: #000; font-size: 10px; padding: 2px 6px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
         
@@ -73,14 +73,14 @@
     <div id="screen-home" class="screen active">
         <div class="container">
             <div class="header">
-                <div class="user-row">
+                <div class="user-row" onclick="nav('profile')">
                     <img id="u-ava" class="ava" src="">
                     <div>
                         <div style="display:flex; align-items:center; gap:6px;">
                             <b id="u-name">...</b>
                             <span id="u-lvl" class="lvl-badge">...</span>
                         </div>
-                        <div style="font-size:12px; color:var(--sec);">ID: <span id="u-id">...</span></div>
+                        <div style="font-size:12px; color:var(--sec);">Профиль <i class="fa-solid fa-chevron-right" style="font-size:8px;"></i></div>
                     </div>
                 </div>
                 <div onclick="nav('settings')" style="padding:10px;"><i class="fa-solid fa-gear"></i></div>
@@ -106,6 +106,35 @@
         </div>
     </div>
 
+    <div id="screen-profile" class="screen">
+        <div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Личный кабинет</div></div>
+        <div class="container">
+            <div class="card" style="text-align: center; padding: 30px 20px;">
+                <div style="position: relative; display: inline-block;">
+                    <img id="p-ava" src="" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div id="p-lvl-tag" class="lvl-badge" style="position: absolute; bottom: 0; right: 0; padding: 4px 10px; font-size: 12px; border: 2px solid #fff;">...</div>
+                </div>
+                <h2 id="p-name" style="margin: 15px 0 5px 0;">...</h2>
+                <div style="font-size:12px; color:var(--sec);">ID: <span id="p-id">...</span></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                <div class="card" style="margin-bottom: 0; text-align: center;">
+                    <div style="font-size: 12px; color: var(--sec);">Бонусы</div>
+                    <div style="font-size: 20px; font-weight: 800; color: var(--green);"><span id="p-bonus">0</span> кг</div>
+                </div>
+                <div class="card" style="margin-bottom: 0; text-align: center;">
+                    <div style="font-size: 12px; color: var(--sec);">Статус</div>
+                    <div style="font-size: 14px; font-weight: 700;" id="p-status-name">...</div>
+                </div>
+            </div>
+            <div class="card" style="padding: 0;">
+                <div class="pkg-item" style="padding: 16px;" onclick="nav('settings')">
+                    <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-user-pen" style="color:var(--blue);"></i><b>Настройки данных</b></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="screen-china" class="screen">
         <div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Мой Китай</div></div>
         <div class="container">
@@ -124,39 +153,33 @@
         </div>
     </div>
 
-<div id="screen-prohibited" class="screen">
+    <div id="screen-prohibited" class="screen">
         <div class="nav-head"><div onclick="nav('china')"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Запрещено к ввозу</div></div>
         <div class="container">
             <div class="card" style="border-left: 4px solid #FF3B30; background: #FFF5F5;">
                 <b style="color:#FF3B30; font-size: 16px;">⚠️ Важная информация</b><br>
                 <small>Данные категории товаров строго запрещены к международной перевозке:</small>
             </div>
-
             <div class="card">
                 <h4 style="margin: 0 0 10px 0; color: #E64646;"><i class="fa-solid fa-fire"></i> Опасные вещества</h4>
                 <p style="font-size: 13px; color: #666; margin: 0;">Порох, фейерверки, патроны, легковоспламеняющиеся металлы (магний, натрий), реактивы.</p>
             </div>
-
             <div class="card">
                 <h4 style="margin: 0 0 10px 0; color: #3A7DFF;"><i class="fa-solid fa-droplet"></i> Жидкости и газы</h4>
                 <p style="font-size: 13px; color: #666; margin: 0;">Бензин, растворители, лаки, краски, баллончики под давлением (спреи), газовые баллоны.</p>
             </div>
-
             <div class="card">
                 <h4 style="margin: 0 0 10px 0; color: #1F1F1F;"><i class="fa-solid fa-gun"></i> Оружие</h4>
                 <p style="font-size: 13px; color: #666; margin: 0;">Огнестрельное, пневматическое, травматическое оружие, электрошокеры, дубинки и запчасти к ним.</p>
             </div>
-
             <div class="card">
                 <h4 style="margin: 0 0 10px 0; color: #8E5AF7;"><i class="fa-solid fa-pills"></i> Наркотические вещества</h4>
                 <p style="font-size: 13px; color: #666; margin: 0;">Наркотики, прекурсоры, сильнодействующие медикаменты без рецепта, стероиды.</p>
             </div>
-
             <div class="card">
                 <h4 style="margin: 0 0 10px 0; color: #FF9500;"><i class="fa-solid fa-battery-half"></i> Аккумуляторы</h4>
                 <p style="font-size: 13px; color: #666; margin: 0;">Литий-ионные батареи отдельно от устройств, Power Station. Встроенные в телефон/ноутбук — <b>разрешены</b>.</p>
             </div>
-
             <div class="card">
                 <h4 style="margin: 0 0 10px 0; color: #4CD964;"><i class="fa-solid fa-apple-whole"></i> Прочее</h4>
                 <p style="font-size: 13px; color: #666; margin: 0;">Скоропортящиеся продукты (мясо, овощи), животные, растения, семена, шпионская техника.</p>
@@ -169,42 +192,21 @@
         <div class="container">
             <div class="card">
                 <h3 style="margin:0 0 15px 0; color:var(--blue);">📦 Розничные тарифы</h3>
-                
-                <div class="rate-row" style="border-bottom: 1px solid #f2f2f2; padding: 10px 0;">
-                    <span>До 0.5 кг</span>
-                    <b style="color:var(--text);">13 TJS <small>(фикс)</small></b>
-                </div>
-                
-                <div class="rate-row" style="border-bottom: 1px solid #f2f2f2; padding: 10px 0;">
-                    <span>от 0.5 до 1 кг</span>
-                    <b style="color:var(--text);">23 TJS <small>(фикс)</small></b>
-                </div>
-
-                <div class="rate-row" style="border-bottom: 1px solid #f2f2f2; padding: 10px 0;">
-                    <span>от 1 до 50 кг</span>
-                    <b style="color:var(--text);">23 TJS / кг</b>
-                </div>
-
-                <div class="rate-row" style="padding: 10px 0;">
-                    <span>от 50 до 99 кг</span>
-                    <b style="color:var(--green);">20 TJS / кг</b>
-                </div>
-                
-                <p style="font-size:12px; color:var(--sec); margin-top:10px; line-height: 1.4;">
-                    * Срок авиа-доставки: 10-15 дней.<br>
-                    * Вес округляется согласно правилам авиаперевозок.
-                </p>
+                <div class="rate-row" style="border-bottom: 1px solid #f2f2f2; padding: 10px 0;"><span>До 0.5 кг</span><b style="color:var(--text);">13 TJS <small>(фикс)</small></b></div>
+                <div class="rate-row" style="border-bottom: 1px solid #f2f2f2; padding: 10px 0;"><span>от 0.5 до 1 кг</span><b style="color:var(--text);">23 TJS <small>(фикс)</small></b></div>
+                <div class="rate-row" style="border-bottom: 1px solid #f2f2f2; padding: 10px 0;"><span>от 1 до 50 кг</span><b style="color:var(--text);">23 TJS / кг</b></div>
+                <div class="rate-row" style="padding: 10px 0;"><span>от 50 до 99 кг</span><b style="color:var(--green);">20 TJS / кг</b></div>
+                <p style="font-size:12px; color:var(--sec); margin-top:10px; line-height: 1.4;">* Срок авиа-доставки: 10-15 дней.<br>* Вес округляется согласно правилам авиаперевозок.</p>
             </div>
-
             <div class="card" style="background: #F8F9FB;">
                 <h3 style="margin:0 0 12px 0;">🏢 Оптовые тарифы</h3>
-                <p style="font-size: 14px; margin-bottom: 15px;">Для грузов весом <b>от 100 кг</b> действуют специальные условия:</p>
                 <div class="rate-row"><span>Хозтовары</span> <b>от $0.55 / кг</b></div>
                 <div class="rate-row"><span>Одежда / Обувь</span> <b>от $0.75 / кг</b></div>
                 <button class="btn btn-blue" style="margin-top: 15px;" onclick="nav('calc')">Точный расчет в калькуляторе</button>
             </div>
         </div>
     </div>
+
     <div id="screen-about" class="screen">
         <div class="nav-head"><div onclick="nav('china')"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">О нас</div></div>
         <div class="container">
@@ -300,16 +302,33 @@
 
         async function init() {
             try {
-                gid('u-ava').src = tg.initDataUnsafe?.user?.photo_url || "";
+                // Подтягиваем фото из ТГ
+                const photo = tg.initDataUnsafe?.user?.photo_url;
+                const firstName = tg.initDataUnsafe?.user?.first_name || "Client";
+                const placeholder = `https://ui-avatars.com/api/?name=${encodeURIComponent(firstName)}&background=007AFF&color=fff`;
+                
+                gid('u-ava').src = photo || placeholder;
+                gid('p-ava').src = photo || placeholder;
+
                 let r = await fetch(`${API}/api/dashboard/${uid}`, { 
                     headers: { 'ngrok-skip-browser-warning': 'true' }
                 });
                 let d = await r.json();
                 config = d.app_config; user = d.user_info;
                 
-                gid('u-name').innerText = user.name || "Клиент";
+                // Главная
+                gid('u-name').innerText = user.name || firstName;
                 gid('u-id').innerText = user.user_id; gid('u-lvl').innerText = user.level || "Новичок";
                 gid('u-bonus').innerText = user.bonus_kg || 0; gid('txt-code').innerText = user.marking_code;
+                
+                // Профиль
+                gid('p-name').innerText = user.name || firstName;
+                gid('p-id').innerText = user.user_id;
+                gid('p-bonus').innerText = user.bonus_kg || 0;
+                gid('p-lvl-tag').innerText = user.level || "Новичок";
+                gid('p-status-name').innerText = user.level || "Новичок";
+
+                // Настройки
                 gid('s-name').value = user.name || ""; gid('s-phone').value = user.phone || "";
                 
                 renderPvzOptions(config.pvz_list, user.pvz_id);
@@ -381,6 +400,7 @@
         }
 
         function renderAddr() {
+            if(!config.warehouses) return;
             if (isOpt) gid('txt-addr').innerText = config.warehouses?.wholesale?.[gid('sel-city').value]?.address || "Выберите город";
             else gid('txt-addr').innerText = config.warehouses?.retail?.address || "Адрес не найден";
         }
@@ -430,12 +450,7 @@
         function swMk(t, el) { tabMk = t; document.querySelectorAll('#screen-market .tab').forEach(x=>x.classList.remove('active')); el.classList.add('active'); ldMk(); }
 
         async function doCalc() {
-            let p = { 
-                user_id:uid, weight:parseFloat(gid('c-wg').value), quantity:parseInt(gid('c-qty').value),
-                category:isOpt?'more_100':'less_100', length:parseFloat(gid('c-len').value)||0,
-                width:parseFloat(gid('c-wid').value)||0, height:parseFloat(gid('c-hei').value)||0,
-                route_from:isOpt?gid('sel-route').value.split(' - ')[0]:"🇨🇳 Китай", route_to:isOpt?gid('sel-route').value.split(' - ')[1]:"🇹🇯 Худжанд"
-            };
+            let p = { user_id:uid, weight:parseFloat(gid('c-wg').value), quantity:parseInt(gid('c-qty').value), category:isOpt?'more_100':'less_100', length:parseFloat(gid('c-len').value)||0, width:parseFloat(gid('c-wid').value)||0, height:parseFloat(gid('c-hei').value)||0, route_from:isOpt?gid('sel-route').value.split(' - ')[0]:"🇨🇳 Китай", route_to:isOpt?gid('sel-route').value.split(' - ')[1]:"🇹🇯 Худжанд" };
             try {
                 let r = await fetch(`${API}/api/calculate`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p)});
                 let j = await r.json();
@@ -445,10 +460,7 @@
 
         async function submitOrder() {
             try {
-                let r = await fetch(`${API}/api/create_order`, {
-                    method:'POST', headers:{'Content-Type':'application/json'},
-                    body: JSON.stringify({user_id:uid, route:lastCalc.route, weight:lastCalc.weight*lastCalc.quantity, price:lastCalc.price})
-                });
+                let r = await fetch(`${API}/api/create_order`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({user_id:uid, route:lastCalc.route, weight:lastCalc.weight*lastCalc.quantity, price:lastCalc.price}) });
                 if((await r.json()).status==='ok') { tg.showAlert("Заказ оформлен!"); gid('btn-order-confirm').style.display='none'; }
             } catch(e) { tg.showAlert("Ошибка"); }
         }
