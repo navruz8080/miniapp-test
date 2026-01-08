@@ -1139,15 +1139,28 @@
 
         /* ================= HELPERS ================= */
         function renderPackageList(pkgs) {
+            console.log('renderPackageList called with:', pkgs); // Отладка
             let h = '';
-            if (pkgs && pkgs.length > 0) {
+            if (pkgs && Array.isArray(pkgs) && pkgs.length > 0) {
                 pkgs.forEach(p => {
-                    let stClass = p.status_text.includes('Прибыл') || p.status_text.includes('Омад') ? 'status-ready' : '';
-                    const pkgId = p.id || p.track_number;
-                    h += `<div class="pkg-item" onclick="showPackageHistory('${pkgId}')" style="cursor:pointer;"><div class="pkg-info"><div class="pkg-name">${p.description || t('packages', 'Посылка')}</div><div class="pkg-sub">${p.track_number}</div></div><div class="pkg-status ${stClass}">${p.status_text}</div><i class="fa-solid fa-chevron-right" style="color:var(--sec); font-size:12px;"></i></div>`;
+                    if (!p) return; // Пропускаем null/undefined
+                    let stClass = (p.status_text && (p.status_text.includes('Прибыл') || p.status_text.includes('Омад'))) ? 'status-ready' : '';
+                    const pkgId = p.id || p.track_number || 'unknown';
+                    const trackNum = p.track_number || 'Без трека';
+                    const desc = p.description || t('packages', 'Посылка');
+                    const statusText = p.status_text || p.status || 'Неизвестно';
+                    h += `<div class="pkg-item" onclick="showPackageHistory('${pkgId}')" style="cursor:pointer;"><div class="pkg-info"><div class="pkg-name">${desc}</div><div class="pkg-sub">${trackNum}</div></div><div class="pkg-status ${stClass}">${statusText}</div><i class="fa-solid fa-chevron-right" style="color:var(--sec); font-size:12px;"></i></div>`;
                 });
-            } else { h = `<div style="text-align:center;padding:20px;color:#8e8e93;">${t('no_packages', 'Посылок пока нет')}</div>`; }
-            safe('full-pkg-list', el => el.innerHTML = h);
+            } else { 
+                h = `<div style="text-align:center;padding:20px;color:#8e8e93;">${t('no_packages', 'Посылок пока нет')}</div>`; 
+            }
+            safe('full-pkg-list', el => {
+                if (el) {
+                    el.innerHTML = h;
+                } else {
+                    console.error('Element full-pkg-list not found');
+                }
+            });
         }
         
         async function showPackageHistory(packageId) {
@@ -1412,7 +1425,28 @@
             if(id === 'admin') {
                 loadAdminPackages();
             }
+            if(id === 'packages') {
+                loadPackages(); // Загружаем посылки при переходе на экран
+            }
             window.scrollTo(0,0);
+        }
+        
+        async function loadPackages() {
+            safe('full-pkg-list', el => el.innerHTML = '<div style="text-align:center;padding:20px;color:#8e8e93;">Загрузка...</div>');
+            try {
+                const data = await safeFetch(`${API}/api/dashboard/${uid}`);
+                console.log('Dashboard data:', data); // Отладка
+                if (data.status === 'ok' && data.packages) {
+                    console.log('Packages found:', data.packages.length); // Отладка
+                    renderPackageList(data.packages);
+                } else {
+                    console.log('No packages in response or error status'); // Отладка
+                    safe('full-pkg-list', el => el.innerHTML = `<div style="text-align:center;padding:20px;color:#8e8e93;">${t('no_packages', 'Посылок пока нет')}</div>`);
+                }
+            } catch(e) {
+                console.error('Load packages error:', e);
+                safe('full-pkg-list', el => el.innerHTML = '<div style="text-align:center;padding:20px;color:#8e8e93;">Ошибка загрузки посылок</div>');
+            }
         }
 
         function goHome() { nav('home'); }
