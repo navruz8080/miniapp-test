@@ -929,6 +929,62 @@
         let currentLang = 'ru'; // Текущий язык (ru или tj)
         let translations = {}; // Загруженные переводы
         
+        /* ================= КЭШИРОВАНИЕ ДАННЫХ ================= */
+        const cache = {
+            dashboard: null,
+            routes: null,
+            wallet: null,
+            packages: null,
+            market: {},
+            exchange: null,
+            cacheTime: 30000, // 30 секунд
+            getTimestamp: () => Date.now(),
+            isExpired: (timestamp) => (Date.now() - timestamp) > cache.cacheTime
+        };
+        
+        // Функция для кэшированного запроса
+        async function cachedFetch(url, cacheKey, options = {}) {
+            const now = cache.getTimestamp();
+            
+            // Проверяем кэш
+            if (cache[cacheKey] && !cache.isExpired(cache[cacheKey].timestamp)) {
+                console.log(`[Cache HIT] ${cacheKey}`);
+                return cache[cacheKey].data;
+            }
+            
+            // Делаем запрос
+            console.log(`[Cache MISS] ${cacheKey}, fetching...`);
+            try {
+                const response = await safeFetch(url, options);
+                cache[cacheKey] = {
+                    data: response,
+                    timestamp: now
+                };
+                return response;
+            } catch (error) {
+                // В случае ошибки возвращаем старые данные из кэша, если есть
+                if (cache[cacheKey]) {
+                    console.log(`[Cache FALLBACK] ${cacheKey}, using stale data`);
+                    return cache[cacheKey].data;
+                }
+                throw error;
+            }
+        }
+        
+        // Функция для инвалидации кэша
+        function invalidateCache(cacheKey) {
+            if (cacheKey) {
+                delete cache[cacheKey];
+            } else {
+                // Очищаем весь кэш
+                Object.keys(cache).forEach(key => {
+                    if (typeof cache[key] === 'object' && cache[key] !== null && 'timestamp' in cache[key]) {
+                        delete cache[key];
+                    }
+                });
+            }
+        }
+        
         /* ================= I18N ================= */
         async function loadTranslations() {
             try {
@@ -1270,16 +1326,29 @@
         /* ================= INIT ================= */
         async function init() {
             try {
+                // Показываем индикатор загрузки
+                showLoadingIndicator();
+                
                 // Получаем фото из Telegram или используем дефолтное
                 const telegramPhoto = tg.initDataUnsafe?.user?.photo_url || "";
                 const firstName = tg.initDataUnsafe?.user?.first_name || "Client";
                 const defaultAva = `https://ui-avatars.com/api/?name=${firstName}`;
                 
-                // Загружаем данные пользователя
-                const data = await safeFetch(`${API}/api/dashboard/${uid}`);
+                // Параллельная загрузка данных с кэшированием
+                const [dashboardData, walletData, routesData] = await Promise.all([
+                    cachedFetch(`${API}/api/dashboard/${uid}`, 'dashboard'),
+                    cachedFetch(`${API}/api/wallet/${uid}`, 'wallet').catch(() => null),
+                    cachedFetch(`${API}/api/get_routes`, 'routes').catch(() => null)
+                ]);
                 
+                const data = dashboardData;
                 config = data.app_config;
                 user = data.user_info;
+                
+                // Если маршруты не пришли в dashboard, используем отдельный запрос
+                if (!config.routes && routesData && routesData.routes) {
+                    config.routes = routesData.routes;
+                }
                 
                 // Используем сохраненный аватар, если есть, иначе Telegram фото, иначе дефолтное
                 const ava = user.avatar_url || telegramPhoto || defaultAva;
@@ -1349,12 +1418,47 @@
                 // Инициализируем адрес сразу после загрузки данных
                 renderAddr();
 
-                // Загружаем данные кошелька
-                loadWallet();
+                // Обновляем данные кошелька из параллельно загруженных данных
+                if (walletData && walletData.status === 'ok' && walletData.balances) {
+                    const b = walletData.balances;
+                    const tjs = Number(b.tjs || 0);
+                    const usd = Number(b.usd || 0);
+                    const bonus = Number(b.bonus_kg || 0);
+                    safe('u-bonus', el => el.innerText = bonus.toFixed(2));
+                    safe('u-balance-tjs', el => el.innerText = tjs.toFixed(2));
+                    safe('u-balance-usd', el => el.innerText = usd.toFixed(2));
+                } else {
+                    loadWallet();
+                }
+                
+                // Скрываем индикатор загрузки
+                hideLoadingIndicator();
             } catch (e) {
                 console.error('INIT ERROR:', e);
+                hideLoadingIndicator();
+                showErrorPopup('Ошибка загрузки данных', 'Не удалось загрузить данные приложения. Попробуйте обновить страницу.');
             }
         }
+        
+        /* ================= ИНДИКАТОРЫ ЗАГРУЗКИ ================= */
+        function showLoadingIndicator() {
+            // Показываем скелетон или спиннер для основных элементов
+            safe('u-name', el => el.innerText = '...');
+            safe('u-bonus', el => el.innerText = '...');
+            safe('u-balance-tjs', el => el.innerText = '...');
+            safe('u-balance-usd', el => el.innerText = '...');
+        }
+        
+        function hideLoadingIndicator() {
+            // Индикатор скрывается автоматически при обновлении данных
+        }
+        
+        let updateWalletUI = (balances) => {
+            const tjs = Number(balances.tjs || balances.balance_tjs || 0);
+            const usd = Number(balances.usd || balances.balance_usd || 0);
+            safe('u-balance-tjs', el => el.innerText = tjs.toFixed(2));
+            safe('u-balance-usd', el => el.innerText = usd.toFixed(2));
+        };
 
         /* ================= MODE ================= */
         function toggleMode() {
@@ -1395,13 +1499,14 @@
         }
         
         async function loadRoutes() {
+            // Используем кэшированные данные, если доступны
             try {
-                const d = await safeFetch(`${API}/api/get_routes`);
-                if (d.status === 'ok' && d.routes) {
-                    config.routes = d.routes;
-                    renderRoutes(d.routes);
+                const routesData = await cachedFetch(`${API}/api/get_routes`, 'routes');
+                if (routesData && routesData.routes) {
+                    config.routes = routesData.routes;
+                    renderRoutes(routesData.routes);
                 }
-            } catch(e) {
+            } catch (e) {
                 console.error('Load routes error:', e);
             }
         }
@@ -1848,7 +1953,8 @@
         async function loadPackages() {
             safe('full-pkg-list', el => el.innerHTML = '<div style="text-align:center;padding:20px;color:#8e8e93;">Загрузка...</div>');
             try {
-                const data = await safeFetch(`${API}/api/dashboard/${uid}`);
+                // Используем кэшированные данные, если доступны
+                const data = await cachedFetch(`${API}/api/dashboard/${uid}`, 'dashboard');
                 console.log('Dashboard data:', data); // Отладка
                 if (data.status === 'ok' && data.packages) {
                     console.log('Packages found:', data.packages.length); // Отладка
@@ -1960,7 +2066,10 @@
             safe('list-market', async c => {
                 c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
                 try {
-                    let d = await safeFetch(`${API}/api/market/list?type=${tabMk}`); c.innerHTML = '';
+                    // Используем кэшированные данные для маркета
+                    const cacheKey = `market_${tabMk}`;
+                    let d = await cachedFetch(`${API}/api/market/list?type=${tabMk}`, cacheKey);
+                    c.innerHTML = '';
                     if(!d.items || d.items.length === 0) { c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Товары не найдены</div>'; return; }
                     let h = '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">';
                     d.items.forEach(i => { 
@@ -2005,6 +2114,8 @@
             const sn = gid('s-name'); const sp = gid('s-phone'); const sv = gid('s-pvz');
             let d = {user_id:uid, full_name:sn?sn.value:"", phone:sp?sp.value:"", pvz_id:parseInt(sv?sv.value:0)};
             await safeFetch(`${API}/api/update_settings`, {method:'POST', body:JSON.stringify(d)});
+            // Инвалидируем кэш dashboard, так как данные пользователя изменились
+            invalidateCache('dashboard');
             tg.showAlert("Сохранено"); init(); goHome();
         }
 
@@ -2012,6 +2123,9 @@
             const nt = gid('n-t'); const nd = gid('n-d');
             let d = {user_id:uid, track_number:nt?nt.value:"", description:nd?nd.value:""};
             await safeFetch(`${API}/api/add_track`, {method:'POST', body:JSON.stringify(d)});
+            // Инвалидируем кэш dashboard и packages, так как добавилась новая посылка
+            invalidateCache('dashboard');
+            invalidateCache('packages');
             closeM('m-add'); init();
         }
 
@@ -2069,6 +2183,7 @@
                 });
                 const d = await r.json();
                 if (d.status === 'ok') {
+                    invalidateCache('exchange');
                     tg.showAlert('Заказ принят!');
                     ldTr();
                 } else {
@@ -2092,9 +2207,12 @@
                 });
                 const d = await r.json();
                 if (d.status === 'ok') {
+                    invalidateCache('exchange');
+                    invalidateCache('wallet');
+                    invalidateCache('dashboard');
                     tg.showAlert('Деньги заморожены');
                     ldTr();
-                    init(); // Обновить баланс
+                    loadWallet(); // Обновить баланс
                 } else {
                     tg.showAlert(d.detail || 'Недостаточно средств');
                 }
@@ -2116,9 +2234,12 @@
                 });
                 const d = await r.json();
                 if (d.status === 'ok') {
+                    invalidateCache('exchange');
+                    invalidateCache('wallet');
+                    invalidateCache('dashboard');
                     tg.showAlert('Доставка подтверждена! Деньги переведены водителю.');
                     ldTr();
-                    init(); // Обновить баланс
+                    loadWallet(); // Обновить баланс
                 } else {
                     tg.showAlert(d.detail || 'Ошибка');
                 }
@@ -2141,9 +2262,12 @@
                 });
                 const d = await r.json();
                 if (d.status === 'ok') {
+                    invalidateCache('exchange');
+                    invalidateCache('wallet');
+                    invalidateCache('dashboard');
                     tg.showAlert('Заказ отменен');
                     ldTr();
-                    init(); // Обновить баланс
+                    loadWallet(); // Обновить баланс
                 } else {
                     tg.showAlert(d.detail || 'Ошибка');
                 }
@@ -2157,7 +2281,7 @@
         /* ================= WALLET ================= */
         async function loadWallet() {
             try {
-                const d = await safeFetch(`${API}/api/wallet/${uid}`);
+                const d = await cachedFetch(`${API}/api/wallet/${uid}`, 'wallet');
                 if (d.status !== 'ok' || !d.balances) return;
 
                 const b = d.balances;
@@ -2174,6 +2298,14 @@
                 safe('w-b-tjs', el => el.innerText = tjs.toFixed(2));
                 safe('w-b-usd', el => el.innerText = usd.toFixed(2));
                 safe('w-b-bonus', el => el.innerText = bonus.toFixed(2));
+                
+                // Обновляем функцию updateWalletUI для использования в init
+                updateWalletUI = (balances) => {
+                    const tjs = Number(balances.tjs || 0);
+                    const usd = Number(balances.usd || 0);
+                    safe('u-balance-tjs', el => el.innerText = tjs.toFixed(2));
+                    safe('u-balance-usd', el => el.innerText = usd.toFixed(2));
+                };
             } catch (e) {
                 console.error('Wallet load error:', e);
             }
@@ -2241,6 +2373,7 @@
                     })
                 });
                 if (d.status === 'ok') {
+                    invalidateCache('dashboard');
                     tg.showAlert('Заказ успешно оформлен!');
                     safe('btn-order-confirm', el => el.style.display = 'none');
                     lastCalc = null;
@@ -2327,6 +2460,7 @@
                 });
                 const d = await r.json();
                 if (d.status === 'ok') {
+                    invalidateCache('exchange');
                     tg.showAlert('Заказ принят!');
                     ldTr();
                 } else {
@@ -2350,9 +2484,12 @@
                 });
                 const d = await r.json();
                 if (d.status === 'ok') {
+                    invalidateCache('exchange');
+                    invalidateCache('wallet');
+                    invalidateCache('dashboard');
                     tg.showAlert('Деньги заморожены');
                     ldTr();
-                    init(); // Обновить баланс
+                    loadWallet(); // Обновить баланс
                 } else {
                     tg.showAlert(d.detail || 'Недостаточно средств');
                 }
@@ -2374,9 +2511,12 @@
                 });
                 const d = await r.json();
                 if (d.status === 'ok') {
+                    invalidateCache('exchange');
+                    invalidateCache('wallet');
+                    invalidateCache('dashboard');
                     tg.showAlert('Доставка подтверждена! Деньги переведены водителю.');
                     ldTr();
-                    init(); // Обновить баланс
+                    loadWallet(); // Обновить баланс
                 } else {
                     tg.showAlert(d.detail || 'Ошибка');
                 }
@@ -2399,9 +2539,12 @@
                 });
                 const d = await r.json();
                 if (d.status === 'ok') {
+                    invalidateCache('exchange');
+                    invalidateCache('wallet');
+                    invalidateCache('dashboard');
                     tg.showAlert('Заказ отменен');
                     ldTr();
-                    init(); // Обновить баланс
+                    loadWallet(); // Обновить баланс
                 } else {
                     tg.showAlert(d.detail || 'Ошибка');
                 }
