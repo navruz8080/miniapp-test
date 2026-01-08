@@ -973,7 +973,13 @@
                 renderPvzOptions(config.pvz_list, user.pvz_id);
                 renderPackageList(d.packages);
 
-                if (config.routes) renderRoutes(config.routes);
+                // Загружаем маршруты
+                if (config.routes && config.routes.length > 0) {
+                    renderRoutes(config.routes);
+                } else {
+                    // Если маршруты не пришли, загружаем их отдельно
+                    loadRoutes();
+                }
 
                 isOpt = user.category === 'more_100';
                 updMode();
@@ -1013,8 +1019,28 @@
             safe('box-code', el => el.style.display = isOpt ? 'none' : 'block');
             safe('box-calc-opt', el => el.style.display = isOpt ? 'block' : 'none');
 
+            // Загружаем маршруты при переключении на оптовый режим
+            if (isOpt && config.routes) {
+                renderRoutes(config.routes);
+            } else if (isOpt && !config.routes) {
+                // Если маршруты еще не загружены, загружаем их
+                loadRoutes();
+            }
+
             if (gid('screen-addresses')?.classList.contains('active')) {
                 renderAddr();
+            }
+        }
+        
+        async function loadRoutes() {
+            try {
+                const d = await safeFetch(`${API}/api/get_routes`);
+                if (d.status === 'ok' && d.routes) {
+                    config.routes = d.routes;
+                    renderRoutes(d.routes);
+                }
+            } catch(e) {
+                console.error('Load routes error:', e);
             }
         }
 
@@ -1245,13 +1271,31 @@
         }
 
         function renderRoutes(routes) {
+            console.log('renderRoutes called with:', routes); // Отладка
             safe('sel-route', sel => {
+                if (!sel) {
+                    console.error('Element sel-route not found');
+                    return;
+                }
                 sel.innerHTML = '';
-                routes.forEach(r => {
+                if (routes && Array.isArray(routes) && routes.length > 0) {
+                    routes.forEach(r => {
+                        if (r) { // Проверка на null/undefined
+                            let opt = document.createElement('option');
+                            opt.value = r;
+                            opt.innerText = r;
+                            sel.appendChild(opt);
+                        }
+                    });
+                    console.log(`Loaded ${routes.length} routes`); // Отладка
+                } else {
+                    console.warn('No routes to render or routes is not an array');
+                    // Добавляем опцию по умолчанию
                     let opt = document.createElement('option');
-                    opt.value = r; opt.innerText = r;
+                    opt.value = '';
+                    opt.innerText = 'Маршруты не загружены';
                     sel.appendChild(opt);
-                });
+                }
             });
         }
 
@@ -1427,6 +1471,14 @@
             }
             if(id === 'packages') {
                 loadPackages(); // Загружаем посылки при переходе на экран
+            }
+            if(id === 'calc') {
+                // Загружаем маршруты при переходе на калькулятор, если они еще не загружены
+                if (isOpt && (!config.routes || config.routes.length === 0)) {
+                    loadRoutes();
+                } else if (isOpt && config.routes) {
+                    renderRoutes(config.routes);
+                }
             }
             window.scrollTo(0,0);
         }
