@@ -216,8 +216,11 @@
         <div class="container">
             <div class="card" style="text-align: center; padding: 30px 20px;">
                 <div style="position: relative; display: inline-block;">
-                    <img id="p-ava" src="" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <img id="p-ava" src="" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: opacity 0.2s;" title="Нажмите для изменения фото">
                     <div id="p-lvl-tag" class="lvl-badge" style="position: absolute; bottom: 0; right: 0; padding: 4px 10px; font-size: 12px; border: 2px solid #fff;">...</div>
+                    <div style="position: absolute; bottom: 0; left: 0; background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; border-radius: 12px; font-size: 10px; cursor: pointer;" onclick="editAvatar()">
+                        <i class="fa-solid fa-camera"></i>
+                    </div>
                 </div>
                 <h2 id="p-name" style="margin: 15px 0 5px 0;">...</h2>
                 <div style="font-size:12px; color:var(--sec);">ID: <span id="p-id">...</span></div>
@@ -386,6 +389,25 @@
     <div id="screen-rewards" class="screen"><div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Задания</div></div><div class="container"><div id="list-rewards"></div></div></div>
 
     <div id="m-add" class="modal-wrap"><div class="modal"><h3>Новый трек</h3><input id="n-t" placeholder="Трек-номер"><input id="n-d" placeholder="Описание"><button class="btn btn-blue" onclick="subTrack()">Добавить</button><div style="text-align:center;padding:15px;color:var(--sec);" onclick="closeM('m-add')">Отмена</div></div></div>
+    
+    <div id="m-avatar" class="modal-wrap">
+        <div class="modal">
+            <h3>Изменить фото профиля</h3>
+            <div style="text-align:center;padding:20px;">
+                <img id="avatar-preview" src="" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #007AFF; margin-bottom: 20px;">
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <button class="btn btn-blue" onclick="useTelegramPhoto()">
+                        <i class="fa-brands fa-telegram"></i> Использовать фото из Telegram
+                    </button>
+                    <button class="btn" style="background:#f2f2f2;color:#000;" onclick="document.getElementById('avatar-upload').click()">
+                        <i class="fa-solid fa-upload"></i> Загрузить фото
+                    </button>
+                    <input type="file" id="avatar-upload" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)">
+                </div>
+            </div>
+            <div style="text-align:center;padding:15px;color:var(--sec);" onclick="closeM('m-avatar')">Отмена</div>
+        </div>
+    </div>
 
     <script>
         const tg = window.Telegram.WebApp;
@@ -405,20 +427,29 @@
         /* ================= INIT ================= */
         async function init() {
             try {
-                const photo = tg.initDataUnsafe?.user?.photo_url || "";
+                // Получаем фото из Telegram или используем дефолтное
+                const telegramPhoto = tg.initDataUnsafe?.user?.photo_url || "";
                 const firstName = tg.initDataUnsafe?.user?.first_name || "Client";
-                const ava = photo || `https://ui-avatars.com/api/?name=${firstName}`;
-
-                safe('u-ava', el => el.src = ava);
-                safe('p-ava', el => el.src = ava);
-
-                const r = await fetch(`${API}/api/dashboard/${uid}`, {
+                const defaultAva = `https://ui-avatars.com/api/?name=${firstName}`;
+                
+                // Загружаем данные пользователя
+                const response = await fetch(`${API}/api/dashboard/${uid}`, {
                     headers: { 'ngrok-skip-browser-warning': 'true' }
                 });
-                const d = await r.json();
-
-                config = d.app_config;
-                user = d.user_info;
+                const data = await response.json();
+                
+                config = data.app_config;
+                user = data.user_info;
+                
+                // Используем сохраненный аватар, если есть, иначе Telegram фото, иначе дефолтное
+                const ava = user.avatar_url || telegramPhoto || defaultAva;
+                
+                safe('u-ava', el => el.src = ava);
+                safe('p-ava', el => {
+                    el.src = ava;
+                    el.style.cursor = 'pointer';
+                    el.onclick = () => editAvatar();
+                });
 
                 safe('u-name', el => el.innerText = user.name || firstName);
                 safe('u-lvl', el => el.innerText = user.level || 'Новичок');
@@ -1195,6 +1226,80 @@
             } catch(e) {
                 console.error('Cancel error:', e);
                 tg.showAlert('Ошибка');
+            }
+        }
+
+        /* ================= AVATAR EDITING ================= */
+        function editAvatar() {
+            const currentAva = gid('p-ava')?.src || '';
+            safe('avatar-preview', el => el.src = currentAva);
+            openM('m-avatar');
+        }
+        
+        async function useTelegramPhoto() {
+            const telegramPhoto = tg.initDataUnsafe?.user?.photo_url || "";
+            if (!telegramPhoto) {
+                tg.showAlert('Фото из Telegram недоступно');
+                return;
+            }
+            
+            await updateAvatar(telegramPhoto);
+        }
+        
+        function handleAvatarUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                tg.showAlert('Пожалуйста, выберите изображение');
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                tg.showAlert('Размер файла не должен превышать 5MB');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const base64Image = e.target.result;
+                // Конвертируем в data URL для предпросмотра
+                safe('avatar-preview', el => el.src = base64Image);
+                
+                // Загружаем на сервер (используем base64)
+                await updateAvatar(base64Image);
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        async function updateAvatar(avatarUrl) {
+            try {
+                const response = await fetch(`${API}/api/update_settings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
+                    },
+                    body: JSON.stringify({
+                        user_id: uid,
+                        avatar_url: avatarUrl
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.status === 'ok') {
+                    // Обновляем аватары в интерфейсе
+                    safe('u-ava', el => el.src = avatarUrl);
+                    safe('p-ava', el => el.src = avatarUrl);
+                    user.avatar_url = avatarUrl;
+                    closeM('m-avatar');
+                    tg.showAlert('Фото профиля обновлено!');
+                } else {
+                    tg.showAlert('Ошибка при обновлении фото');
+                }
+            } catch (error) {
+                console.error('Error updating avatar:', error);
+                tg.showAlert('Ошибка при обновлении фото');
             }
         }
 
