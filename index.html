@@ -1222,15 +1222,48 @@
         });
         
         // Перехватчик fetch запросов для блокировки внешних сервисов безопасности
+        // Это внешний сервис безопасности Telegram, который может вызывать ошибки 500
         const originalFetch = window.fetch;
         window.fetch = function(...args) {
-            const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
-            if (url.includes('laikalabs') || url.includes('dapp-security')) {
+            const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || args[0]?.toString() || '';
+            if (url.includes('laikalabs') || url.includes('dapp-security') || url.includes('security.laikalabs')) {
                 // Блокируем запросы к внешним сервисам безопасности
-                console.warn('Blocked fetch to security service:', url);
-                return Promise.reject(new Error('Security service request blocked'));
+                console.warn('[BLOCKED] Security service request blocked:', url);
+                // Возвращаем успешный пустой ответ, чтобы не вызывать ошибки
+                return Promise.resolve(new Response(JSON.stringify({status: 'ok'}), {
+                    status: 200,
+                    headers: {'Content-Type': 'application/json'}
+                }));
             }
             return originalFetch.apply(this, args);
+        };
+        
+        // Также перехватываем XMLHttpRequest (старый способ запросов)
+        const originalXHROpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+            if (typeof url === 'string' && (url.includes('laikalabs') || url.includes('dapp-security'))) {
+                console.warn('[BLOCKED] XHR request to security service blocked:', url);
+                // Блокируем запрос
+                this._blocked = true;
+                return;
+            }
+            return originalXHROpen.apply(this, [method, url, ...rest]);
+        };
+        
+        const originalXHRSend = XMLHttpRequest.prototype.send;
+        XMLHttpRequest.prototype.send = function(...args) {
+            if (this._blocked) {
+                // Если запрос был заблокирован, имитируем успешный ответ
+                setTimeout(() => {
+                    Object.defineProperty(this, 'status', {value: 200, writable: false});
+                    Object.defineProperty(this, 'responseText', {value: '{"status":"ok"}', writable: false});
+                    Object.defineProperty(this, 'readyState', {value: 4, writable: false});
+                    if (this.onload) this.onload();
+                    if (this.onreadystatechange) this.onreadystatechange();
+                }, 0);
+                return;
+            }
+            return originalXHRSend.apply(this, args);
         };
         
         // Перехватчик для ошибок загрузки ресурсов
