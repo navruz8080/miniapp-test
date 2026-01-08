@@ -547,7 +547,13 @@
     </div>
 
     <div id="screen-profile" class="screen">
-        <div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Личный кабинет</div></div>
+        <div class="nav-head">
+            <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title" data-i18n="profile">Личный кабинет</div>
+            <div onclick="toggleLanguage()" style="padding:8px; cursor:pointer; font-size:14px; font-weight:600; color:var(--blue);">
+                <span id="lang-indicator">RU</span>
+            </div>
+        </div>
         <div class="container">
             <div class="card" style="text-align: center; padding: 30px 20px;">
                 <div style="position: relative; display: inline-block;">
@@ -721,9 +727,26 @@
         </div>
     </div>
     <div id="screen-market" class="screen"><div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Маркет</div></div><div class="container"><div class="tabs"><div class="tab active" onclick="swMk('item', this)">Товары</div><div class="tab" onclick="swMk('joint', this)">Сборы</div></div><div id="list-market"></div></div></div>
-    <div id="screen-rewards" class="screen"><div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Задания</div></div><div class="container"><div id="list-rewards"></div></div></div>
+    <div id="screen-rewards" class="screen">
+        <div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Задания</div></div>
+        <div class="container">
+            <div class="tabs" style="margin-bottom:15px;">
+                <div class="tab active" onclick="swRew('tasks', this)">Задания</div>
+                <div class="tab" onclick="swRew('referrals', this)">Рефералы</div>
+            </div>
+            <div id="list-rewards"></div>
+            <div id="list-referrals" style="display:none;"></div>
+        </div>
+    </div>
 
     <div id="m-add" class="modal-wrap"><div class="modal"><h3>Новый трек</h3><input id="n-t" placeholder="Трек-номер"><input id="n-d" placeholder="Описание"><button class="btn btn-blue" onclick="subTrack()">Добавить</button><div style="text-align:center;padding:15px;color:var(--sec);" onclick="closeM('m-add')">Отмена</div></div></div>
+    
+    <div id="m-package-history" class="modal-wrap">
+        <div class="modal" style="max-height:80vh; overflow-y:auto;">
+            <div class="modal-content"></div>
+            <div style="text-align:center;padding:15px;color:var(--sec);" onclick="closeM('m-package-history')">Закрыть</div>
+        </div>
+    </div>
     
     <div id="m-avatar" class="modal-wrap">
         <div class="modal">
@@ -750,6 +773,43 @@
         const uid = tg.initDataUnsafe?.user?.id || 317295540;
 
         let config = {}, user = {}, isOpt = false, lastCalc = null, tabTr = 'trips', tabMk = 'item';
+        let currentLang = 'ru'; // Текущий язык (ru или tj)
+        let translations = {}; // Загруженные переводы
+        
+        /* ================= I18N ================= */
+        async function loadTranslations() {
+            try {
+                const response = await fetch('data/i18n.json');
+                translations = await response.json();
+            } catch (e) {
+                console.error('Error loading translations:', e);
+                translations = { ru: {}, tj: {} };
+            }
+        }
+        
+        function t(key, defaultValue = '') {
+            return translations[currentLang]?.[key] || translations['ru']?.[key] || defaultValue || key;
+        }
+        
+        function changeLanguage(lang) {
+            if (lang !== 'ru' && lang !== 'tj') return;
+            currentLang = lang;
+            updateLanguageIndicator();
+            safeFetch(`${API}/api/update_settings`, {
+                method: 'POST',
+                body: JSON.stringify({ user_id: uid, language: lang })
+            }).catch(e => console.error('Error saving language:', e));
+        }
+        
+        function toggleLanguage() {
+            const newLang = currentLang === 'ru' ? 'tj' : 'ru';
+            changeLanguage(newLang);
+            tg.showAlert(newLang === 'ru' ? 'Язык изменен на русский' : 'Забон ба тоҷикӣ иваз карда шуд');
+        }
+        
+        function updateLanguageIndicator() {
+            safe('lang-indicator', el => el.innerText = currentLang.toUpperCase());
+        }
 
         /* ================= SAFE HELPERS ================= */
         function gid(id) { return document.getElementById(id); }
@@ -758,6 +818,114 @@
             const el = gid(id);
             if (el) cb(el);
         }
+
+        /* ================= ERROR HANDLING ================= */
+        async function showErrorPopup(message, retryCallback = null) {
+            return new Promise((resolve) => {
+                const buttons = retryCallback ? [
+                    { id: 'retry', text: 'Повторить', type: 'default' },
+                    { id: 'cancel', text: 'Отмена', type: 'cancel' }
+                ] : [
+                    { id: 'ok', text: 'ОК', type: 'default' }
+                ];
+                
+                tg.showPopup({
+                    title: 'Ошибка',
+                    message: message,
+                    buttons: buttons
+                }, (buttonId) => {
+                    if (buttonId === 'retry' && retryCallback) {
+                        retryCallback();
+                    }
+                    resolve(buttonId);
+                });
+            });
+        }
+
+        async function safeFetch(url, options = {}, retries = 3) {
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true',
+                    ...options.headers
+                },
+                ...options
+            };
+
+            for (let attempt = 1; attempt <= retries; attempt++) {
+                try {
+                    const response = await fetch(url, defaultOptions);
+                    
+                    // Проверяем статус ответа
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        let errorMessage = `Ошибка сервера (${response.status})`;
+                        
+                        try {
+                            const errorJson = JSON.parse(errorText);
+                            errorMessage = errorJson.detail || errorJson.message || errorMessage;
+                        } catch (e) {
+                            // Если не JSON, используем текст ошибки
+                            if (errorText) errorMessage = errorText.substring(0, 100);
+                        }
+                        
+                        if (attempt < retries) {
+                            // Пробуем еще раз
+                            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+                            continue;
+                        }
+                        
+                        // Последняя попытка - показываем ошибку
+                        await showErrorPopup(
+                            errorMessage,
+                            attempt < retries ? () => safeFetch(url, options, retries - attempt) : null
+                        );
+                        throw new Error(errorMessage);
+                    }
+                    
+                    return await response.json();
+                } catch (error) {
+                    // Сетевые ошибки или ошибки парсинга
+                    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                        // Проблема с сетью
+                        if (attempt < retries) {
+                            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+                            continue;
+                        }
+                        
+                        await showErrorPopup(
+                            'Проблема с подключением к серверу. Проверьте интернет и попробуйте снова.',
+                            attempt < retries ? () => safeFetch(url, options, retries - attempt) : null
+                        );
+                        throw error;
+                    }
+                    
+                    // Другие ошибки
+                    if (attempt === retries) {
+                        await showErrorPopup(
+                            error.message || 'Произошла неизвестная ошибка',
+                            null
+                        );
+                    }
+                    throw error;
+                }
+            }
+        }
+
+        // Глобальный перехватчик необработанных ошибок
+        window.addEventListener('error', (event) => {
+            console.error('Global error:', event.error);
+            if (event.error && !event.error.handled) {
+                showErrorPopup('Произошла ошибка в приложении. Пожалуйста, перезагрузите страницу.');
+            }
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('Unhandled promise rejection:', event.reason);
+            if (event.reason && !event.reason.handled) {
+                showErrorPopup('Произошла ошибка при выполнении операции. Попробуйте еще раз.');
+            }
+        });
 
         /* ================= INIT ================= */
         async function init() {
@@ -768,10 +936,7 @@
                 const defaultAva = `https://ui-avatars.com/api/?name=${firstName}`;
                 
                 // Загружаем данные пользователя
-                const response = await fetch(`${API}/api/dashboard/${uid}`, {
-                    headers: { 'ngrok-skip-browser-warning': 'true' }
-                });
-                const data = await response.json();
+                const data = await safeFetch(`${API}/api/dashboard/${uid}`);
                 
                 config = data.app_config;
                 user = data.user_info;
@@ -952,12 +1117,10 @@
             };
 
             try {
-                const r = await fetch(`${API}/api/calculate`, {
+                const j = await safeFetch(`${API}/api/calculate`, {
                     method: 'POST',
-                    headers: {'Content-Type':'application/json'},
                     body: JSON.stringify(p)
                 });
-                const j = await r.json();
 
                 if (j.status === 'ok') {
                     const price = typeof j.price === 'number' ? j.price : parseFloat(j.price) || 0;
@@ -979,11 +1142,82 @@
             let h = '';
             if (pkgs && pkgs.length > 0) {
                 pkgs.forEach(p => {
-                    let stClass = p.status_text.includes('Прибыл') ? 'status-ready' : '';
-                    h += `<div class="pkg-item"><div class="pkg-info"><div class="pkg-name">${p.description || 'Посылка'}</div><div class="pkg-sub">${p.track_number}</div></div><div class="pkg-status ${stClass}">${p.status_text}</div></div>`;
+                    let stClass = p.status_text.includes('Прибыл') || p.status_text.includes('Омад') ? 'status-ready' : '';
+                    const pkgId = p.id || p.track_number;
+                    h += `<div class="pkg-item" onclick="showPackageHistory('${pkgId}')" style="cursor:pointer;"><div class="pkg-info"><div class="pkg-name">${p.description || t('packages', 'Посылка')}</div><div class="pkg-sub">${p.track_number}</div></div><div class="pkg-status ${stClass}">${p.status_text}</div><i class="fa-solid fa-chevron-right" style="color:var(--sec); font-size:12px;"></i></div>`;
                 });
-            } else { h = '<div style="text-align:center;padding:20px;color:#8e8e93;">Посылок пока нет</div>'; }
+            } else { h = `<div style="text-align:center;padding:20px;color:#8e8e93;">${t('no_packages', 'Посылок пока нет')}</div>`; }
             safe('full-pkg-list', el => el.innerHTML = h);
+        }
+        
+        async function showPackageHistory(packageId) {
+            try {
+                const d = await safeFetch(`${API}/api/package/${packageId}/history`);
+                if (d.status !== 'ok') {
+                    tg.showAlert(t('error_unknown', 'Ошибка загрузки истории'));
+                    return;
+                }
+                
+                const pkg = d.package;
+                const history = d.history || [];
+                
+                const statusNames = {
+                    'AWAITING_IU': t('status_awaiting_iu', 'Ожидает в Иу'),
+                    'IN_TRANSIT': t('status_in_transit', 'В пути'),
+                    'ARRIVED': t('status_arrived', 'Прибыл'),
+                    'READY': t('status_ready', 'Готов к выдаче'),
+                    'DELIVERED': t('status_delivered', 'Доставлено'),
+                    'CANCELLED': t('status_cancelled', 'Отменено')
+                };
+                
+                const statusEmojis = {
+                    'AWAITING_IU': '📦', 'IN_TRANSIT': '🚛', 'ARRIVED': '🏢',
+                    'READY': '✅', 'DELIVERED': '🎉', 'CANCELLED': '❌'
+                };
+                
+                let historyHTML = `
+                    <div class="card" style="margin-bottom:16px;">
+                        <div style="font-weight:700; font-size:16px; margin-bottom:8px;">${pkg.description || t('packages', 'Посылка')}</div>
+                        <div style="font-size:13px; color:var(--sec); margin-bottom:4px;">${t('packages', 'Трек')}: <code>${pkg.track_number}</code></div>
+                        <div style="font-size:13px; color:var(--sec);">${t('current_status', 'Текущий статус')}: <b>${statusNames[pkg.current_status] || pkg.current_status}</b></div>
+                    </div>
+                    <div class="card" style="padding:0;">
+                        <div style="padding:16px; border-bottom:1px solid var(--border); font-weight:700;">${t('status_history', 'История статусов')}</div>
+                `;
+                
+                if (history.length === 0) {
+                    historyHTML += `<div style="padding:20px; text-align:center; color:var(--sec);">${t('no_history', 'История пока пуста')}</div>`;
+                } else {
+                    history.forEach((item, index) => {
+                        const isLast = index === 0;
+                        const statusName = statusNames[item.status] || item.status;
+                        const emoji = statusEmojis[item.status] || '📦';
+                        historyHTML += `
+                            <div style="padding:16px; border-bottom:${index < history.length - 1 ? '1px solid var(--border)' : 'none'}; display:flex; gap:12px; align-items:start;">
+                                <div style="width:32px; height:32px; background:${isLast ? 'linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%)' : 'var(--bg)'}; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">${emoji}</div>
+                                <div style="flex:1;">
+                                    <div style="font-weight:${isLast ? '700' : '600'}; font-size:${isLast ? '15px' : '14px'}; margin-bottom:4px;">${statusName}</div>
+                                    ${item.description ? `<div style="font-size:12px; color:var(--sec); margin-bottom:4px;">${item.description}</div>` : ''}
+                                    <div style="font-size:11px; color:var(--sec);">${item.created_at}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                historyHTML += '</div>';
+                
+                safe('m-package-history', el => {
+                    const existing = el.querySelector('.modal-content');
+                    if (existing) existing.remove();
+                    const content = document.createElement('div');
+                    content.className = 'modal-content';
+                    content.innerHTML = historyHTML;
+                    el.querySelector('.modal').insertBefore(content, el.querySelector('.modal').lastElementChild);
+                    openM('m-package-history');
+                });
+            } catch(e) {
+                console.error('Package history error:', e);
+            }
         }
 
         function renderPvzOptions(list, currentId) {
@@ -1008,6 +1242,162 @@
             });
         }
 
+        let isAdmin = false;
+        let currentAdminPackage = null;
+        
+        async function checkAdmin() {
+            try {
+                const d = await safeFetch(`${API}/api/admin/check?telegram_id=${uid}`);
+                isAdmin = d.is_admin || false;
+                if (isAdmin) {
+                    // Добавляем кнопку админки в меню
+                    const adminBtn = document.createElement('div');
+                    adminBtn.className = 'grid-item';
+                    adminBtn.innerHTML = '<div class="icon-box" style="color: #FF2D55;"><i class="fa-solid fa-shield-halved"></i></div><span class="grid-lbl">Админ</span>';
+                    adminBtn.onclick = () => nav('admin');
+                    adminBtn.style.display = 'none';
+                    adminBtn.id = 'admin-menu-btn';
+                    const grid = document.querySelector('.grid');
+                    if (grid) grid.appendChild(adminBtn);
+                    adminBtn.style.display = 'block';
+                }
+            } catch(e) {
+                console.error('Admin check error:', e);
+            }
+        }
+        
+        async function loadAdminPackages() {
+            safe('admin-packages-list', async el => {
+                el.innerHTML = 'Загрузка...';
+                try {
+                    const d = await safeFetch(`${API}/api/admin/packages?telegram_id=${uid}`);
+                    if (d.status !== 'ok' || !d.packages) {
+                        el.innerHTML = '<div style="text-align:center;padding:20px;color:#8e8e93;">Ошибка загрузки</div>';
+                        return;
+                    }
+                    
+                    if (d.packages.length === 0) {
+                        el.innerHTML = '<div style="text-align:center;padding:20px;color:#8e8e93;">Посылок нет</div>';
+                        return;
+                    }
+                    
+                    let h = '';
+                    d.packages.forEach(p => {
+                        h += `
+                            <div class="pkg-item" onclick="openAdminPackage(${p.id})" style="cursor:pointer;">
+                                <div class="pkg-info">
+                                    <div class="pkg-name">${p.description || 'Посылка'}</div>
+                                    <div class="pkg-sub">${p.track_number} | ID: ${p.user_id}</div>
+                                </div>
+                                <div class="pkg-status">${p.status_text}</div>
+                            </div>
+                        `;
+                    });
+                    el.innerHTML = h;
+                } catch(e) {
+                    console.error('Load admin packages error:', e);
+                    el.innerHTML = '<div style="text-align:center;padding:20px;color:#8e8e93;">Ошибка загрузки</div>';
+                }
+            });
+        }
+        
+        async function openAdminPackage(packageId) {
+            try {
+                const d = await safeFetch(`${API}/api/package/${packageId}/history`);
+                if (d.status !== 'ok') {
+                    tg.showAlert('Ошибка загрузки посылки');
+                    return;
+                }
+                
+                currentAdminPackage = d.package;
+                const pkg = d.package;
+                
+                safe('admin-pkg-title', el => el.innerText = `Посылка #${pkg.id}`);
+                safe('admin-pkg-info', el => {
+                    el.innerHTML = `
+                        <div><b>Трек:</b> ${pkg.track_number}</div>
+                        <div><b>Пользователь:</b> ${pkg.user_id}</div>
+                        <div><b>Описание:</b> ${pkg.description || 'Нет'}</div>
+                        <div><b>Текущий статус:</b> ${pkg.current_status}</div>
+                    `;
+                });
+                safe('admin-status-select', el => el.value = pkg.current_status);
+                openM('m-admin-package');
+            } catch(e) {
+                console.error('Open admin package error:', e);
+            }
+        }
+        
+        async function searchPackageByTrack() {
+            const track = gid('admin-track-input')?.value?.trim();
+            if (!track) {
+                tg.showAlert('Введите трек-номер');
+                return;
+            }
+            
+            try {
+                const d = await safeFetch(`${API}/api/admin/package/${track}?telegram_id=${uid}`);
+                if (d.status !== 'ok') {
+                    tg.showAlert('Посылка не найдена');
+                    return;
+                }
+                
+                await openAdminPackage(d.package.id);
+            } catch(e) {
+                console.error('Search package error:', e);
+            }
+        }
+        
+        function openAdminScanner() {
+            // Используем Telegram WebApp для сканирования QR
+            if (tg.showScanQrPopup) {
+                tg.showScanQrPopup({
+                    text: 'Отсканируйте QR-код с трек-номером'
+                }, (qrText) => {
+                    if (qrText) {
+                        safe('admin-track-input', el => el.value = qrText);
+                        searchPackageByTrack();
+                    }
+                });
+            } else {
+                tg.showAlert('QR-сканер недоступен. Введите трек-номер вручную.');
+            }
+        }
+        
+        async function updatePackageStatus() {
+            if (!currentAdminPackage) return;
+            
+            const newStatus = gid('admin-status-select')?.value;
+            const description = gid('admin-status-desc')?.value?.trim() || null;
+            
+            if (!newStatus) {
+                tg.showAlert('Выберите статус');
+                return;
+            }
+            
+            try {
+                const d = await safeFetch(`${API}/api/admin/package/update_status`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        telegram_id: uid,
+                        package_id: currentAdminPackage.id,
+                        new_status: newStatus,
+                        description: description
+                    })
+                });
+                
+                if (d.status === 'ok') {
+                    tg.showAlert('Статус обновлен!');
+                    closeM('m-admin-package');
+                    loadAdminPackages();
+                } else {
+                    tg.showAlert(d.detail || 'Ошибка обновления');
+                }
+            } catch(e) {
+                console.error('Update status error:', e);
+            }
+        }
+
         function nav(id) {
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
             safe('screen-' + id, el => el.classList.add('active'));
@@ -1018,6 +1408,9 @@
             if(id === 'wallet') {
                 loadWallet();
                 loadWalletHistory();
+            }
+            if(id === 'admin') {
+                loadAdminPackages();
             }
             window.scrollTo(0,0);
         }
@@ -1045,8 +1438,7 @@
                 try {
                     if (tabTr === 'orders') {
                         // Загружаем P2P-сделки
-                        let r = await fetch(`${API}/api/exchange/list?user_id=${uid}`, { headers: { 'ngrok-skip-browser-warning': 'true' }});
-                        let d = await r.json();
+                        let d = await safeFetch(`${API}/api/exchange/list?user_id=${uid}`);
                         c.innerHTML = '';
                         if(!d.orders || d.orders.length === 0) {
                             c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">У вас пока нет сделок</div>';
@@ -1105,8 +1497,7 @@
                         });
                     } else {
                         // Старый код для trips и cargo
-                        let r = await fetch(`${API}/api/trucking/list?type=${tabTr}`, { headers: { 'ngrok-skip-browser-warning': 'true' }});
-                        let d = await r.json(); c.innerHTML = '';
+                        let d = await safeFetch(`${API}/api/trucking/list?type=${tabTr}`); c.innerHTML = '';
                         if(!d.items || d.items.length === 0) { c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Объявлений нет</div>'; return; }
                         d.items.forEach(i => { c.innerHTML += `<div class="card"><div style="font-weight:700;">${i.title}</div><div style="font-size:13px;color:#8e8e93;">${i.subtitle}</div><div style="color:var(--blue); font-weight:800; margin-top:8px;">${i.details}</div></div>`; });
                     }
@@ -1121,8 +1512,7 @@
             safe('list-market', async c => {
                 c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
                 try {
-                    let r = await fetch(`${API}/api/market/list?type=${tabMk}`, { headers: { 'ngrok-skip-browser-warning': 'true' }});
-                    let d = await r.json(); c.innerHTML = '';
+                    let d = await safeFetch(`${API}/api/market/list?type=${tabMk}`); c.innerHTML = '';
                     if(!d.items || d.items.length === 0) { c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Товары не найдены</div>'; return; }
                     let h = '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">';
                     d.items.forEach(i => { h += `<div class="card" style="padding:10px;margin-bottom:0;"><img src="${i.img}" style="width:100%;height:100px;object-fit:cover;border-radius:10px;"><div style="font-weight:600;font-size:13px;">${i.title}</div><div style="color:var(--blue); font-weight:800;">${i.price}</div></div>`; });
@@ -1135,8 +1525,7 @@
             safe('list-rewards', async c => {
                 c.innerHTML = 'Загрузка...';
                 try {
-                    let r = await fetch(`${API}/api/rewards/list/${uid}`, { headers: { 'ngrok-skip-browser-warning': 'true' }});
-                    let d = await r.json(); c.innerHTML = '';
+                    let d = await safeFetch(`${API}/api/rewards/list/${uid}`); c.innerHTML = '';
                     if(!d.tasks) return;
                     d.tasks.forEach(t => { c.innerHTML += `<div class="card" onclick="claimRew(${t.id})"><b>${t.title}</b><br><small>${t.desc}</small><div style="color:#F57F17; font-weight:800;">+${t.reward} кг</div></div>`; });
                 } catch { c.innerHTML = 'Ошибка'; }
@@ -1146,14 +1535,14 @@
         async function saveSet() {
             const sn = gid('s-name'); const sp = gid('s-phone'); const sv = gid('s-pvz');
             let d = {user_id:uid, full_name:sn?sn.value:"", phone:sp?sp.value:"", pvz_id:parseInt(sv?sv.value:0)};
-            await fetch(`${API}/api/update_settings`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(d)});
+            await safeFetch(`${API}/api/update_settings`, {method:'POST', body:JSON.stringify(d)});
             tg.showAlert("Сохранено"); init(); goHome();
         }
 
         async function subTrack() {
             const nt = gid('n-t'); const nd = gid('n-d');
             let d = {user_id:uid, track_number:nt?nt.value:"", description:nd?nd.value:""};
-            await fetch(`${API}/api/add_track`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(d)});
+            await safeFetch(`${API}/api/add_track`, {method:'POST', body:JSON.stringify(d)});
             closeM('m-add'); init();
         }
 
@@ -1299,10 +1688,7 @@
         /* ================= WALLET ================= */
         async function loadWallet() {
             try {
-                const r = await fetch(`${API}/api/wallet/${uid}`, {
-                    headers: { 'ngrok-skip-browser-warning': 'true' }
-                });
-                const d = await r.json();
+                const d = await safeFetch(`${API}/api/wallet/${uid}`);
                 if (d.status !== 'ok' || !d.balances) return;
 
                 const b = d.balances;
@@ -1327,10 +1713,7 @@
         async function loadWalletHistory() {
             safe('wallet-tx-list', el => el.innerHTML = 'Загрузка...');
             try {
-                const r = await fetch(`${API}/api/wallet/${uid}/transactions?limit=20`, {
-                    headers: { 'ngrok-skip-browser-warning': 'true' }
-                });
-                const d = await r.json();
+                const d = await safeFetch(`${API}/api/wallet/${uid}/transactions?limit=20`);
                 if (d.status !== 'ok' || !d.transactions || d.transactions.length === 0) {
                     safe('wallet-tx-list', el => el.innerHTML = '<div style="text-align:center; padding:10px; color:#8e8e93;">Транзакций пока нет</div>');
                     return;
@@ -1379,9 +1762,8 @@
                 return;
             }
             try {
-                const r = await fetch(`${API}/api/create_order`, {
+                const d = await safeFetch(`${API}/api/create_order`, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         user_id: uid,
                         route: lastCalc.route,
@@ -1389,7 +1771,6 @@
                         price: lastCalc.price
                     })
                 });
-                const d = await r.json();
                 if (d.status === 'ok') {
                     tg.showAlert('Заказ успешно оформлен!');
                     safe('btn-order-confirm', el => el.style.display = 'none');
@@ -1406,15 +1787,13 @@
         /* ================= REWARD CLAIM ================= */
         async function claimRew(taskId) {
             try {
-                const r = await fetch(`${API}/api/rewards/claim`, {
+                const d = await safeFetch(`${API}/api/rewards/claim`, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         user_id: uid,
                         task_id: taskId
                     })
                 });
-                const d = await r.json();
                 if (d.status === 'ok') {
                     tg.showAlert('Задание выполнено! Бонус начислен.');
                     ldRew();
@@ -1424,7 +1803,6 @@
                 }
             } catch (e) {
                 console.error('Reward error:', e);
-                tg.showAlert('Ошибка выполнения задания');
             }
         }
 
@@ -1609,19 +1987,13 @@
         
         async function updateAvatar(avatarUrl) {
             try {
-                const response = await fetch(`${API}/api/update_settings`, {
+                const result = await safeFetch(`${API}/api/update_settings`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'ngrok-skip-browser-warning': 'true'
-                    },
                     body: JSON.stringify({
                         user_id: uid,
                         avatar_url: avatarUrl
                     })
                 });
-                
-                const result = await response.json();
                 if (result.status === 'ok') {
                     // Обновляем аватары в интерфейсе
                     safe('u-ava', el => el.src = avatarUrl);
