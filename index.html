@@ -668,7 +668,7 @@
         <div class="nav-head"><div onclick="nav('china')"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Наши адреса</div></div>
         <div class="container">
             <div class="card">
-                <div class="switch-row"><b>Оптовый режим (>100 кг)</b><label class="switch" for="tg-opt"><input type="checkbox" id="tg-opt" name="tg-opt" onchange="toggleMode()"><span class="slider"></span></label></div>
+                <div class="switch-row"><b>Оптовый режим (>100 кг)</b><label class="switch"><input type="checkbox" id="tg-opt" name="tg-opt" onchange="toggleMode()"><span class="slider"></span></label></div>
             </div>
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -709,7 +709,7 @@
         <div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Расчет стоимости</div></div>
         <div class="container">
             <div class="card">
-                <div class="switch-row" style="margin-bottom:15px;"><b>Оптовый тариф</b><label class="switch" for="tg-calc"><input type="checkbox" id="tg-calc" name="tg-calc" onchange="toggleMode()"><span class="slider"></span></label></div>
+                <div class="switch-row" style="margin-bottom:15px;"><b>Оптовый тариф</b><label class="switch"><input type="checkbox" id="tg-calc" name="tg-calc" onchange="toggleMode()"><span class="slider"></span></label></div>
                 <div id="box-calc-opt" style="display:none; border-top:1px solid #eee; padding-top:10px;">
                     <select id="sel-route" name="sel-route"></select>
                     <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;">
@@ -1206,8 +1206,12 @@
         window.addEventListener('unhandledrejection', (event) => {
             // Игнорируем ошибки от внешних сервисов безопасности
             const reason = event.reason?.message || event.reason?.toString() || '';
-            if (reason.includes('laikalabs') || reason.includes('security') || reason.includes('dapp-security')) {
-                console.warn('Ignored external security service rejection:', reason);
+            const url = event.reason?.url || event.reason?.config?.url || '';
+            
+            if (reason.includes('laikalabs') || reason.includes('security') || reason.includes('dapp-security') ||
+                url.includes('laikalabs') || url.includes('dapp-security')) {
+                console.warn('Ignored external security service rejection:', reason || url);
+                event.preventDefault(); // Предотвращаем вывод ошибки в консоль
                 return;
             }
             
@@ -1217,8 +1221,31 @@
             }
         });
         
+        // Перехватчик fetch запросов для блокировки внешних сервисов безопасности
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
+            if (url.includes('laikalabs') || url.includes('dapp-security')) {
+                // Блокируем запросы к внешним сервисам безопасности
+                console.warn('Blocked fetch to security service:', url);
+                return Promise.reject(new Error('Security service request blocked'));
+            }
+            return originalFetch.apply(this, args);
+        };
+        
         // Перехватчик для ошибок загрузки ресурсов
         window.addEventListener('error', (event) => {
+            // Игнорируем сетевые ошибки от внешних сервисов
+            if (event.filename && (
+                event.filename.includes('laikalabs') || 
+                event.filename.includes('dapp-security') ||
+                event.filename.includes('security.laikalabs')
+            )) {
+                console.warn('Ignored network error from security service:', event.filename);
+                event.preventDefault();
+                return false;
+            }
+            
             if (event.target && event.target.tagName) {
                 const src = event.target.src || event.target.href || '';
                 if (src.includes('laikalabs') || src.includes('security') || src.includes('dapp-security')) {
