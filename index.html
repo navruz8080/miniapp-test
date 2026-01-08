@@ -833,30 +833,37 @@
         tg.ready();
         tg.expand();
         
-        // Настройка отступов для Fullscreen режима
+        // Настройка отступов для разных режимов открытия Mini App
         function adjustViewportPadding() {
-            // Высота шапки Telegram Mini App в Fullscreen режиме
-            // В Fullscreen режиме шапка с кнопками "Закрыть" и "Свернуть" обычно имеет высоту около 64-80px
-            // Увеличиваем отступ, чтобы кнопки были полностью видны и не перекрывались
-            let headerHeight = 80; // Увеличено для полной видимости кнопок
+            let headerHeight = 0;
+            let displayMode = 'unknown';
             
-            // Проверяем, находимся ли мы в Fullscreen режиме
-            // tg.isExpanded указывает, что приложение развернуто на весь экран
-            const isFullscreen = tg.isExpanded === true || 
-                                 tg.platform === 'tdesktop' || 
-                                 tg.platform === 'web' ||
-                                 (window.innerHeight / window.innerWidth > 1.5); // Высокий экран обычно означает Fullscreen
+            // Определяем режим отображения и высоту шапки
+            // Разница между window.innerHeight и tg.viewportHeight указывает на высоту шапки
+            const viewportDiff = tg.viewportHeight ? (window.innerHeight - tg.viewportHeight) : 0;
+            const isExpanded = tg.isExpanded === true;
             
-            // Пытаемся определить реальную высоту шапки через viewport
-            if (tg.viewportHeight && tg.viewportStableHeight) {
-                const viewportDiff = window.innerHeight - tg.viewportHeight;
-                if (viewportDiff > 0) {
-                    headerHeight = Math.max(headerHeight, viewportDiff + 10); // Добавляем небольшой запас
-                }
+            // Определяем режим отображения
+            if (isExpanded && viewportDiff > 60) {
+                // Fullscreen режим - большая разница viewport, есть кнопки "Закрыть" и "Свернуть"
+                displayMode = 'fullscreen';
+                headerHeight = Math.max(80, viewportDiff + 10); // 80px или больше для полной видимости кнопок
+            } else if (isExpanded && viewportDiff > 20) {
+                // Fullsize режим - средняя разница viewport
+                displayMode = 'fullsize';
+                headerHeight = Math.max(30, viewportDiff + 5); // 30px или больше
+            } else if (viewportDiff > 0) {
+                // Compact режим - небольшая разница viewport
+                displayMode = 'compact';
+                headerHeight = Math.max(10, viewportDiff); // 10px или больше
+            } else {
+                // Не удалось определить, используем минимальный отступ
+                displayMode = 'default';
+                headerHeight = 0;
             }
             
-            if (isFullscreen) {
-                // Добавляем отступ для шапки Telegram в body
+            // Применяем отступы в зависимости от режима
+            if (headerHeight > 0) {
                 document.body.style.paddingTop = `${headerHeight}px`;
                 document.body.style.boxSizing = 'border-box';
                 
@@ -866,20 +873,23 @@
                     screen.style.paddingTop = '0';
                 });
                 
-                // Обновляем отступ для контейнеров (оставляем только боковые отступы)
+                // Обновляем отступ для контейнеров
                 const containers = document.querySelectorAll('.container');
                 containers.forEach(container => {
                     container.style.paddingTop = '20px';
                 });
                 
-                // Убираем верхний отступ у header, так как он уже есть в body
+                // Убираем верхний отступ у header
                 const headers = document.querySelectorAll('.header');
                 headers.forEach(header => {
                     header.style.marginTop = '0';
                 });
+                
+                console.log(`Display mode: ${displayMode}, Header height: ${headerHeight}px, Viewport diff: ${viewportDiff}px`);
             } else {
-                // В обычном режиме убираем отступ
+                // В режиме без шапки убираем отступ
                 document.body.style.paddingTop = '0';
+                console.log(`Display mode: ${displayMode}, No header padding`);
             }
         }
         
@@ -900,6 +910,15 @@
                 tg.onEvent('viewportChanged', adjustViewportPadding);
             } catch(e) {
                 console.log('viewportChanged event not available');
+            }
+        }
+        
+        // Также слушаем изменения при разворачивании/сворачивании
+        if (tg.onEvent) {
+            try {
+                tg.onEvent('themeChanged', adjustViewportPadding);
+            } catch(e) {
+                // Игнорируем, если событие недоступно
             }
         }
         
