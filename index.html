@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -915,6 +914,16 @@
 
         // Глобальный перехватчик необработанных ошибок
         window.addEventListener('error', (event) => {
+            // Игнорируем ошибки от внешних сервисов безопасности
+            if (event.filename && (
+                event.filename.includes('laikalabs') || 
+                event.filename.includes('security') ||
+                event.filename.includes('dapp-security')
+            )) {
+                console.warn('Ignored external security service error:', event.filename);
+                return;
+            }
+            
             console.error('Global error:', event.error);
             if (event.error && !event.error.handled) {
                 showErrorPopup('Произошла ошибка в приложении. Пожалуйста, перезагрузите страницу.');
@@ -922,11 +931,30 @@
         });
 
         window.addEventListener('unhandledrejection', (event) => {
+            // Игнорируем ошибки от внешних сервисов безопасности
+            const reason = event.reason?.message || event.reason?.toString() || '';
+            if (reason.includes('laikalabs') || reason.includes('security') || reason.includes('dapp-security')) {
+                console.warn('Ignored external security service rejection:', reason);
+                return;
+            }
+            
             console.error('Unhandled promise rejection:', event.reason);
             if (event.reason && !event.reason.handled) {
                 showErrorPopup('Произошла ошибка при выполнении операции. Попробуйте еще раз.');
             }
         });
+        
+        // Перехватчик для ошибок загрузки ресурсов
+        window.addEventListener('error', (event) => {
+            if (event.target && event.target.tagName) {
+                const src = event.target.src || event.target.href || '';
+                if (src.includes('laikalabs') || src.includes('security') || src.includes('dapp-security')) {
+                    console.warn('Ignored external security service resource error:', src);
+                    event.preventDefault();
+                    return false;
+                }
+            }
+        }, true); // Используем capture phase для перехвата всех событий
 
         /* ================= INIT ================= */
         async function init() {
