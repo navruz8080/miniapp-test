@@ -809,6 +809,10 @@
         </div>
     </div>
     
+    <div id="m-pool-details" class="modal-wrap">
+        <!-- Контент будет добавлен динамически через showPoolDetails() -->
+    </div>
+    
     <div id="m-avatar" class="modal-wrap">
         <div class="modal">
             <h3>Изменить фото профиля</h3>
@@ -2308,7 +2312,13 @@
             safe('list-market', async c => {
                 c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
                 try {
-                    // Используем кэшированные данные для маркета
+                    if (tabMk === 'joint') {
+                        // Загружаем пулы (групповые покупки)
+                        await loadPools();
+                        return;
+                    }
+                    
+                    // Используем кэшированные данные для маркета товаров
                     const cacheKey = `market_${tabMk}`;
                     let d = await cachedFetch(`${API}/api/market/list?type=${tabMk}`, cacheKey);
                     c.innerHTML = '';
@@ -2519,6 +2529,193 @@
             }
         }
         function swMk(t, el) { tabMk = t; document.querySelectorAll('#screen-market .tab').forEach(x=>x.classList.remove('active')); el.classList.add('active'); ldMk(); }
+        
+        /* ================= ПУЛЫ (ГРУППОВЫЕ ПОКУПКИ) ================= */
+        async function loadPools() {
+            safe('list-market', async c => {
+                c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
+                try {
+                    const d = await cachedFetch(`${API}/api/pools/list?status=ACTIVE`, 'pools');
+                    c.innerHTML = '';
+                    
+                    if(!d.pools || d.pools.length === 0) {
+                        c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Активных сборов пока нет</div>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    d.pools.forEach(pool => {
+                        const progress = pool.progress || 0;
+                        const remaining = Math.max(0, pool.target_participants - pool.current_participants);
+                        const isFull = pool.current_participants >= pool.target_participants;
+                        
+                        html += `
+                            <div class="card" style="padding:16px;margin-bottom:12px;cursor:pointer;" onclick="showPoolDetails(${pool.id})">
+                                <div style="display:flex;gap:12px;margin-bottom:12px;">
+                                    <img src="${pool.product_image || 'https://ui-avatars.com/api/?name=' + encodeURIComponent((pool.product_title || 'Product').substring(0, 2)) + '&size=100&background=007AFF&color=fff'}" 
+                                         style="width:80px;height:80px;object-fit:cover;border-radius:12px;background:#f0f0f0;"
+                                         onerror="this.src='https://ui-avatars.com/api/?name=POOL&size=100&background=007AFF&color=fff'">
+                                    <div style="flex:1;">
+                                        <div style="font-weight:700;font-size:16px;margin-bottom:4px;">${(pool.product_title || 'Товар').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                                        <div style="display:flex;gap:12px;margin-top:8px;">
+                                            <div>
+                                                <div style="font-size:12px;color:#8e8e93;">Одиночная</div>
+                                                <div style="font-weight:700;color:#FF3B30;font-size:14px;">${pool.solo_price.toFixed(2)} TJS</div>
+                                            </div>
+                                            <div>
+                                                <div style="font-size:12px;color:#8e8e93;">В сборе</div>
+                                                <div style="font-weight:700;color:#34C759;font-size:14px;">${pool.pool_price.toFixed(2)} TJS</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-top:12px;">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                                        <span style="font-size:13px;color:#8e8e93;">Прогресс сбора</span>
+                                        <span style="font-weight:700;font-size:14px;">${pool.current_participants}/${pool.target_participants}</span>
+                                    </div>
+                                    <div style="width:100%;height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden;">
+                                        <div style="width:${Math.min(100, progress)}%;height:100%;background:linear-gradient(90deg, #007AFF 0%, #5856D6 100%);transition:width 0.3s;border-radius:4px;"></div>
+                                    </div>
+                                    ${remaining > 0 && !isFull ? 
+                                        `<div style="margin-top:8px;font-size:12px;color:#007AFF;text-align:center;">Осталось ${remaining} ${remaining === 1 ? 'человек' : remaining < 5 ? 'человека' : 'человек'}</div>` :
+                                        isFull ? 
+                                        `<div style="margin-top:8px;font-size:12px;color:#34C759;text-align:center;font-weight:700;">✓ Сбор завершен!</div>` :
+                                        ''
+                                    }
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    c.innerHTML = html;
+                } catch(e) {
+                    console.error('Load pools error:', e);
+                    c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Ошибка загрузки сборов</div>';
+                }
+            });
+        }
+        
+        async function showPoolDetails(poolId) {
+            try {
+                const d = await cachedFetch(`${API}/api/pools/${poolId}`, `pool_${poolId}`);
+                if (d.status !== 'ok' || !d.pool) {
+                    tg.showAlert('Ошибка загрузки информации о сборе');
+                    return;
+                }
+                
+                const pool = d.pool;
+                const progress = pool.progress || 0;
+                const remaining = Math.max(0, pool.target_participants - pool.current_participants);
+                const isFull = pool.current_participants >= pool.target_participants;
+                const userParticipating = pool.participants && pool.participants.some(p => p.user_id === uid);
+                
+                let participantsHTML = '';
+                if (pool.participants && pool.participants.length > 0) {
+                    pool.participants.forEach(p => {
+                        participantsHTML += `
+                            <div style="display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #f0f0f0;">
+                                <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg, #007AFF 0%, #5856D6 100%);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;">
+                                    ${(p.user_name || 'U').charAt(0).toUpperCase()}
+                                </div>
+                                <div style="flex:1;">
+                                    <div style="font-weight:600;font-size:14px;">${(p.user_name || `Пользователь ${p.user_id}`).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                                    <div style="font-size:12px;color:#8e8e93;">${p.payment_status === 'PAID' ? '✓ Оплачено' : 'Ожидает оплаты'}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    participantsHTML = '<div style="text-align:center;padding:20px;color:#8e8e93;">Участников пока нет</div>';
+                }
+                
+                const modalHTML = `
+                    <div class="modal" style="max-width:90%;max-height:90vh;overflow-y:auto;">
+                        <h3 style="margin-bottom:16px;">${(pool.product_title || 'Товар').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</h3>
+                        <img src="${pool.product_image || 'https://ui-avatars.com/api/?name=' + encodeURIComponent((pool.product_title || 'Product').substring(0, 2)) + '&size=200&background=007AFF&color=fff'}" 
+                             style="width:100%;height:200px;object-fit:cover;border-radius:12px;margin-bottom:16px;background:#f0f0f0;"
+                             onerror="this.src='https://ui-avatars.com/api/?name=POOL&size=200&background=007AFF&color=fff'">
+                        
+                        <div style="display:flex;gap:16px;margin-bottom:16px;">
+                            <div style="flex:1;padding:12px;background:#fff3f3;border-radius:8px;text-align:center;">
+                                <div style="font-size:12px;color:#8e8e93;margin-bottom:4px;">Одиночная покупка</div>
+                                <div style="font-weight:700;color:#FF3B30;font-size:18px;">${pool.solo_price.toFixed(2)} TJS</div>
+                            </div>
+                            <div style="flex:1;padding:12px;background:#f0fff4;border-radius:8px;text-align:center;">
+                                <div style="font-size:12px;color:#8e8e93;margin-bottom:4px;">В сборе</div>
+                                <div style="font-weight:700;color:#34C759;font-size:18px;">${pool.pool_price.toFixed(2)} TJS</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom:16px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                                <span style="font-weight:600;font-size:14px;">Прогресс сбора</span>
+                                <span style="font-weight:700;font-size:16px;">${pool.current_participants}/${pool.target_participants}</span>
+                            </div>
+                            <div style="width:100%;height:12px;background:#f0f0f0;border-radius:6px;overflow:hidden;margin-bottom:8px;">
+                                <div style="width:${Math.min(100, progress)}%;height:100%;background:linear-gradient(90deg, #007AFF 0%, #5856D6 100%);transition:width 0.3s;border-radius:6px;"></div>
+                            </div>
+                            ${remaining > 0 && !isFull ? 
+                                `<div style="text-align:center;font-size:13px;color:#007AFF;">Осталось ${remaining} ${remaining === 1 ? 'человек' : remaining < 5 ? 'человека' : 'человек'}</div>` :
+                                isFull ? 
+                                `<div style="text-align:center;font-size:13px;color:#34C759;font-weight:700;">✓ Сбор завершен! Выкуп будет выполнен автоматически.</div>` :
+                                ''
+                            }
+                        </div>
+                        
+                        <div style="margin-bottom:16px;">
+                            <div style="font-weight:600;font-size:14px;margin-bottom:8px;">Участники (${pool.participants.length})</div>
+                            <div style="background:#f9f9f9;border-radius:8px;overflow:hidden;">
+                                ${participantsHTML}
+                            </div>
+                        </div>
+                        
+                        ${!isFull && !userParticipating ? 
+                            `<button class="btn btn-blue" onclick="joinPool(${pool.id})" style="width:100%;margin-top:16px;">Присоединиться к сбору</button>` :
+                            userParticipating ?
+                            `<div style="text-align:center;padding:12px;background:#f0fff4;border-radius:8px;color:#34C759;font-weight:600;margin-top:16px;">Вы уже участвуете в этом сборе</div>` :
+                            ''
+                        }
+                        
+                        <div style="text-align:center;padding:15px;color:#8e8e93;font-size:13px;margin-top:16px;cursor:pointer;" onclick="closeM('m-pool-details')">Закрыть</div>
+                    </div>
+                `;
+                
+                safe('m-pool-details', el => {
+                    el.innerHTML = modalHTML;
+                    openM('m-pool-details');
+                });
+            } catch(e) {
+                console.error('Show pool details error:', e);
+                tg.showAlert('Ошибка загрузки информации о сборе');
+            }
+        }
+        
+        async function joinPool(poolId) {
+            try {
+                const d = await safeFetch(`${API}/api/pools/join`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        pool_id: poolId,
+                        user_id: uid
+                    })
+                });
+                
+                if (d.status === 'ok') {
+                    invalidateCache('pools');
+                    invalidateCache(`pool_${poolId}`);
+                    tg.showAlert('Вы успешно присоединились к сбору!');
+                    closeM('m-pool-details');
+                    loadPools(); // Обновляем список пулов
+                } else {
+                    tg.showAlert(d.detail || 'Ошибка присоединения к сбору');
+                }
+            } catch(e) {
+                console.error('Join pool error:', e);
+                tg.showAlert('Ошибка присоединения к сбору');
+            }
+        }
 
         /* ================= WALLET ================= */
         async function loadWallet() {
