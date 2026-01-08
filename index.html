@@ -1616,13 +1616,69 @@
                 // Скрываем индикатор загрузки
                 hideLoadingIndicator();
             } catch (e) {
-                console.error('INIT ERROR:', e);
+                console.error('[INIT] Error during initialization:', e);
                 hideLoadingIndicator();
-                // Показываем ошибку с возможностью повтора
-                await showErrorPopup(
-                    'Ошибка загрузки данных. Проверьте подключение к интернету и попробуйте еще раз.',
-                    () => init() // Retry callback
-                );
+                
+                // Не показываем ошибку пользователю - используем кэш или минимальные данные
+                // Пытаемся использовать кэшированные данные
+                if (cache.dashboard && cache.dashboard.data) {
+                    console.log('[INIT] Using cached data after error');
+                    try {
+                        const data = cache.dashboard.data;
+                        config = data.app_config || {};
+                        user = data.user_info || {
+                            name: firstName,
+                            user_id: String(uid),
+                            level: 'Новичок',
+                            bonus_kg: 0,
+                            marking_code: 'Загрузка...',
+                            category: 'less_100',
+                            avatar_url: telegramPhoto || defaultAva
+                        };
+                        
+                        // Продолжаем инициализацию с кэшированными данными
+                        const ava = user.avatar_url || telegramPhoto || defaultAva;
+                        safe('u-ava', el => {
+                            if (el) {
+                                el.onerror = () => { if (el.src !== defaultAva) el.src = defaultAva; };
+                                el.src = ava || defaultAva;
+                            }
+                        });
+                        safe('u-name', el => el.innerText = user.name || firstName);
+                        safe('u-lvl', el => el.innerText = user.level || 'Новичок');
+                        safe('u-bonus', el => el.innerText = user.bonus_kg || 0);
+                    } catch (cacheError) {
+                        console.error('[INIT] Error using cache:', cacheError);
+                    }
+                } else {
+                    // Нет кэша - создаем минимальный набор данных
+                    console.warn('[INIT] No cache available, using minimal data');
+                    config = {
+                        warehouses: [],
+                        pvz_list: [],
+                        routes: []
+                    };
+                    user = {
+                        name: firstName,
+                        user_id: String(uid),
+                        level: 'Новичок',
+                        bonus_kg: 0,
+                        marking_code: 'Загрузка...',
+                        category: 'less_100',
+                        avatar_url: telegramPhoto || defaultAva
+                    };
+                    
+                    const ava = user.avatar_url || telegramPhoto || defaultAva;
+                    safe('u-ava', el => {
+                        if (el) {
+                            el.onerror = () => { if (el.src !== defaultAva) el.src = defaultAva; };
+                            el.src = ava || defaultAva;
+                        }
+                    });
+                    safe('u-name', el => el.innerText = user.name || firstName);
+                    safe('u-lvl', el => el.innerText = user.level || 'Новичок');
+                    safe('u-bonus', el => el.innerText = user.bonus_kg || 0);
+                }
             }
         }
         
