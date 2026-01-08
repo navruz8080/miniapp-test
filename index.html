@@ -349,7 +349,39 @@
     </div>
 
     <div id="screen-settings" class="screen"><div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Настройки</div></div><div class="container"><div class="card"><input id="s-name" placeholder="Ваше имя"><input id="s-phone" placeholder="Телефон"><select id="s-pvz"></select><button class="btn btn-blue" onclick="saveSet()">Сохранить</button></div></div></div>
-    <div id="screen-trucks" class="screen"><div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Биржа</div></div><div class="container"><div class="tabs"><div class="tab active" onclick="swTr('trips', this)">Машины</div><div class="tab" onclick="swTr('cargo', this)">Грузы</div></div><div id="list-trucks"></div></div></div>
+    <div id="screen-trucks" class="screen">
+        <div class="nav-head">
+            <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Биржа</div>
+        </div>
+        <div class="container">
+            <div class="tabs">
+                <div class="tab active" onclick="swTr('orders', this)">Сделки</div>
+                <div class="tab" onclick="swTr('trips', this)">Машины</div>
+                <div class="tab" onclick="swTr('cargo', this)">Грузы</div>
+            </div>
+            <button class="btn btn-blue" onclick="openM('m-create-order')" style="margin-bottom:15px;">
+                <i class="fa-solid fa-plus"></i> Создать заказ
+            </button>
+            <div id="list-trucks"></div>
+        </div>
+    </div>
+
+    <div id="m-create-order" class="modal-wrap">
+        <div class="modal">
+            <h3>Создать заказ на бирже</h3>
+            <input id="eo-route" placeholder="Маршрут (например: Иу → Худжанд)">
+            <input id="eo-weight" type="number" placeholder="Вес (кг)" step="0.01">
+            <input id="eo-price" type="number" placeholder="Цена за кг" step="0.01">
+            <select id="eo-currency">
+                <option value="USD">USD</option>
+                <option value="TJS">TJS</option>
+            </select>
+            <input id="eo-desc" placeholder="Описание (необязательно)">
+            <button class="btn btn-blue" onclick="createExchangeOrder()">Создать заказ</button>
+            <div style="text-align:center;padding:15px;color:var(--sec);" onclick="closeM('m-create-order')">Отмена</div>
+        </div>
+    </div>
     <div id="screen-market" class="screen"><div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Маркет</div></div><div class="container"><div class="tabs"><div class="tab active" onclick="swMk('item', this)">Товары</div><div class="tab" onclick="swMk('joint', this)">Сборы</div></div><div id="list-market"></div></div></div>
     <div id="screen-rewards" class="screen"><div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Задания</div></div><div class="container"><div id="list-rewards"></div></div></div>
 
@@ -645,11 +677,77 @@
             safe('list-trucks', async c => {
                 c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
                 try {
-                    let r = await fetch(`${API}/api/trucking/list?type=${tabTr}`, { headers: { 'ngrok-skip-browser-warning': 'true' }});
-                    let d = await r.json(); c.innerHTML = '';
-                    if(!d.items || d.items.length === 0) { c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Объявлений нет</div>'; return; }
-                    d.items.forEach(i => { c.innerHTML += `<div class="card"><div style="font-weight:700;">${i.title}</div><div style="font-size:13px;color:#8e8e93;">${i.subtitle}</div><div style="color:var(--blue); font-weight:800; margin-top:8px;">${i.details}</div></div>`; });
-                } catch { c.innerHTML = 'Ошибка загрузки'; }
+                    if (tabTr === 'orders') {
+                        // Загружаем P2P-сделки
+                        let r = await fetch(`${API}/api/exchange/list?user_id=${uid}`, { headers: { 'ngrok-skip-browser-warning': 'true' }});
+                        let d = await r.json();
+                        c.innerHTML = '';
+                        if(!d.orders || d.orders.length === 0) {
+                            c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">У вас пока нет сделок</div>';
+                            return;
+                        }
+                        d.orders.forEach(o => {
+                            const statusColors = {
+                                'PENDING': '#FF9500',
+                                'ACCEPTED': '#007AFF',
+                                'HOLD': '#5856D6',
+                                'COMPLETED': '#34C759',
+                                'CANCELLED': '#FF3B30'
+                            };
+                            const statusTexts = {
+                                'PENDING': 'Ожидает водителя',
+                                'ACCEPTED': 'Принят водителем',
+                                'HOLD': 'Деньги заморожены',
+                                'COMPLETED': 'Выполнено',
+                                'CANCELLED': 'Отменено'
+                            };
+                            const statusColor = statusColors[o.status] || '#8E8E93';
+                            const statusText = statusTexts[o.status] || o.status;
+                            const isClient = o.client_id == uid;
+                            const isDriver = o.driver_id == uid;
+                            
+                            let actions = '';
+                            if (o.status === 'PENDING' && isClient) {
+                                actions = `<button class="btn" onclick="cancelExOrder(${o.id})" style="background:#FF3B30;margin-top:8px;padding:10px;font-size:14px;">Отменить</button>`;
+                            } else if (o.status === 'ACCEPTED' && isClient) {
+                                actions = `<button class="btn btn-blue" onclick="holdEscrow(${o.id})" style="margin-top:8px;padding:10px;font-size:14px;">Заморозить деньги</button>`;
+                            } else if (o.status === 'HOLD' && (isClient || isDriver)) {
+                                actions = `<button class="btn" onclick="completeExOrder(${o.id})" style="background:#34C759;margin-top:8px;padding:10px;font-size:14px;">Подтвердить доставку</button>`;
+                            } else if (o.status === 'PENDING' && !isClient && !isDriver) {
+                                actions = `<button class="btn btn-blue" onclick="acceptExOrder(${o.id})" style="margin-top:8px;padding:10px;font-size:14px;">Принять заказ</button>`;
+                            }
+                            
+                            c.innerHTML += `
+                                <div class="card">
+                                    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
+                                        <div style="flex:1;">
+                                            <div style="font-weight:700;font-size:15px;">${o.route || 'Без маршрута'}</div>
+                                            <div style="font-size:13px;color:#8e8e93;margin-top:4px;">${o.description || 'Без описания'}</div>
+                                        </div>
+                                        <div style="background:${statusColor};color:#fff;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;white-space:nowrap;">
+                                            ${statusText}
+                                        </div>
+                                    </div>
+                                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;font-size:13px;">
+                                        <div><b>Вес:</b> ${o.weight} кг</div>
+                                        <div><b>Цена:</b> ${o.price_per_kg} ${o.currency}/кг</div>
+                                        <div style="grid-column:1/-1;"><b>Итого:</b> ${o.total_price} ${o.currency}</div>
+                                    </div>
+                                    ${actions}
+                                </div>
+                            `;
+                        });
+                    } else {
+                        // Старый код для trips и cargo
+                        let r = await fetch(`${API}/api/trucking/list?type=${tabTr}`, { headers: { 'ngrok-skip-browser-warning': 'true' }});
+                        let d = await r.json(); c.innerHTML = '';
+                        if(!d.items || d.items.length === 0) { c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Объявлений нет</div>'; return; }
+                        d.items.forEach(i => { c.innerHTML += `<div class="card"><div style="font-weight:700;">${i.title}</div><div style="font-size:13px;color:#8e8e93;">${i.subtitle}</div><div style="color:var(--blue); font-weight:800; margin-top:8px;">${i.details}</div></div>`; });
+                    }
+                } catch(e) {
+                    console.error('Load error:', e);
+                    c.innerHTML = 'Ошибка загрузки';
+                }
             });
         }
 
@@ -694,6 +792,142 @@
         }
 
         function swTr(t, el) { tabTr = t; document.querySelectorAll('#screen-trucks .tab').forEach(x=>x.classList.remove('active')); el.classList.add('active'); ldTr(); }
+
+        /* ================= EXCHANGE ORDERS ================= */
+        async function createExchangeOrder() {
+            const route = gid('eo-route')?.value;
+            const weight = parseFloat(gid('eo-weight')?.value || 0);
+            const price = parseFloat(gid('eo-price')?.value || 0);
+            const currency = gid('eo-currency')?.value || 'USD';
+            const desc = gid('eo-desc')?.value || '';
+            
+            if (!route || !weight || !price) {
+                tg.showAlert('Заполните все обязательные поля');
+                return;
+            }
+            
+            try {
+                const r = await fetch(`${API}/api/exchange/create`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: uid,
+                        route: route,
+                        weight: weight,
+                        price_per_kg: price,
+                        currency: currency,
+                        description: desc
+                    })
+                });
+                const d = await r.json();
+                if (d.status === 'ok') {
+                    tg.showAlert('Заказ создан!');
+                    closeM('m-create-order');
+                    ldTr();
+                } else {
+                    tg.showAlert(d.detail || 'Ошибка создания заказа');
+                }
+            } catch(e) {
+                console.error('Create order error:', e);
+                tg.showAlert('Ошибка создания заказа');
+            }
+        }
+
+        async function acceptExOrder(orderId) {
+            try {
+                const r = await fetch(`${API}/api/exchange/accept`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: uid,
+                        order_id: orderId
+                    })
+                });
+                const d = await r.json();
+                if (d.status === 'ok') {
+                    tg.showAlert('Заказ принят!');
+                    ldTr();
+                } else {
+                    tg.showAlert(d.detail || 'Ошибка');
+                }
+            } catch(e) {
+                console.error('Accept error:', e);
+                tg.showAlert('Ошибка');
+            }
+        }
+
+        async function holdEscrow(orderId) {
+            try {
+                const r = await fetch(`${API}/api/exchange/hold`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: uid,
+                        order_id: orderId
+                    })
+                });
+                const d = await r.json();
+                if (d.status === 'ok') {
+                    tg.showAlert('Деньги заморожены');
+                    ldTr();
+                    init(); // Обновить баланс
+                } else {
+                    tg.showAlert(d.detail || 'Недостаточно средств');
+                }
+            } catch(e) {
+                console.error('Hold error:', e);
+                tg.showAlert('Ошибка');
+            }
+        }
+
+        async function completeExOrder(orderId) {
+            try {
+                const r = await fetch(`${API}/api/exchange/complete`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: uid,
+                        order_id: orderId
+                    })
+                });
+                const d = await r.json();
+                if (d.status === 'ok') {
+                    tg.showAlert('Доставка подтверждена! Деньги переведены водителю.');
+                    ldTr();
+                    init(); // Обновить баланс
+                } else {
+                    tg.showAlert(d.detail || 'Ошибка');
+                }
+            } catch(e) {
+                console.error('Complete error:', e);
+                tg.showAlert('Ошибка');
+            }
+        }
+
+        async function cancelExOrder(orderId) {
+            if (!confirm('Отменить заказ?')) return;
+            try {
+                const r = await fetch(`${API}/api/exchange/cancel`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: uid,
+                        order_id: orderId
+                    })
+                });
+                const d = await r.json();
+                if (d.status === 'ok') {
+                    tg.showAlert('Заказ отменен');
+                    ldTr();
+                    init(); // Обновить баланс
+                } else {
+                    tg.showAlert(d.detail || 'Ошибка');
+                }
+            } catch(e) {
+                console.error('Cancel error:', e);
+                tg.showAlert('Ошибка');
+            }
+        }
         function swMk(t, el) { tabMk = t; document.querySelectorAll('#screen-market .tab').forEach(x=>x.classList.remove('active')); el.classList.add('active'); ldMk(); }
 
         /* ================= WALLET ================= */
@@ -825,6 +1059,142 @@
             } catch (e) {
                 console.error('Reward error:', e);
                 tg.showAlert('Ошибка выполнения задания');
+            }
+        }
+
+        /* ================= EXCHANGE ORDERS ================= */
+        async function createExchangeOrder() {
+            const route = gid('eo-route')?.value;
+            const weight = parseFloat(gid('eo-weight')?.value || 0);
+            const price = parseFloat(gid('eo-price')?.value || 0);
+            const currency = gid('eo-currency')?.value || 'USD';
+            const desc = gid('eo-desc')?.value || '';
+            
+            if (!route || !weight || !price) {
+                tg.showAlert('Заполните все обязательные поля');
+                return;
+            }
+            
+            try {
+                const r = await fetch(`${API}/api/exchange/create`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: uid,
+                        route: route,
+                        weight: weight,
+                        price_per_kg: price,
+                        currency: currency,
+                        description: desc
+                    })
+                });
+                const d = await r.json();
+                if (d.status === 'ok') {
+                    tg.showAlert('Заказ создан!');
+                    closeM('m-create-order');
+                    ldTr();
+                } else {
+                    tg.showAlert(d.detail || 'Ошибка создания заказа');
+                }
+            } catch(e) {
+                console.error('Create order error:', e);
+                tg.showAlert('Ошибка создания заказа');
+            }
+        }
+
+        async function acceptExOrder(orderId) {
+            try {
+                const r = await fetch(`${API}/api/exchange/accept`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: uid,
+                        order_id: orderId
+                    })
+                });
+                const d = await r.json();
+                if (d.status === 'ok') {
+                    tg.showAlert('Заказ принят!');
+                    ldTr();
+                } else {
+                    tg.showAlert(d.detail || 'Ошибка');
+                }
+            } catch(e) {
+                console.error('Accept error:', e);
+                tg.showAlert('Ошибка');
+            }
+        }
+
+        async function holdEscrow(orderId) {
+            try {
+                const r = await fetch(`${API}/api/exchange/hold`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: uid,
+                        order_id: orderId
+                    })
+                });
+                const d = await r.json();
+                if (d.status === 'ok') {
+                    tg.showAlert('Деньги заморожены');
+                    ldTr();
+                    init(); // Обновить баланс
+                } else {
+                    tg.showAlert(d.detail || 'Недостаточно средств');
+                }
+            } catch(e) {
+                console.error('Hold error:', e);
+                tg.showAlert('Ошибка');
+            }
+        }
+
+        async function completeExOrder(orderId) {
+            try {
+                const r = await fetch(`${API}/api/exchange/complete`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: uid,
+                        order_id: orderId
+                    })
+                });
+                const d = await r.json();
+                if (d.status === 'ok') {
+                    tg.showAlert('Доставка подтверждена! Деньги переведены водителю.');
+                    ldTr();
+                    init(); // Обновить баланс
+                } else {
+                    tg.showAlert(d.detail || 'Ошибка');
+                }
+            } catch(e) {
+                console.error('Complete error:', e);
+                tg.showAlert('Ошибка');
+            }
+        }
+
+        async function cancelExOrder(orderId) {
+            if (!confirm('Отменить заказ?')) return;
+            try {
+                const r = await fetch(`${API}/api/exchange/cancel`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: uid,
+                        order_id: orderId
+                    })
+                });
+                const d = await r.json();
+                if (d.status === 'ok') {
+                    tg.showAlert('Заказ отменен');
+                    ldTr();
+                    init(); // Обновить баланс
+                } else {
+                    tg.showAlert(d.detail || 'Ошибка');
+                }
+            } catch(e) {
+                console.error('Cancel error:', e);
+                tg.showAlert('Ошибка');
             }
         }
 
