@@ -66,6 +66,9 @@
         .info-list li { padding: 12px 0; border-bottom: 1px solid #f2f2f2; display: flex; align-items: center; gap: 10px; font-size: 14px; }
         .info-list li:last-child { border-bottom: none; }
         .rate-row { display: flex; justify-content: space-between; padding: 8px 0; }
+        
+        .smart-copy-btn { background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%); border: none; color: white; padding: 14px 18px; border-radius: 14px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.1s; box-shadow: 0 4px 12px rgba(0,122,255,0.3); }
+        .smart-copy-btn:active { transform: scale(0.97); }
     </style>
 </head>
 <body>
@@ -255,12 +258,25 @@
                     <div id="txt-addr" class="copy-text">Загрузка...</div>
                     <i class="fa-regular fa-copy" style="position:absolute; right:12px; top:15px; color:var(--blue);"></i>
                 </div>
+                <button class="smart-copy-btn" onclick="smartCopyAddress()" style="margin-top:12px; width:100%;">
+                    <i class="fa-solid fa-bolt"></i> Smart Copy для Taobao/Pinduoduo
+                </button>
             </div>
             <div class="card" id="box-code">
-                <b>Маркировка (ОБЯЗАТЕЛЬНО):</b>
-                <div class="copy-box" onclick="copy('txt-code')" style="background: #FFF9C4; margin-top:10px; border-color: #FBC02D;">
-                    <div id="txt-code" class="copy-text" style="font-weight:900; color:#F57F17;">...</div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <i class="fa-solid fa-qrcode" style="color:#F57F17;"></i>
+                    <b>Marking ID (ОБЯЗАТЕЛЬНО)</b>
+                </div>
+                <div style="font-size:12px; color:var(--sec); margin-bottom:10px;">
+                    Уникальный код для идентификации ваших посылок. Обязательно указывайте его при заказе!
+                </div>
+                <div class="copy-box" onclick="copy('txt-code')" style="background: #FFF9C4; margin-top:10px; border-color: #FBC02D; cursor:pointer;">
+                    <div id="txt-code" class="copy-text" style="font-weight:900; color:#F57F17; font-family:monospace; font-size:14px;">...</div>
                     <i class="fa-regular fa-copy" style="position:absolute; right:12px; top:15px; color:#F57F17;"></i>
+                </div>
+                <div style="margin-top:8px; font-size:11px; color:#8E8E93; display:flex; align-items:center; gap:5px;">
+                    <i class="fa-solid fa-info-circle"></i>
+                    <span>Нажмите, чтобы скопировать код</span>
                 </div>
             </div>
         </div>
@@ -336,7 +352,15 @@
                 safe('u-name', el => el.innerText = user.name || firstName);
                 safe('u-lvl', el => el.innerText = user.level || 'Новичок');
                 safe('u-bonus', el => el.innerText = user.bonus_kg || 0);
-                safe('txt-code', el => el.innerText = user.marking_code || '—');
+                safe('txt-code', el => {
+                    const code = user.marking_code || 'Загрузка...';
+                    el.innerText = code;
+                    if (code === 'Загрузка...') {
+                        el.style.color = '#8E8E93';
+                    } else {
+                        el.style.color = '#F57F17';
+                    }
+                });
 
                 safe('p-name', el => el.innerText = user.name || firstName);
                 safe('p-id', el => el.innerText = user.user_id);
@@ -398,6 +422,51 @@
                 } else {
                     el.innerText = config.warehouses?.retail?.address || 'Адрес не найден';
                 }
+            });
+        }
+
+        /* ================= SMART COPY FOR MARKETPLACES ================= */
+        function smartCopyAddress() {
+            if (!config.warehouses || !user.marking_code) {
+                tg.showAlert('Данные не загружены. Попробуйте позже.');
+                return;
+            }
+
+            let addressText = '';
+            
+            if (isOpt) {
+                const city = gid('sel-city')?.value || 'yiwu';
+                const warehouse = config.warehouses?.wholesale?.[city];
+                if (!warehouse || !warehouse.address) {
+                    tg.showAlert('Выберите город склада');
+                    return;
+                }
+                // Для опта: адрес + маркировка в конце (формат для китайских маркетплейсов)
+                // Убираем лишние переносы и форматируем правильно
+                const cleanAddr = warehouse.address.replace(/\n+/g, '\n').trim();
+                addressText = `${cleanAddr}\n\n【标记码 Marking ID】\n${user.marking_code}`;
+            } else {
+                // Для розницы: адрес + маркировка
+                const retailAddr = config.warehouses?.retail?.address;
+                if (!retailAddr) {
+                    tg.showAlert('Адрес не найден');
+                    return;
+                }
+                // Форматируем адрес для розницы
+                const cleanAddr = retailAddr.replace(/\n+/g, '\n').trim();
+                addressText = `${cleanAddr}\n\n【标记码 Marking ID】\n${user.marking_code}`;
+            }
+
+            // Копируем в буфер обмена
+            navigator.clipboard.writeText(addressText).then(() => {
+                // Haptic feedback
+                if (tg.HapticFeedback) {
+                    tg.HapticFeedback.impactOccurred('medium');
+                }
+                tg.showAlert('✅ Адрес скопирован!\n\nВставьте его в поле адреса на Taobao/Pinduoduo\n\n⚠️ Не забудьте указать Marking ID!');
+            }).catch(err => {
+                console.error('Copy error:', err);
+                tg.showAlert('Ошибка копирования. Попробуйте скопировать вручную.');
             });
         }
 
@@ -499,7 +568,19 @@
         function goHome() { nav('home'); }
         function openM(id) { safe(id, el => el.style.display = 'flex'); }
         function closeM(id) { safe(id, el => el.style.display = 'none'); }
-        function copy(t) { safe(t, el => { navigator.clipboard.writeText(el.innerText); tg.HapticFeedback.impactOccurred('light'); tg.showAlert("Скопировано"); }); }
+        function copy(t) { 
+            safe(t, el => { 
+                navigator.clipboard.writeText(el.innerText).then(() => {
+                    if (tg.HapticFeedback) {
+                        tg.HapticFeedback.impactOccurred('light');
+                    }
+                    tg.showAlert("Скопировано");
+                }).catch(err => {
+                    console.error('Copy error:', err);
+                    tg.showAlert("Ошибка копирования");
+                });
+            }); 
+        }
 
         async function ldTr() {
             safe('list-trucks', async c => {
