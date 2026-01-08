@@ -48,9 +48,18 @@
             line-height: 1.5;
         }
         
-        .container { padding: 20px; max-width: 480px; margin: 0 auto; padding-bottom: 100px; }
+        .container { 
+            padding: 20px; 
+            max-width: 480px; 
+            margin: 0 auto; 
+            padding-bottom: 100px;
+        }
         
-        .screen { display: none; width: 100%; animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .screen { 
+            display: none; 
+            width: 100%; 
+            animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
         .screen.active { display: block !important; }
         @keyframes fadeIn { 
             from { opacity: 0; transform: translateY(8px); }
@@ -62,10 +71,13 @@
             justify-content: space-between; 
             align-items: center; 
             margin-bottom: 24px; 
+            margin-top: 0;
             padding: 20px 24px;
             background: var(--card);
             border-radius: 0 0 var(--radius-sm) var(--radius-sm);
             box-shadow: var(--shadow-sm);
+            position: relative;
+            z-index: 1;
         }
         
         .user-row { 
@@ -818,6 +830,70 @@
 
     <script>
         const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        
+        // Настройка отступов для Fullscreen режима
+        function adjustViewportPadding() {
+            // Высота шапки Telegram Mini App в Fullscreen режиме
+            // В Fullscreen режиме шапка обычно имеет высоту около 56-60px
+            const headerHeight = 56;
+            
+            // Проверяем, находимся ли мы в Fullscreen режиме
+            // tg.isExpanded указывает, что приложение развернуто на весь экран
+            const isFullscreen = tg.isExpanded === true || 
+                                 tg.platform === 'tdesktop' || 
+                                 tg.platform === 'web' ||
+                                 (window.innerHeight / window.innerWidth > 1.5); // Высокий экран обычно означает Fullscreen
+            
+            if (isFullscreen) {
+                // Добавляем отступ для шапки Telegram в body
+                document.body.style.paddingTop = `${headerHeight}px`;
+                document.body.style.boxSizing = 'border-box';
+                
+                // Убираем лишний отступ у экранов, так как он уже есть в body
+                const screens = document.querySelectorAll('.screen');
+                screens.forEach(screen => {
+                    screen.style.paddingTop = '0';
+                });
+                
+                // Обновляем отступ для контейнеров (оставляем только боковые отступы)
+                const containers = document.querySelectorAll('.container');
+                containers.forEach(container => {
+                    container.style.paddingTop = '20px';
+                });
+                
+                // Убираем верхний отступ у header, так как он уже есть в body
+                const headers = document.querySelectorAll('.header');
+                headers.forEach(header => {
+                    header.style.marginTop = '0';
+                });
+            } else {
+                // В обычном режиме убираем отступ
+                document.body.style.paddingTop = '0';
+            }
+        }
+        
+        // Вызываем при загрузке и изменении размера окна
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(adjustViewportPadding, 100);
+            });
+        } else {
+            setTimeout(adjustViewportPadding, 100);
+        }
+        
+        window.addEventListener('resize', adjustViewportPadding);
+        
+        // Слушаем изменения viewport от Telegram
+        if (tg.onEvent) {
+            try {
+                tg.onEvent('viewportChanged', adjustViewportPadding);
+            } catch(e) {
+                console.log('viewportChanged event not available');
+            }
+        }
+        
         const API = "https://unforeshortened-interartistic-judith.ngrok-free.dev"; 
         const uid = tg.initDataUnsafe?.user?.id || 317295540;
 
