@@ -3,10 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://telegram.org https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com https://ui-avatars.com https://via.placeholder.com https://*.ngrok-free.dev; script-src 'self' 'unsafe-inline' https://telegram.org; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob: http:; connect-src 'self' https://*.ngrok-free.dev https://telegram.org;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://telegram.org https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com https://ui-avatars.com https://via.placeholder.com https://*.ngrok-free.dev; script-src 'self' 'unsafe-inline' https://telegram.org; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; img-src 'self' data: https: blob: http:; connect-src 'self' https://*.ngrok-free.dev https://telegram.org;">
     <title>Drop SuperApp</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Preload Font Awesome для быстрой загрузки -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+          onerror="console.error('Font Awesome failed to load from CDN'); this.onerror=null; this.href='https://use.fontawesome.com/releases/v6.4.0/css/all.css';"
+          crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -457,7 +463,7 @@
             </div>
 
             <div class="grid">
-                <div class="grid-item" onclick="nav('china')"><div class="icon-box" style="color: #FF2D55;"><i class="fa-brands fa-dhl"></i></div><span class="grid-lbl">Мой Китай</span></div>
+                <div class="grid-item" onclick="nav('china')"><div class="icon-box" style="color: #FF2D55;"><i class="fa-solid fa-warehouse"></i></div><span class="grid-lbl">Мой Китай</span></div>
                 <div class="grid-item" onclick="nav('trucks')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-truck-fast"></i></div><span class="grid-lbl">Биржа</span></div>
                 <div class="grid-item" onclick="nav('market')"><div class="icon-box" style="color: #FF9500;"><i class="fa-solid fa-bag-shopping"></i></div><span class="grid-lbl">Маркет</span></div>
                 <div class="grid-item" onclick="nav('calc')"><div class="icon-box" style="color: #007AFF;"><i class="fa-solid fa-calculator"></i></div><span class="grid-lbl">Расчет</span></div>
@@ -1049,6 +1055,114 @@
             }
         };
 
+        /* ================= FONT AWESOME CHECK ================= */
+        function checkFontAwesome() {
+            // Проверяем наличие Font Awesome CSS
+            const faStylesheet = Array.from(document.styleSheets).find(sheet => {
+                try {
+                    return sheet.href && (sheet.href.includes('font-awesome') || sheet.href.includes('fontawesome'));
+                } catch(e) {
+                    return false;
+                }
+            });
+            
+            if (!faStylesheet) {
+                console.warn('Font Awesome stylesheet не найден');
+                applyFontAwesomeFallback();
+                return;
+            }
+            
+            // Проверяем, загрузился ли Font Awesome через проверку шрифта
+            const testIcon = document.createElement('i');
+            testIcon.className = 'fa-solid fa-check';
+            testIcon.style.position = 'absolute';
+            testIcon.style.visibility = 'hidden';
+            testIcon.style.fontSize = '16px';
+            testIcon.style.left = '-9999px';
+            document.body.appendChild(testIcon);
+            
+            setTimeout(() => {
+                try {
+                    const computedStyle = window.getComputedStyle(testIcon, ':before');
+                    const fontFamily = computedStyle.getPropertyValue('font-family') || '';
+                    const content = computedStyle.getPropertyValue('content') || '';
+                    
+                    document.body.removeChild(testIcon);
+                    
+                    // Если Font Awesome не загрузился (нет правильного font-family или content)
+                    if ((!fontFamily.includes('Font Awesome') && !fontFamily.includes('FontAwesome')) || content === 'none' || content === '' || content === '""') {
+                        console.warn('Font Awesome шрифты не загрузились, применяем fallback');
+                        applyFontAwesomeFallback();
+                    }
+                } catch(e) {
+                    console.warn('Ошибка при проверке Font Awesome:', e);
+                    document.body.removeChild(testIcon);
+                    applyFontAwesomeFallback();
+                }
+            }, 1000);
+        }
+        
+        function applyFontAwesomeFallback() {
+            // Проверяем, не применен ли уже fallback
+            if (document.getElementById('fa-fallback')) {
+                return;
+            }
+            
+            // Добавляем fallback стили для иконок с эмодзи
+            const style = document.createElement('style');
+            style.id = 'fa-fallback';
+            style.textContent = `
+                .fa-solid.fa-arrow-left:before { content: '←'; }
+                .fa-solid.fa-warehouse:before { content: '🏭'; }
+                .fa-solid.fa-box-open:before { content: '📦'; }
+                .fa-solid.fa-map-location-dot:before { content: '📍'; }
+                .fa-solid.fa-users:before { content: '👥'; }
+                .fa-solid.fa-hand:before { content: '✋'; }
+                .fa-solid.fa-tags:before { content: '🏷️'; }
+                .fa-solid.fa-comment-dots:before { content: '💬'; }
+                .fa-solid.fa-building:before { content: '🏢'; }
+                .fa-solid.fa-star-half-stroke:before { content: '⭐'; }
+                .fa-solid.fa-truck-fast:before { content: '🚛'; }
+                .fa-solid.fa-bag-shopping:before { content: '🛍️'; }
+                .fa-solid.fa-calculator:before { content: '🧮'; }
+                .fa-solid.fa-gift:before { content: '🎁'; }
+                .fa-solid.fa-chevron-right:before { content: '›'; }
+                .fa-solid.fa-star:before { content: '⭐'; }
+                .fa-solid.fa-gear:before { content: '⚙️'; }
+                .fa-solid.fa-qrcode:before { content: '📱'; }
+                .fa-solid.fa-camera:before { content: '📷'; }
+                .fa-solid.fa-user-pen:before { content: '✏️'; }
+                .fa-solid.fa-plus:before { content: '➕'; }
+                .fa-solid.fa-fire:before { content: '🔥'; }
+                .fa-solid.fa-droplet:before { content: '💧'; }
+                .fa-solid.fa-gun:before { content: '🔫'; }
+                .fa-solid.fa-pills:before { content: '💊'; }
+                .fa-solid.fa-battery-half:before { content: '🔋'; }
+                .fa-solid.fa-apple-whole:before { content: '🍎'; }
+                .fa-solid.fa-shield-halved:before { content: '🛡️'; }
+                .fa-brands.fa-telegram:before { content: '✈️'; }
+                .fa-solid.fa-upload:before { content: '📤'; }
+                .fa-regular.fa-copy:before { content: '📋'; }
+                .fa-solid.fa-bolt:before { content: '⚡'; }
+                .fa-solid.fa-info-circle:before { content: 'ℹ️'; }
+                .icon-box i, .fa-solid, .fa-brands, .fa-regular {
+                    font-family: Arial, sans-serif !important;
+                    font-style: normal !important;
+                    font-weight: normal !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Проверяем Font Awesome после загрузки страницы
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(checkFontAwesome, 1000);
+            });
+        } else {
+            setTimeout(checkFontAwesome, 1000);
+        }
+        
         /* ================= INIT ================= */
         async function init() {
             try {
