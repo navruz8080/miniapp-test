@@ -375,6 +375,9 @@
 
                 isOpt = user.category === 'more_100';
                 updMode();
+                
+                // Инициализируем адрес сразу после загрузки данных
+                renderAddr();
             } catch (e) {
                 console.error('INIT ERROR:', e);
             }
@@ -412,15 +415,24 @@
 
         /* ================= ADDRESSES ================= */
         function renderAddr() {
-            if (!config.warehouses) return;
-            if (!gid('screen-addresses')?.classList.contains('active')) return;
-
             safe('txt-addr', el => {
+                if (!config || !config.warehouses) {
+                    el.innerText = 'Загрузка данных...';
+                    return;
+                }
+
                 if (isOpt) {
-                    const city = gid('sel-city')?.value;
-                    el.innerText = config.warehouses?.wholesale?.[city]?.address || 'Выберите город';
+                    const city = gid('sel-city')?.value || 'yiwu';
+                    const addr = config.warehouses?.wholesale?.[city]?.address;
+                    el.innerText = addr || 'Выберите город';
                 } else {
-                    el.innerText = config.warehouses?.retail?.address || 'Адрес не найден';
+                    const addr = config.warehouses?.retail?.address;
+                    if (addr) {
+                        el.innerText = addr;
+                    } else {
+                        console.error('Retail address not found:', config.warehouses);
+                        el.innerText = 'Адрес не найден. Обратитесь в поддержку.';
+                    }
                 }
             });
         }
@@ -562,6 +574,7 @@
             if(id === 'trucks') ldTr();
             if(id === 'market') ldMk();
             if(id === 'rewards') ldRew();
+            if(id === 'addresses') renderAddr(); // Обновляем адрес при переходе на экран
             window.scrollTo(0,0);
         }
 
