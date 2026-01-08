@@ -836,8 +836,9 @@
         // Настройка отступов для Fullscreen режима
         function adjustViewportPadding() {
             // Высота шапки Telegram Mini App в Fullscreen режиме
-            // В Fullscreen режиме шапка обычно имеет высоту около 56-60px
-            const headerHeight = 56;
+            // В Fullscreen режиме шапка с кнопками "Закрыть" и "Свернуть" обычно имеет высоту около 64-80px
+            // Увеличиваем отступ, чтобы кнопки были полностью видны и не перекрывались
+            let headerHeight = 80; // Увеличено для полной видимости кнопок
             
             // Проверяем, находимся ли мы в Fullscreen режиме
             // tg.isExpanded указывает, что приложение развернуто на весь экран
@@ -845,6 +846,14 @@
                                  tg.platform === 'tdesktop' || 
                                  tg.platform === 'web' ||
                                  (window.innerHeight / window.innerWidth > 1.5); // Высокий экран обычно означает Fullscreen
+            
+            // Пытаемся определить реальную высоту шапки через viewport
+            if (tg.viewportHeight && tg.viewportStableHeight) {
+                const viewportDiff = window.innerHeight - tg.viewportHeight;
+                if (viewportDiff > 0) {
+                    headerHeight = Math.max(headerHeight, viewportDiff + 10); // Добавляем небольшой запас
+                }
+            }
             
             if (isFullscreen) {
                 // Добавляем отступ для шапки Telegram в body
