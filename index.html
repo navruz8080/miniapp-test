@@ -439,12 +439,16 @@
                 const j = await r.json();
 
                 if (j.status === 'ok') {
-                    safe('c-res', el => el.innerText = j.price.toLocaleString());
-                    safe('c-cur', el => el.innerText = j.currency);
+                    const price = typeof j.price === 'number' ? j.price : parseFloat(j.price) || 0;
+                    safe('c-res', el => el.innerText = price.toLocaleString('ru-RU', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+                    safe('c-cur', el => el.innerText = j.currency || 'TJS');
                     safe('btn-order-confirm', el => el.style.display = 'block');
-                    lastCalc = {...p, price: j.price, route: `${routeFrom} - ${routeTo}`};
+                    lastCalc = {...p, price: price, route: `${routeFrom} - ${routeTo}`};
+                } else {
+                    tg.showAlert(j.message || 'Ошибка расчета');
                 }
-            } catch {
+            } catch (e) {
+                console.error('Calc error:', e);
                 tg.showAlert('Ошибка расчета');
             }
         }
@@ -551,6 +555,62 @@
 
         function swTr(t, el) { tabTr = t; document.querySelectorAll('#screen-trucks .tab').forEach(x=>x.classList.remove('active')); el.classList.add('active'); ldTr(); }
         function swMk(t, el) { tabMk = t; document.querySelectorAll('#screen-market .tab').forEach(x=>x.classList.remove('active')); el.classList.add('active'); ldMk(); }
+
+        /* ================= ORDER SUBMISSION ================= */
+        async function submitOrder() {
+            if (!lastCalc) {
+                tg.showAlert('Сначала рассчитайте стоимость');
+                return;
+            }
+            try {
+                const r = await fetch(`${API}/api/create_order`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: uid,
+                        route: lastCalc.route,
+                        weight: lastCalc.weight * lastCalc.quantity,
+                        price: lastCalc.price
+                    })
+                });
+                const d = await r.json();
+                if (d.status === 'ok') {
+                    tg.showAlert('Заказ успешно оформлен!');
+                    safe('btn-order-confirm', el => el.style.display = 'none');
+                    lastCalc = null;
+                } else {
+                    tg.showAlert(d.detail || 'Ошибка оформления заказа');
+                }
+            } catch (e) {
+                console.error('Order error:', e);
+                tg.showAlert('Ошибка оформления заказа');
+            }
+        }
+
+        /* ================= REWARD CLAIM ================= */
+        async function claimRew(taskId) {
+            try {
+                const r = await fetch(`${API}/api/rewards/claim`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: uid,
+                        task_id: taskId
+                    })
+                });
+                const d = await r.json();
+                if (d.status === 'ok') {
+                    tg.showAlert('Задание выполнено! Бонус начислен.');
+                    ldRew();
+                    init(); // Обновить баланс
+                } else {
+                    tg.showAlert(d.detail || 'Ошибка выполнения задания');
+                }
+            } catch (e) {
+                console.error('Reward error:', e);
+                tg.showAlert('Ошибка выполнения задания');
+            }
+        }
 
         /* ================= START ================= */
         init();
