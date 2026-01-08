@@ -942,8 +942,8 @@
             isExpired: (timestamp) => (Date.now() - timestamp) > cache.cacheTime
         };
         
-        // Функция для кэшированного запроса
-        async function cachedFetch(url, cacheKey, options = {}) {
+        // Функция для кэшированного запроса (без показа ошибок)
+        async function cachedFetch(url, cacheKey, options = {}, silent = true) {
             const now = cache.getTimestamp();
             
             // Проверяем кэш
@@ -952,10 +952,10 @@
                 return cache[cacheKey].data;
             }
             
-            // Делаем запрос
+            // Делаем запрос без показа ошибок (silent mode)
             console.log(`[Cache MISS] ${cacheKey}, fetching...`);
             try {
-                const response = await safeFetch(url, options);
+                const response = await safeFetchSilent(url, options);
                 cache[cacheKey] = {
                     data: response,
                     timestamp: now
@@ -968,6 +968,70 @@
                     return cache[cacheKey].data;
                 }
                 throw error;
+            }
+        }
+        
+        // Тихая версия safeFetch (без показа popup ошибок)
+        async function safeFetchSilent(url, options = {}, retries = 3) {
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true',
+                    ...options.headers
+                },
+                ...options,
+                // Увеличиваем таймаут для медленных соединений
+                signal: AbortSignal.timeout(15000) // 15 секунд
+            };
+
+            for (let attempt = 1; attempt <= retries; attempt++) {
+                try {
+                    const response = await fetch(url, defaultOptions);
+                    
+                    // Проверяем, не является ли ответ HTML (ngrok warning page)
+                    const contentType = response.headers.get('content-type') || '';
+                    if (contentType.includes('text/html') && !response.ok) {
+                        console.warn(`[safeFetchSilent] Got HTML response instead of JSON, might be ngrok warning page`);
+                        if (attempt < retries) {
+                            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+                            continue;
+                        }
+                        throw new Error('Server returned HTML instead of JSON');
+                    }
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text().catch(() => 'Unknown error');
+                        console.warn(`[safeFetchSilent] HTTP ${response.status}: ${errorText.substring(0, 100)}`);
+                        if (attempt < retries) {
+                            await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+                            continue;
+                        }
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                    const jsonData = await response.json().catch(e => {
+                        console.error(`[safeFetchSilent] JSON parse error:`, e);
+                        throw new Error('Invalid JSON response');
+                    });
+                    
+                    return jsonData;
+                } catch (error) {
+                    // Игнорируем AbortError (таймаут) и пробуем еще раз
+                    if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+                        console.warn(`[safeFetchSilent] Request timeout (attempt ${attempt}/${retries})`);
+                        if (attempt < retries) {
+                            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+                            continue;
+                        }
+                    }
+                    
+                    console.warn(`[safeFetchSilent] Error on attempt ${attempt}/${retries}:`, error.message);
+                    if (attempt < retries) {
+                        await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+                        continue;
+                    }
+                    throw error;
+                }
             }
         }
         
@@ -1344,109 +1408,58 @@
                 let hasError = false;
                 
                 try {
+                    // Пытаемся загрузить данные, но не показываем ошибки - используем кэш
                     [dashboardData, walletData, routesData] = await Promise.all([
-                        cachedFetch(`${API}/api/dashboard/${uid}`, 'dashboard'),
+                        cachedFetch(`${API}/api/dashboard/${uid}`, 'dashboard').catch(() => null),
                         cachedFetch(`${API}/api/wallet/${uid}`, 'wallet').catch(() => null),
                         cachedFetch(`${API}/api/get_routes`, 'routes').catch(() => null)
                     ]);
                 } catch (error) {
                     console.error('Error loading initial data:', error);
-                    hasError = true;
-                    
-                    // Пытаемся использовать кэшированные данные, если они есть
-                    if (cache.dashboard && cache.dashboard.data) {
-                        console.log('[FALLBACK] Using cached dashboard data');
-                        dashboardData = cache.dashboard.data;
-                        hasError = false; // У нас есть данные для работы
-                    } else {
-                        // Нет кэшированных данных, показываем ошибку
-                        hideLoadingIndicator();
-                        
-                        // Проверяем лимит попыток
-                        if (initRetryCount >= MAX_INIT_RETRIES) {
-                            // Превышен лимит - показываем финальное сообщение и используем кэш, если есть
-                            await showErrorPopup(
-                                'Не удалось загрузить данные. Приложение будет работать в ограниченном режиме.',
-                                null // Без повтора
-                            );
-                            // Пытаемся использовать кэш, даже если он устарел
-                            if (cache.dashboard && cache.dashboard.data) {
-                                dashboardData = cache.dashboard.data;
-                                hasError = false;
-                            } else {
-                                return; // Нет данных для работы
-                            }
-                        } else {
-                            initRetryCount++;
-                            const retry = await showErrorPopup(
-                                `Ошибка загрузки данных. Проверьте подключение к интернету. (Попытка ${initRetryCount}/${MAX_INIT_RETRIES})`,
-                                async () => {
-                                    // Добавляем небольшую задержку перед повтором
-                                    await new Promise(resolve => setTimeout(resolve, 1000));
-                                    await init(false);
-                                }
-                            );
-                            if (retry === 'retry') {
-                                return; // init() будет вызван в callback
-                            }
-                            // Если пользователь отменил, пытаемся использовать старые данные
-                            if (cache.dashboard && cache.dashboard.data) {
-                                console.log('[INIT] User cancelled, using cached data');
-                                dashboardData = cache.dashboard.data;
-                                walletData = cache.wallet?.data || null;
-                                routesData = cache.routes?.data || null;
-                                hasError = false;
-                            } else {
-                                return; // Нет данных для работы
-                            }
-                        }
-                    }
+                    // Не показываем ошибку, просто используем кэш
+                }
+                
+                // Если данные не загрузились, используем кэш
+                if (!dashboardData && cache.dashboard && cache.dashboard.data) {
+                    console.log('[INIT] Using cached dashboard data');
+                    dashboardData = cache.dashboard.data;
+                }
+                
+                if (!walletData && cache.wallet && cache.wallet.data) {
+                    walletData = cache.wallet.data;
+                }
+                
+                if (!routesData && cache.routes && cache.routes.data) {
+                    routesData = cache.routes.data;
                 }
                 
                 // Проверяем, что dashboard загрузился успешно
                 if (!dashboardData || dashboardData.status !== 'ok') {
-                    // Пытаемся использовать кэшированные данные
-                    if (cache.dashboard && cache.dashboard.data && cache.dashboard.data.status === 'ok') {
-                        console.log('[FALLBACK] Using cached dashboard data (status check)');
+                    // Пытаемся использовать кэшированные данные (даже устаревшие)
+                    if (cache.dashboard && cache.dashboard.data) {
+                        console.log('[INIT] Using cached dashboard data (status check)');
                         dashboardData = cache.dashboard.data;
                     } else {
-                        // Проверяем лимит попыток
-                        if (initRetryCount >= MAX_INIT_RETRIES) {
-                            // Превышен лимит - используем кэш
-                            if (cache.dashboard && cache.dashboard.data) {
-                                console.log('[INIT] Max retries reached, using cached data');
-                                dashboardData = cache.dashboard.data;
-                            } else {
-                                hideLoadingIndicator();
-                                await showErrorPopup(
-                                    'Не удалось загрузить данные. Приложение будет работать в ограниченном режиме.',
-                                    null
-                                );
-                                return;
+                        // Нет данных вообще - создаем минимальный набор данных для работы
+                        console.warn('[INIT] No data available, creating minimal dataset');
+                        dashboardData = {
+                            status: 'ok',
+                            user_info: {
+                                name: firstName,
+                                user_id: String(uid),
+                                level: 'Новичок',
+                                bonus_kg: 0,
+                                marking_code: 'Загрузка...',
+                                category: 'less_100',
+                                avatar_url: telegramPhoto || defaultAva
+                            },
+                            packages: [],
+                            app_config: {
+                                warehouses: [],
+                                pvz_list: [],
+                                routes: []
                             }
-                        } else {
-                            hideLoadingIndicator();
-                            initRetryCount++;
-                            const retry = await showErrorPopup(
-                                `Не удалось загрузить данные приложения. (Попытка ${initRetryCount}/${MAX_INIT_RETRIES})`,
-                                async () => {
-                                    await new Promise(resolve => setTimeout(resolve, 1000));
-                                    await init(false);
-                                }
-                            );
-                            if (retry === 'retry') {
-                                return;
-                            }
-                            // Если отменили, но есть кэш - используем его
-                            if (cache.dashboard && cache.dashboard.data) {
-                                console.log('[INIT] User cancelled, using cached data (status check)');
-                                dashboardData = cache.dashboard.data;
-                                walletData = cache.wallet?.data || null;
-                                routesData = cache.routes?.data || null;
-                            } else {
-                                return;
-                            }
-                        }
+                        };
                     }
                 }
                 
