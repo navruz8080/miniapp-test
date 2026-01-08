@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://telegram.org https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com https://ui-avatars.com https://*.ngrok-free.dev; script-src 'self' 'unsafe-inline' https://telegram.org; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.ngrok-free.dev https://telegram.org;">
     <title>Drop SuperApp</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -405,6 +406,27 @@
 </head>
 <body>
 
+    <div id="screen-admin" class="screen">
+        <div class="nav-head">
+            <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Админ-панель</div>
+        </div>
+        <div class="container">
+            <div class="card">
+                <h3 style="margin:0 0 15px 0;">📦 Управление посылками</h3>
+                <button class="btn btn-blue" onclick="openAdminScanner()" style="width:100%; margin-bottom:10px;">
+                    <i class="fa-solid fa-qrcode"></i> Сканировать QR-код
+                </button>
+                <input type="text" id="admin-track-input" name="admin-track-input" placeholder="Или введите трек-номер" style="width:100%; padding:12px; margin-bottom:10px; border-radius:var(--radius-md); border:1px solid var(--border);">
+                <button class="btn" onclick="searchPackageByTrack()" style="width:100%;">Найти посылку</button>
+            </div>
+            <div class="card">
+                <h3 style="margin:0 0 15px 0;">Список посылок</h3>
+                <div id="admin-packages-list">Загрузка...</div>
+            </div>
+        </div>
+    </div>
+
     <div id="screen-home" class="screen active">
         <div class="container">
             <div class="header">
@@ -628,12 +650,12 @@
         <div class="nav-head"><div onclick="nav('china')"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Наши адреса</div></div>
         <div class="container">
             <div class="card">
-                <div class="switch-row"><b>Оптовый режим (>100 кг)</b><label class="switch"><input type="checkbox" id="tg-opt" onchange="toggleMode()"><span class="slider"></span></label></div>
+                <div class="switch-row"><b>Оптовый режим (>100 кг)</b><label class="switch" for="tg-opt"><input type="checkbox" id="tg-opt" name="tg-opt" onchange="toggleMode()"><span class="slider"></span></label></div>
             </div>
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <b>Адрес в Китае</b>
-                    <select id="sel-city" onchange="renderAddr()" style="width: auto; height: 30px; font-size: 12px; display:none; padding: 0 5px; margin: 0;">
+                    <select id="sel-city" name="sel-city" onchange="renderAddr()" style="width: auto; height: 30px; font-size: 12px; display:none; padding: 0 5px; margin: 0;">
                         <option value="yiwu">Иу (Yiwu)</option><option value="urumqi">Урумчи</option>
                     </select>
                 </div>
@@ -669,18 +691,18 @@
         <div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Расчет стоимости</div></div>
         <div class="container">
             <div class="card">
-                <div class="switch-row" style="margin-bottom:15px;"><b>Оптовый тариф</b><label class="switch"><input type="checkbox" id="tg-calc" onchange="toggleMode()"><span class="slider"></span></label></div>
+                <div class="switch-row" style="margin-bottom:15px;"><b>Оптовый тариф</b><label class="switch" for="tg-calc"><input type="checkbox" id="tg-calc" name="tg-calc" onchange="toggleMode()"><span class="slider"></span></label></div>
                 <div id="box-calc-opt" style="display:none; border-top:1px solid #eee; padding-top:10px;">
-                    <select id="sel-route"></select>
+                    <select id="sel-route" name="sel-route"></select>
                     <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;">
-                        <input id="c-len" type="number" placeholder="Длина">
-                        <input id="c-wid" type="number" placeholder="Ширина">
-                        <input id="c-hei" type="number" placeholder="Высота">
+                        <input id="c-len" name="c-len" type="number" placeholder="Длина">
+                        <input id="c-wid" name="c-wid" type="number" placeholder="Ширина">
+                        <input id="c-hei" name="c-hei" type="number" placeholder="Высота">
                     </div>
                 </div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
-                    <input id="c-wg" type="number" placeholder="Вес (кг)">
-                    <input id="c-qty" type="number" value="1" placeholder="Кол-во">
+                    <input id="c-wg" name="c-wg" type="number" placeholder="Вес (кг)">
+                    <input id="c-qty" name="c-qty" type="number" value="1" placeholder="Кол-во">
                 </div>
                 <div id="c-res-wrap" style="background:#f8f9fa; border-radius:14px; padding:20px; margin:20px 0; text-align:center;">
                     <div id="c-res" style="font-size:36px; font-weight:800; color:var(--blue);">0.00</div>
@@ -692,7 +714,7 @@
         </div>
     </div>
 
-    <div id="screen-settings" class="screen"><div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Настройки</div></div><div class="container"><div class="card"><input id="s-name" placeholder="Ваше имя"><input id="s-phone" placeholder="Телефон"><select id="s-pvz"></select><button class="btn btn-blue" onclick="saveSet()">Сохранить</button></div></div></div>
+    <div id="screen-settings" class="screen"><div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Настройки</div></div><div class="container"><div class="card"><input id="s-name" name="s-name" placeholder="Ваше имя"><input id="s-phone" name="s-phone" placeholder="Телефон"><select id="s-pvz" name="s-pvz"></select><button class="btn btn-blue" onclick="saveSet()">Сохранить</button></div></div></div>
     <div id="screen-trucks" class="screen">
         <div class="nav-head">
             <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
@@ -714,14 +736,14 @@
     <div id="m-create-order" class="modal-wrap">
         <div class="modal">
             <h3>Создать заказ на бирже</h3>
-            <input id="eo-route" placeholder="Маршрут (например: Иу → Худжанд)">
-            <input id="eo-weight" type="number" placeholder="Вес (кг)" step="0.01">
-            <input id="eo-price" type="number" placeholder="Цена за кг" step="0.01">
-            <select id="eo-currency">
+            <input id="eo-route" name="eo-route" placeholder="Маршрут (например: Иу → Худжанд)">
+            <input id="eo-weight" name="eo-weight" type="number" placeholder="Вес (кг)" step="0.01">
+            <input id="eo-price" name="eo-price" type="number" placeholder="Цена за кг" step="0.01">
+            <select id="eo-currency" name="eo-currency">
                 <option value="USD">USD</option>
                 <option value="TJS">TJS</option>
             </select>
-            <input id="eo-desc" placeholder="Описание (необязательно)">
+            <input id="eo-desc" name="eo-desc" placeholder="Описание (необязательно)">
             <button class="btn btn-blue" onclick="createExchangeOrder()">Создать заказ</button>
             <div style="text-align:center;padding:15px;color:var(--sec);" onclick="closeM('m-create-order')">Отмена</div>
         </div>
@@ -739,12 +761,33 @@
         </div>
     </div>
 
-    <div id="m-add" class="modal-wrap"><div class="modal"><h3>Новый трек</h3><input id="n-t" placeholder="Трек-номер"><input id="n-d" placeholder="Описание"><button class="btn btn-blue" onclick="subTrack()">Добавить</button><div style="text-align:center;padding:15px;color:var(--sec);" onclick="closeM('m-add')">Отмена</div></div></div>
+    <div id="m-add" class="modal-wrap"><div class="modal"><h3>Новый трек</h3><input id="n-t" name="n-t" placeholder="Трек-номер"><input id="n-d" name="n-d" placeholder="Описание"><button class="btn btn-blue" onclick="subTrack()">Добавить</button><div style="text-align:center;padding:15px;color:var(--sec);" onclick="closeM('m-add')">Отмена</div></div></div>
     
     <div id="m-package-history" class="modal-wrap">
         <div class="modal" style="max-height:80vh; overflow-y:auto;">
             <div class="modal-content"></div>
             <div style="text-align:center;padding:15px;color:var(--sec);" onclick="closeM('m-package-history')">Закрыть</div>
+        </div>
+    </div>
+    
+    <div id="m-admin-package" class="modal-wrap">
+        <div class="modal" style="max-height:90vh; overflow-y:auto;">
+            <h3 id="admin-pkg-title">Посылка</h3>
+            <div id="admin-pkg-info" class="card" style="margin-bottom:15px;"></div>
+            <div class="card">
+                <h4 style="margin:0 0 10px 0;">Изменить статус</h4>
+                <select id="admin-status-select" name="admin-status-select" style="width:100%; padding:12px; margin-bottom:10px; border-radius:var(--radius-md);">
+                    <option value="AWAITING_IU">Ожидает в Иу</option>
+                    <option value="IN_TRANSIT">В пути</option>
+                    <option value="ARRIVED">Прибыл</option>
+                    <option value="READY">Готов к выдаче</option>
+                    <option value="DELIVERED">Доставлено</option>
+                    <option value="CANCELLED">Отменено</option>
+                </select>
+                <input type="text" id="admin-status-desc" name="admin-status-desc" placeholder="Описание изменения (необязательно)" style="width:100%; padding:12px; margin-bottom:10px; border-radius:var(--radius-md); border:1px solid var(--border);">
+                <button class="btn btn-blue" onclick="updatePackageStatus()" style="width:100%;">Обновить статус</button>
+            </div>
+            <div style="text-align:center;padding:15px;color:var(--sec);cursor:pointer;" onclick="closeM('m-admin-package')">Закрыть</div>
         </div>
     </div>
     
