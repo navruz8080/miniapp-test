@@ -89,10 +89,17 @@
                 <div onclick="nav('settings')" style="padding:10px;"><i class="fa-solid fa-gear"></i></div>
             </div>
 
-            <div class="bonus-card">
-                <div style="opacity:0.7; font-size:12px;">Бонусный баланс</div>
-                <div class="b-val"><span id="u-bonus">0</span> <span style="font-size:16px;">кг</span></div>
-                <button class="b-btn" onclick="nav('rewards')"><i class="fa-solid fa-star"></i> Задания</button>
+            <div class="bonus-card" onclick="nav('wallet')" style="cursor:pointer;">
+                <div style="opacity:0.7; font-size:12px;">Кошелек</div>
+                <div class="b-val">
+                    <span id="u-bonus">0</span> <span style="font-size:16px;">кг</span>
+                </div>
+                <div style="font-size:12px; opacity:0.8; margin-top:4px;">
+                    <span id="u-balance-tjs">0.00</span> TJS · <span id="u-balance-usd">0.00</span> USD
+                </div>
+                <button class="b-btn" onclick="event.stopPropagation(); nav('rewards')">
+                    <i class="fa-solid fa-star"></i> Задания
+                </button>
             </div>
 
             <div class="grid">
@@ -228,6 +235,38 @@
             <div class="card" style="padding: 0;">
                 <div class="pkg-item" style="padding: 16px;" onclick="nav('settings')">
                     <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-user-pen" style="color:var(--blue);"></i><b>Настройки данных</b></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-wallet" class="screen">
+        <div class="nav-head">
+            <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Кошелек</div>
+        </div>
+        <div class="container">
+            <div class="card" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; text-align:center;">
+                <div>
+                    <div style="font-size:11px; color:var(--sec);">Баланс TJS</div>
+                    <div style="font-size:18px; font-weight:800;"><span id="w-b-tjs">0.00</span></div>
+                </div>
+                <div>
+                    <div style="font-size:11px; color:var(--sec);">Баланс USD</div>
+                    <div style="font-size:18px; font-weight:800;"><span id="w-b-usd">0.00</span></div>
+                </div>
+                <div>
+                    <div style="font-size:11px; color:var(--sec);">Bonus KG</div>
+                    <div style="font-size:18px; font-weight:800; color:var(--green);"><span id="w-b-bonus">0.00</span> кг</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <b>История транзакций</b>
+                </div>
+                <div id="wallet-tx-list" style="font-size:13px; color:var(--sec);">
+                    Загрузка...
                 </div>
             </div>
         </div>
@@ -378,6 +417,9 @@
                 
                 // Инициализируем адрес сразу после загрузки данных
                 renderAddr();
+
+                // Загружаем данные кошелька
+                loadWallet();
             } catch (e) {
                 console.error('INIT ERROR:', e);
             }
@@ -575,6 +617,10 @@
             if(id === 'market') ldMk();
             if(id === 'rewards') ldRew();
             if(id === 'addresses') renderAddr(); // Обновляем адрес при переходе на экран
+            if(id === 'wallet') {
+                loadWallet();
+                loadWalletHistory();
+            }
             window.scrollTo(0,0);
         }
 
@@ -649,6 +695,82 @@
 
         function swTr(t, el) { tabTr = t; document.querySelectorAll('#screen-trucks .tab').forEach(x=>x.classList.remove('active')); el.classList.add('active'); ldTr(); }
         function swMk(t, el) { tabMk = t; document.querySelectorAll('#screen-market .tab').forEach(x=>x.classList.remove('active')); el.classList.add('active'); ldMk(); }
+
+        /* ================= WALLET ================= */
+        async function loadWallet() {
+            try {
+                const r = await fetch(`${API}/api/wallet/${uid}`, {
+                    headers: { 'ngrok-skip-browser-warning': 'true' }
+                });
+                const d = await r.json();
+                if (d.status !== 'ok' || !d.balances) return;
+
+                const b = d.balances;
+                const tjs = Number(b.tjs || 0);
+                const usd = Number(b.usd || 0);
+                const bonus = Number(b.bonus_kg || 0);
+
+                safe('u-bonus', el => el.innerText = bonus.toFixed(2));
+                safe('p-bonus', el => el.innerText = bonus.toFixed(2));
+
+                safe('u-balance-tjs', el => el.innerText = tjs.toFixed(2));
+                safe('u-balance-usd', el => el.innerText = usd.toFixed(2));
+
+                safe('w-b-tjs', el => el.innerText = tjs.toFixed(2));
+                safe('w-b-usd', el => el.innerText = usd.toFixed(2));
+                safe('w-b-bonus', el => el.innerText = bonus.toFixed(2));
+            } catch (e) {
+                console.error('Wallet load error:', e);
+            }
+        }
+
+        async function loadWalletHistory() {
+            safe('wallet-tx-list', el => el.innerHTML = 'Загрузка...');
+            try {
+                const r = await fetch(`${API}/api/wallet/${uid}/transactions?limit=20`, {
+                    headers: { 'ngrok-skip-browser-warning': 'true' }
+                });
+                const d = await r.json();
+                if (d.status !== 'ok' || !d.transactions || d.transactions.length === 0) {
+                    safe('wallet-tx-list', el => el.innerHTML = '<div style="text-align:center; padding:10px; color:#8e8e93;">Транзакций пока нет</div>');
+                    return;
+                }
+
+                const typeIcons = {
+                    'DEPOSIT': '➕',
+                    'WITHDRAWAL': '➖',
+                    'BONUS': '🎁'
+                };
+
+                const currencyNames = {
+                    'TJS': 'TJS',
+                    'USD': 'USD',
+                    'BONUS_KG': 'кг'
+                };
+
+                let h = '';
+                d.transactions.forEach(t => {
+                    const icon = typeIcons[t.type] || '•';
+                    const curName = currencyNames[t.currency] || t.currency;
+                    const amount = Number(t.amount || 0);
+                    const amountStr = (amount > 0 ? '+' : '') + amount.toFixed(2) + ' ' + curName;
+                    h += `<div style="padding:8px 0; border-bottom:1px solid #f2f2f2;">
+                            <div style="display:flex; justify-content:space-between; font-size:13px;">
+                                <span>${icon} ${amountStr}</span>
+                                <span style="opacity:0.7;">${t.created_at}</span>
+                            </div>`;
+                    if (t.description) {
+                        h += `<div style="font-size:12px; opacity:0.8; margin-top:2px;">${t.description}</div>`;
+                    }
+                    h += `</div>`;
+                });
+
+                safe('wallet-tx-list', el => el.innerHTML = h);
+            } catch (e) {
+                console.error('Wallet history error:', e);
+                safe('wallet-tx-list', el => el.innerHTML = '<div style="text-align:center; padding:10px; color:#8e8e93;">Ошибка загрузки</div>');
+            }
+        }
 
         /* ================= ORDER SUBMISSION ================= */
         async function submitOrder() {
