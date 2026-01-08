@@ -1335,15 +1335,43 @@
                 const defaultAva = `https://ui-avatars.com/api/?name=${firstName}`;
                 
                 // Параллельная загрузка данных с кэшированием
-                const [dashboardData, walletData, routesData] = await Promise.all([
-                    cachedFetch(`${API}/api/dashboard/${uid}`, 'dashboard'),
-                    cachedFetch(`${API}/api/wallet/${uid}`, 'wallet').catch(() => null),
-                    cachedFetch(`${API}/api/get_routes`, 'routes').catch(() => null)
-                ]);
+                let dashboardData, walletData, routesData;
+                try {
+                    [dashboardData, walletData, routesData] = await Promise.all([
+                        cachedFetch(`${API}/api/dashboard/${uid}`, 'dashboard'),
+                        cachedFetch(`${API}/api/wallet/${uid}`, 'wallet').catch(() => null),
+                        cachedFetch(`${API}/api/get_routes`, 'routes').catch(() => null)
+                    ]);
+                } catch (error) {
+                    console.error('Error loading initial data:', error);
+                    hideLoadingIndicator();
+                    // Показываем ошибку с возможностью повтора
+                    const retry = await showErrorPopup(
+                        'Ошибка загрузки данных. Проверьте подключение к интернету.',
+                        () => init() // Retry callback
+                    );
+                    if (retry === 'retry') {
+                        return; // init() будет вызван в callback
+                    }
+                    return; // Пользователь отменил
+                }
+                
+                // Проверяем, что dashboard загрузился успешно
+                if (!dashboardData || dashboardData.status !== 'ok') {
+                    hideLoadingIndicator();
+                    const retry = await showErrorPopup(
+                        'Не удалось загрузить данные приложения. Попробуйте обновить страницу.',
+                        () => init()
+                    );
+                    if (retry === 'retry') {
+                        return;
+                    }
+                    return;
+                }
                 
                 const data = dashboardData;
-                config = data.app_config;
-                user = data.user_info;
+                config = data.app_config || {};
+                user = data.user_info || {};
                 
                 // Если маршруты не пришли в dashboard, используем отдельный запрос
                 if (!config.routes && routesData && routesData.routes) {
@@ -1436,7 +1464,11 @@
             } catch (e) {
                 console.error('INIT ERROR:', e);
                 hideLoadingIndicator();
-                showErrorPopup('Ошибка загрузки данных', 'Не удалось загрузить данные приложения. Попробуйте обновить страницу.');
+                // Показываем ошибку с возможностью повтора
+                await showErrorPopup(
+                    'Ошибка загрузки данных. Проверьте подключение к интернету и попробуйте еще раз.',
+                    () => init() // Retry callback
+                );
             }
         }
         
