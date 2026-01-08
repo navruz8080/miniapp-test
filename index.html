@@ -766,7 +766,34 @@
             <div style="text-align:center;padding:15px;color:var(--sec);" onclick="closeM('m-create-order')">Отмена</div>
         </div>
     </div>
-    <div id="screen-market" class="screen"><div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Маркет</div></div><div class="container"><div class="tabs"><div class="tab active" onclick="swMk('item', this)">Товары</div><div class="tab" onclick="swMk('joint', this)">Сборы</div></div><div id="list-market"></div></div></div>
+    <div id="screen-market" class="screen">
+        <div class="nav-head">
+            <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Маркет</div>
+        </div>
+        <div class="container">
+            <div class="tabs">
+                <div class="tab active" onclick="swMk('item', this)">Товары</div>
+                <div class="tab" onclick="swMk('joint', this)">Сборы</div>
+            </div>
+            <div id="market-search-wrap" style="margin:12px 0;">
+                <input type="text" id="market-search" name="market-search" placeholder="🔍 Поиск товаров..." 
+                       style="width:100%;padding:12px 16px;border-radius:12px;border:1px solid var(--border);background:var(--bg);font-size:15px;"
+                       oninput="filterMarketProducts()">
+            </div>
+            <div id="list-market"></div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно деталей товара -->
+    <div id="m-product-details" class="modal-wrap">
+        <div class="modal" style="max-width:500px;">
+            <div class="modal-content" id="product-details-content">
+                <!-- Контент будет добавлен динамически -->
+            </div>
+            <div style="text-align:center;padding:15px;color:var(--sec);cursor:pointer;" onclick="closeM('m-product-details')">Закрыть</div>
+        </div>
+    </div>
     <div id="screen-rewards" class="screen">
         <div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Задания</div></div>
         <div class="container">
@@ -2323,7 +2350,10 @@
                     let d = await cachedFetch(`${API}/api/market/list?type=${tabMk}`, cacheKey);
                     c.innerHTML = '';
                     if(!d.items || d.items.length === 0) { c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Товары не найдены</div>'; return; }
-                    let h = '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">';
+                    // Сохраняем данные для фильтрации
+                    window.marketProducts = d.items;
+                    
+                    let h = '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;" id="market-products-grid">';
                     d.items.forEach(i => { 
                         const itemTitle = (i.title || 'Item').substring(0, 2);
                         const fallbackImg = `https://ui-avatars.com/api/?name=${encodeURIComponent(itemTitle)}&size=200&background=007AFF&color=fff`;
@@ -2336,14 +2366,41 @@
                         }
                         
                         const imgId = `market-img-${i.id || Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-                        h += `<div class="card" style="padding:10px;margin-bottom:0;">
-                            <img id="${imgId}" src="${imgUrl}" 
-                                 style="width:100%;height:100px;object-fit:cover;border-radius:10px;background:#f0f0f0;display:block;"
-                                 onerror="const el=document.getElementById('${imgId}'); if(el && el.src!=='${fallbackImg}'){el.src='${fallbackImg}';}else{el.style.display='none';el.style.backgroundColor='#f0f0f0';}"
-                                 onload="const el=document.getElementById('${imgId}'); if(el){el.style.display='block';}"
-                                 alt="${(i.title || 'Item').replace(/"/g, '&quot;')}">
-                            <div style="font-weight:600;font-size:13px;margin-top:8px;">${(i.title || 'Товар').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
-                            <div style="color:var(--blue); font-weight:800;">${(i.price || '0').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                        const priceValue = (i.price || '0 TJS').replace(' TJS', '').trim();
+                        const titleEscaped = (i.title || 'Товар').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        
+                        h += `<div class="card market-product-card" 
+                                   data-product-id="${i.id}" 
+                                   data-product-title="${titleEscaped.toLowerCase()}"
+                                   style="padding:0;margin-bottom:0;overflow:hidden;cursor:pointer;transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);border:1px solid var(--border);"
+                                   onclick="showProductDetails(${i.id})"
+                                   onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)';"
+                                   onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)';">
+                            <div style="position:relative;width:100%;height:140px;overflow:hidden;background:linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);">
+                                <img id="${imgId}" src="${imgUrl}" 
+                                     style="width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.3s;"
+                                     onerror="const el=document.getElementById('${imgId}'); if(el && el.src!=='${fallbackImg}'){el.src='${fallbackImg}';}else{el.style.display='none';el.style.backgroundColor='#f0f0f0';}"
+                                     onload="const el=document.getElementById('${imgId}'); if(el){el.style.display='block';}"
+                                     onmouseover="this.style.transform='scale(1.05)';"
+                                     onmouseout="this.style.transform='scale(1)';"
+                                     alt="${titleEscaped.replace(/"/g, '&quot;')}">
+                                <div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.6);color:#fff;padding:4px 8px;border-radius:12px;font-size:11px;font-weight:600;">
+                                    <i class="fa-solid fa-tag"></i>
+                                </div>
+                            </div>
+                            <div style="padding:12px;">
+                                <div style="font-weight:700;font-size:14px;margin-bottom:6px;line-height:1.3;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                                    ${titleEscaped}
+                                </div>
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+                                    <div style="color:var(--blue);font-weight:800;font-size:16px;">
+                                        ${priceValue} <span style="font-size:12px;font-weight:600;opacity:0.7;">TJS</span>
+                                    </div>
+                                    <div style="background:linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,122,255,0.3);">
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </div>
+                                </div>
+                            </div>
                         </div>`; 
                     });
                     c.innerHTML = h + '</div>';
@@ -2528,7 +2585,169 @@
                 tg.showAlert('Ошибка');
             }
         }
-        function swMk(t, el) { tabMk = t; document.querySelectorAll('#screen-market .tab').forEach(x=>x.classList.remove('active')); el.classList.add('active'); ldMk(); }
+        function swMk(t, el) { 
+            tabMk = t; 
+            document.querySelectorAll('#screen-market .tab').forEach(x=>x.classList.remove('active')); 
+            el.classList.add('active'); 
+            // Показываем/скрываем поиск только для товаров
+            const searchWrap = document.getElementById('market-search-wrap');
+            if (searchWrap) {
+                searchWrap.style.display = t === 'item' ? 'block' : 'none';
+            }
+            ldMk(); 
+        }
+        
+        // Фильтрация товаров по поисковому запросу
+        function filterMarketProducts() {
+            const searchInput = document.getElementById('market-search');
+            if (!searchInput) return;
+            
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const productCards = document.querySelectorAll('.market-product-card');
+            
+            productCards.forEach(card => {
+                const title = card.getAttribute('data-product-title') || '';
+                if (title.includes(searchTerm) || searchTerm === '') {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+        
+        // Показать детали товара
+        async function showProductDetails(productId) {
+            openM('m-product-details');
+            const contentEl = document.getElementById('product-details-content');
+            if (!contentEl) return;
+            
+            contentEl.innerHTML = '<div style="text-align:center;padding:40px;"><div class="loading-spinner"></div><div style="margin-top:16px;color:var(--sec);">Загрузка...</div></div>';
+            
+            try {
+                // Получаем данные товара из кэша или API
+                const product = window.marketProducts?.find(p => p.id === productId);
+                if (!product) {
+                    contentEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--sec);">Товар не найден</div>';
+                    return;
+                }
+                
+                const titleEscaped = (product.title || 'Товар').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                const priceValue = (product.price || '0 TJS').replace(' TJS', '').trim();
+                const fallbackImg = `https://ui-avatars.com/api/?name=${encodeURIComponent((product.title || 'Item').substring(0, 2))}&size=200&background=007AFF&color=fff`;
+                let imgUrl = product.img;
+                if (!imgUrl || !imgUrl.trim() || imgUrl === 'null' || imgUrl === 'undefined' || (!imgUrl.startsWith('http://') && !imgUrl.startsWith('https://') && !imgUrl.startsWith('data:'))) {
+                    imgUrl = fallbackImg;
+                }
+                
+                // Проверяем, есть ли активные пулы для этого товара
+                let poolsHtml = '';
+                try {
+                    const poolsRes = await safeFetch(`${API}/api/pools/list?status=ACTIVE`);
+                    if (poolsRes.status === 'ok' && poolsRes.pools) {
+                        const activePools = poolsRes.pools.filter(p => p.product_id === productId);
+                        if (activePools.length > 0) {
+                            poolsHtml = `<div style="margin-top:20px;padding:16px;background:linear-gradient(135deg, rgba(0,122,255,0.1) 0%, rgba(88,86,214,0.1) 100%);border-radius:12px;">
+                                <div style="font-weight:700;font-size:16px;margin-bottom:12px;color:var(--blue);">
+                                    <i class="fa-solid fa-users"></i> Активные сборы (${activePools.length})
+                                </div>
+                                ${activePools.map(pool => `
+                                    <div class="card" style="padding:12px;margin-bottom:8px;cursor:pointer;" onclick="showPoolDetails(${pool.id});closeM('m-product-details');">
+                                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                                            <div>
+                                                <div style="font-weight:600;font-size:14px;">Прогресс: ${pool.current_participants}/${pool.target_participants}</div>
+                                                <div style="font-size:12px;color:var(--sec);margin-top:4px;">Цена пула: <span style="font-weight:700;color:var(--green);">${pool.pool_price.toFixed(2)} TJS</span></div>
+                                            </div>
+                                            <div style="width:40px;height:40px;background:linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;">
+                                                <i class="fa-solid fa-arrow-right"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>`;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error loading pools:', e);
+                }
+                
+                contentEl.innerHTML = `
+                    <div style="padding:20px;">
+                        <div style="width:100%;height:200px;border-radius:16px;overflow:hidden;background:linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);margin-bottom:20px;">
+                            <img src="${imgUrl}" 
+                                 style="width:100%;height:100%;object-fit:cover;display:block;"
+                                 onerror="this.src='${fallbackImg}'"
+                                 alt="${titleEscaped.replace(/"/g, '&quot;')}">
+                        </div>
+                        
+                        <div style="margin-bottom:20px;">
+                            <h2 style="font-weight:800;font-size:24px;margin-bottom:12px;color:var(--text);line-height:1.2;">
+                                ${titleEscaped}
+                            </h2>
+                            <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+                                <div style="font-size:28px;font-weight:800;color:var(--blue);">
+                                    ${priceValue} <span style="font-size:18px;font-weight:600;opacity:0.7;">TJS</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${poolsHtml}
+                        
+                        <div style="display:flex;gap:12px;margin-top:24px;">
+                            <button class="btn btn-blue" style="flex:1;" onclick="createPoolFromProduct(${productId}, '${titleEscaped.replace(/'/g, "\\'")}', ${priceValue})">
+                                <i class="fa-solid fa-users"></i> Создать сбор
+                            </button>
+                            <button class="btn" style="flex:1;background:linear-gradient(135deg, #34C759 0%, #30D158 100%);" onclick="tg.showAlert('Функция покупки будет добавлена позже');">
+                                <i class="fa-solid fa-shopping-cart"></i> Купить
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                console.error('Error loading product details:', e);
+                contentEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--sec);">Ошибка загрузки данных</div>';
+            }
+        }
+        
+        // Создать пул из карточки товара
+        async function createPoolFromProduct(productId, productTitle, soloPrice) {
+            closeM('m-product-details');
+            
+            // Запрашиваем параметры пула у пользователя
+            const poolPrice = parseFloat(prompt(`Введите цену для групповой покупки (текущая цена: ${soloPrice} TJS):`, (soloPrice * 0.7).toFixed(2))) || soloPrice * 0.7;
+            const targetParticipants = parseInt(prompt('Сколько участников нужно для активации пула?', '5')) || 5;
+            
+            if (!confirm(`Создать сбор для "${productTitle}"?\nЦена соло: ${soloPrice} TJS\nЦена пула: ${poolPrice.toFixed(2)} TJS\nЦель: ${targetParticipants} участников`)) {
+                return;
+            }
+            
+            try {
+                const res = await safeFetch(`${API}/api/pools/create`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        product_id: productId,
+                        creator_id: uid,
+                        solo_price: parseFloat(soloPrice),
+                        pool_price: parseFloat(poolPrice),
+                        target_participants: parseInt(targetParticipants)
+                    })
+                });
+                
+                if (res.status === 'ok') {
+                    tg.showAlert('✅ Сбор успешно создан!');
+                    invalidateCache('pools_list');
+                    // Переключаемся на вкладку "Сборы"
+                    const jointTab = document.querySelector('#screen-market .tab:last-child');
+                    if (jointTab) {
+                        swMk('joint', jointTab);
+                    }
+                } else {
+                    tg.showAlert(res.detail || 'Ошибка создания сбора');
+                }
+            } catch (e) {
+                console.error('Error creating pool:', e);
+                tg.showAlert('Ошибка создания сбора');
+            }
+        }
         
         /* ================= ПУЛЫ (ГРУППОВЫЕ ПОКУПКИ) ================= */
         async function loadPools() {
