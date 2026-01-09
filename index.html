@@ -2755,8 +2755,32 @@
             safe('list-trucks-trips', async c => {
                 c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
                 try {
-                    // Здесь можно загрузить список машин/рейсов
-                    c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Функция в разработке</div>';
+                    const res = await safeFetch(`${API}/api/trucking/trips`);
+                    if (!res || res.status !== 'ok' || !res.trips || res.trips.length === 0) {
+                        c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Активных рейсов нет</div>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    res.trips.forEach(trip => {
+                        html += `
+                            <div class="card" style="padding:16px;margin-bottom:12px;">
+                                <div style="font-weight:700;font-size:16px;margin-bottom:8px;">${trip.route}</div>
+                                <div style="font-size:14px;color:var(--sec);margin-bottom:4px;">${trip.car_model} • ${trip.car_number}</div>
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+                                    <div>
+                                        <div style="font-size:12px;color:var(--sec);">Цена</div>
+                                        <div style="font-weight:700;color:var(--blue);">${trip.price_per_kg} TJS/кг</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size:12px;color:var(--sec);">Свободно</div>
+                                        <div style="font-weight:700;color:var(--green);">${trip.capacity_available} кг</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    c.innerHTML = html;
                 } catch(e) {
                     console.error('Load trips error:', e);
                     c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Ошибка загрузки</div>';
@@ -2769,8 +2793,32 @@
             safe('list-trucks-cargo', async c => {
                 c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
                 try {
-                    // Здесь можно загрузить список грузов
-                    c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Функция в разработке</div>';
+                    const res = await safeFetch(`${API}/api/trucking/cargo`);
+                    if (!res || res.status !== 'ok' || !res.cargo || res.cargo.length === 0) {
+                        c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Активных грузов нет</div>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    res.cargo.forEach(item => {
+                        html += `
+                            <div class="card" style="padding:16px;margin-bottom:12px;">
+                                <div style="font-weight:700;font-size:16px;margin-bottom:8px;">${item.route}</div>
+                                <div style="font-size:14px;color:var(--sec);margin-bottom:8px;">${item.description}</div>
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+                                    <div>
+                                        <div style="font-size:12px;color:var(--sec);">Вес</div>
+                                        <div style="font-weight:700;">${item.weight} кг</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size:12px;color:var(--sec);">Предложенная цена</div>
+                                        <div style="font-weight:700;color:var(--blue);">${item.price_offer} TJS</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    c.innerHTML = html;
                 } catch(e) {
                     console.error('Load cargo error:', e);
                     c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Ошибка загрузки</div>';
@@ -2841,10 +2889,13 @@
             safe('list-market-categories', async c => {
                 c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
                 try {
-                    const categories = ['Электроника', 'Одежда', 'Аксессуары', 'Дом и сад', 'Спорт', 'Красота', 'Игрушки', 'Авто'];
+                    const res = await safeFetch(`${API}/api/marketplace/categories`);
+                    const categories = (res && res.status === 'ok' && res.categories) ? res.categories : 
+                        ['Электроника', 'Одежда', 'Аксессуары', 'Дом и сад', 'Спорт', 'Красота', 'Игрушки', 'Авто'];
+                    
                     let html = '<div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:12px;">';
+                    const colors = ['#FF2D55', '#34C759', '#007AFF', '#FF9500', '#5856D6', '#FF3B30', '#FFD60A', '#8E8E93'];
                     categories.forEach((cat, idx) => {
-                        const colors = ['#FF2D55', '#34C759', '#007AFF', '#FF9500', '#5856D6', '#FF3B30', '#FFD60A', '#8E8E93'];
                         html += `<div class="card" style="padding:20px;text-align:center;cursor:pointer;" onclick="nav('market-products');filterByCategory('${cat}')">
                             <div class="icon-box" style="color:${colors[idx % colors.length]};font-size:32px;margin-bottom:8px;">
                                 <i class="fa-solid fa-tag"></i>
@@ -2856,7 +2907,20 @@
                     c.innerHTML = html;
                 } catch(e) {
                     console.error('Load categories error:', e);
-                    c.innerHTML = '<div style="text-align:center;padding:40px;color:var(--sec);">Ошибка загрузки категорий</div>';
+                    // Fallback на статический список
+                    const categories = ['Электроника', 'Одежда', 'Аксессуары', 'Дом и сад', 'Спорт', 'Красота', 'Игрушки', 'Авто'];
+                    const colors = ['#FF2D55', '#34C759', '#007AFF', '#FF9500', '#5856D6', '#FF3B30', '#FFD60A', '#8E8E93'];
+                    let html = '<div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:12px;">';
+                    categories.forEach((cat, idx) => {
+                        html += `<div class="card" style="padding:20px;text-align:center;cursor:pointer;" onclick="nav('market-products');filterByCategory('${cat}')">
+                            <div class="icon-box" style="color:${colors[idx % colors.length]};font-size:32px;margin-bottom:8px;">
+                                <i class="fa-solid fa-tag"></i>
+                            </div>
+                            <div style="font-weight:600;">${cat}</div>
+                        </div>`;
+                    });
+                    html += '</div>';
+                    c.innerHTML = html;
                 }
             });
         }
@@ -2866,7 +2930,32 @@
             safe('list-market-sellers', async c => {
                 c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
                 try {
-                    c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Функция в разработке</div>';
+                    const res = await safeFetch(`${API}/api/marketplace/sellers`);
+                    if (!res || res.status !== 'ok' || !res.sellers || res.sellers.length === 0) {
+                        c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Продавцов пока нет</div>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    res.sellers.forEach(seller => {
+                        html += `
+                            <div class="card" style="padding:16px;margin-bottom:12px;display:flex;gap:12px;align-items:center;">
+                                <img src="${seller.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(seller.name) + '&size=60'}" 
+                                     style="width:60px;height:60px;border-radius:50%;object-fit:cover;">
+                                <div style="flex:1;">
+                                    <div style="font-weight:700;font-size:16px;margin-bottom:4px;">${seller.name}</div>
+                                    <div style="font-size:14px;color:var(--sec);margin-bottom:4px;">
+                                        ${seller.products_count} товаров
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:4px;">
+                                        <i class="fa-solid fa-star" style="color:#FFD60A;font-size:12px;"></i>
+                                        <span style="font-weight:600;">${seller.rating}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    c.innerHTML = html;
                 } catch(e) {
                     console.error('Load sellers error:', e);
                     c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Ошибка загрузки</div>';
@@ -2902,13 +2991,86 @@
         }
         
         // Фильтр по категории
-        function filterByCategory(category) {
-            // Переключаемся на экран товаров и применяем фильтр
-            setTimeout(() => {
-                const searchInput = document.getElementById('market-search');
-                if (searchInput) {
-                    searchInput.value = category;
-                    filterMarketProducts();
+        async function filterByCategory(category) {
+            // Переключаемся на экран товаров
+            nav('market-products');
+            
+            setTimeout(async () => {
+                try {
+                    const res = await safeFetch(`${API}/api/marketplace/products/by-category?category=${encodeURIComponent(category)}`);
+                    if (res && res.status === 'ok' && res.items) {
+                        // Обновляем список товаров
+                        window.marketProducts = res.items;
+                        const grid = document.getElementById('market-products-grid');
+                        if (grid) {
+                            let html = '';
+                            res.items.forEach(i => {
+                                const itemTitle = (i.title || 'Item').substring(0, 2);
+                                const fallbackImg = `https://ui-avatars.com/api/?name=${encodeURIComponent(itemTitle)}&size=200&background=007AFF&color=fff`;
+                                let imgUrl = i.img;
+                                if (!imgUrl || !imgUrl.trim() || imgUrl === 'null' || imgUrl === 'undefined') {
+                                    imgUrl = fallbackImg;
+                                } else if (!imgUrl.startsWith('http://') && !imgUrl.startsWith('https://') && !imgUrl.startsWith('data:')) {
+                                    imgUrl = fallbackImg;
+                                }
+                                
+                                const imgId = `market-img-${i.id || Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                                const priceValue = (i.price || '0 TJS').replace(' TJS', '').trim();
+                                const titleEscaped = (i.title || 'Товар').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                                
+                                html += `<div class="card market-product-card" 
+                                           data-product-id="${i.id}" 
+                                           data-product-title="${titleEscaped.toLowerCase()}"
+                                           style="padding:0;margin-bottom:0;overflow:hidden;cursor:pointer;transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);border:1px solid var(--border);"
+                                           onclick="showProductDetails(${i.id})"
+                                           onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)';"
+                                           onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)';">
+                                    <div style="position:relative;width:100%;height:140px;overflow:hidden;background:linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);">
+                                        <img id="${imgId}" src="${imgUrl}" 
+                                             style="width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.3s;"
+                                             onerror="const el=document.getElementById('${imgId}'); if(el && el.src!=='${fallbackImg}'){el.src='${fallbackImg}';}else{el.style.display='none';el.style.backgroundColor='#f0f0f0';}"
+                                             onload="const el=document.getElementById('${imgId}'); if(el){el.style.display='block';}"
+                                             onmouseover="this.style.transform='scale(1.05)';"
+                                             onmouseout="this.style.transform='scale(1)';"
+                                             alt="${titleEscaped.replace(/"/g, '&quot;')}">
+                                        <div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.6);color:#fff;padding:4px 8px;border-radius:12px;font-size:11px;font-weight:600;">
+                                            <i class="fa-solid fa-tag"></i>
+                                        </div>
+                                    </div>
+                                    <div style="padding:12px;">
+                                        <div style="font-weight:700;font-size:14px;margin-bottom:6px;line-height:1.3;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                                            ${titleEscaped}
+                                        </div>
+                                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+                                            <div style="color:var(--blue);font-weight:800;font-size:16px;">
+                                                ${priceValue} <span style="font-size:12px;font-weight:600;opacity:0.7;">TJS</span>
+                                            </div>
+                                            <div style="display:flex;gap:6px;">
+                                                <div style="background:rgba(0,122,255,0.1);color:var(--blue);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;" 
+                                                     onclick="event.stopPropagation();toggleWishlist(${i.id})" 
+                                                     title="В избранное">
+                                                    <i class="fa-regular fa-heart"></i>
+                                                </div>
+                                                <div style="background:linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,122,255,0.3);cursor:pointer;" 
+                                                     onclick="event.stopPropagation();addToCart(${i.id}, 1)">
+                                                    <i class="fa-solid fa-cart-plus"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
+                            });
+                            grid.innerHTML = html;
+                        }
+                    }
+                } catch(e) {
+                    console.error('Filter by category error:', e);
+                    // Fallback на обычный поиск
+                    const searchInput = document.getElementById('market-search');
+                    if (searchInput) {
+                        searchInput.value = category;
+                        filterMarketProducts();
+                    }
                 }
             }, 100);
         }
