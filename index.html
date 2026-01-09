@@ -479,6 +479,7 @@
                 <div class="grid-item" onclick="nav('trucks')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-truck-fast"></i></div><span class="grid-lbl">Биржа</span></div>
                 <div class="grid-item" onclick="nav('market')"><div class="icon-box" style="color: #FF9500;"><i class="fa-solid fa-bag-shopping"></i></div><span class="grid-lbl">Маркет</span></div>
                 <div class="grid-item" onclick="nav('calc')"><div class="icon-box" style="color: #007AFF;"><i class="fa-solid fa-calculator"></i></div><span class="grid-lbl">Расчет</span></div>
+                <div class="grid-item" onclick="nav('orders')"><div class="icon-box" style="color: #34C759;"><i class="fa-solid fa-box"></i></div><span class="grid-lbl">Заказы</span></div>
             </div>
 
             <div class="card" style="background: linear-gradient(135deg, rgba(0,122,255,0.08) 0%, rgba(88,86,214,0.08) 100%); border: 1px solid rgba(0,122,255,0.15); display:flex; align-items:center; gap:16px; padding:20px; cursor:pointer;" onclick="nav('rewards')">
@@ -766,10 +767,45 @@
             <div style="text-align:center;padding:15px;color:var(--sec);" onclick="closeM('m-create-order')">Отмена</div>
         </div>
     </div>
+    <div id="screen-cart" class="screen">
+        <div class="nav-head">
+            <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Корзина</div>
+        </div>
+        <div class="container" style="padding-bottom:120px;">
+            <div id="cart-content"></div>
+            <div id="cart-footer" style="position:fixed;bottom:0;left:0;right:0;background:var(--bg);padding:16px;border-top:1px solid var(--border);box-shadow:0 -2px 10px rgba(0,0,0,0.1);z-index:10;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <div>
+                        <div style="font-size:12px;color:var(--sec);">Итого</div>
+                        <div id="cart-total" style="font-size:24px;font-weight:800;color:var(--blue);">0 TJS</div>
+                    </div>
+                    <button class="btn btn-blue" id="cart-checkout-btn" onclick="checkoutCart()" style="flex:1;max-width:200px;">
+                        Оформить заказ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="screen-orders" class="screen">
+        <div class="nav-head">
+            <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Мои заказы</div>
+        </div>
+        <div class="container">
+            <div id="orders-content"></div>
+        </div>
+    </div>
+    
     <div id="screen-market" class="screen">
         <div class="nav-head">
             <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Маркет</div>
+            <div style="position:relative;cursor:pointer;" onclick="nav('cart')">
+                <i class="fa-solid fa-shopping-cart" style="font-size:20px;"></i>
+                <span id="cart-badge" style="position:absolute;top:-8px;right:-8px;background:#FF3B30;color:#fff;border-radius:50%;width:20px;height:20px;display:none;align-items:center;justify-content:center;font-size:11px;font-weight:700;">0</span>
+            </div>
         </div>
         <div class="container">
             <div class="tabs">
@@ -1477,7 +1513,7 @@
         } else {
             setTimeout(checkFontAwesome, 1000);
         }
-        
+
         /* ================= INIT ================= */
         let initRetryCount = 0;
         const MAX_INIT_RETRIES = 3;
@@ -1646,9 +1682,13 @@
                 
                 // Скрываем индикатор загрузки
                 hideLoadingIndicator();
+                // Обновляем бейдж корзины после инициализации
+                updateCartBadge();
             } catch (e) {
                 console.error('[INIT] Error during initialization:', e);
                 hideLoadingIndicator();
+                // Обновляем бейдж корзины даже при ошибке
+                updateCartBadge();
                 
                 // Не показываем ошибку пользователю - используем кэш или минимальные данные
                 // Пытаемся использовать кэшированные данные
@@ -2019,12 +2059,12 @@
                 }
                 sel.innerHTML = '';
                 if (routes && Array.isArray(routes) && routes.length > 0) {
-                    routes.forEach(r => {
+                routes.forEach(r => {
                         if (r) { // Проверка на null/undefined
-                            let opt = document.createElement('option');
+                    let opt = document.createElement('option');
                             opt.value = r;
                             opt.innerText = r;
-                            sel.appendChild(opt);
+                    sel.appendChild(opt);
                         }
                     });
                     console.log(`Loaded ${routes.length} routes`); // Отладка
@@ -2196,6 +2236,10 @@
         }
 
         function nav(id) {
+            // Обновляем бейдж корзины при навигации
+            if (id !== 'cart') {
+                updateCartBadge();
+            }
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
             safe('screen-' + id, el => el.classList.add('active'));
             if(id === 'trucks') ldTr();
@@ -2219,6 +2263,12 @@
                 } else if (isOpt && config.routes) {
                     renderRoutes(config.routes);
                 }
+            }
+            if(id === 'cart') {
+                loadCart();
+            }
+            if(id === 'orders') {
+                loadOrders();
             }
             window.scrollTo(0,0);
         }
@@ -2325,8 +2375,8 @@
                     } else {
                         // Старый код для trips и cargo
                         let d = await safeFetch(`${API}/api/trucking/list?type=${tabTr}`); c.innerHTML = '';
-                        if(!d.items || d.items.length === 0) { c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Объявлений нет</div>'; return; }
-                        d.items.forEach(i => { c.innerHTML += `<div class="card"><div style="font-weight:700;">${i.title}</div><div style="font-size:13px;color:#8e8e93;">${i.subtitle}</div><div style="color:var(--blue); font-weight:800; margin-top:8px;">${i.details}</div></div>`; });
+                    if(!d.items || d.items.length === 0) { c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Объявлений нет</div>'; return; }
+                    d.items.forEach(i => { c.innerHTML += `<div class="card"><div style="font-weight:700;">${i.title}</div><div style="font-size:13px;color:#8e8e93;">${i.subtitle}</div><div style="color:var(--blue); font-weight:800; margin-top:8px;">${i.details}</div></div>`; });
                     }
                 } catch(e) {
                     console.error('Load error:', e);
@@ -2396,8 +2446,16 @@
                                     <div style="color:var(--blue);font-weight:800;font-size:16px;">
                                         ${priceValue} <span style="font-size:12px;font-weight:600;opacity:0.7;">TJS</span>
                                     </div>
-                                    <div style="background:linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,122,255,0.3);">
-                                        <i class="fa-solid fa-arrow-right"></i>
+                                    <div style="display:flex;gap:6px;">
+                                        <div style="background:rgba(0,122,255,0.1);color:var(--blue);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;" 
+                                             onclick="event.stopPropagation();toggleWishlist(${i.id})" 
+                                             title="В избранное">
+                                            <i class="fa-regular fa-heart"></i>
+                                        </div>
+                                        <div style="background:linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,122,255,0.3);cursor:pointer;" 
+                                             onclick="event.stopPropagation();addToCart(${i.id}, 1)">
+                                            <i class="fa-solid fa-cart-plus"></i>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -2696,8 +2754,11 @@
                             <button class="btn btn-blue" style="flex:1;" onclick="createPoolFromProduct(${productId}, '${titleEscaped.replace(/'/g, "\\'")}', ${priceValue})">
                                 <i class="fa-solid fa-users"></i> Создать сбор
                             </button>
-                            <button class="btn" style="flex:1;background:linear-gradient(135deg, #34C759 0%, #30D158 100%);" onclick="tg.showAlert('Функция покупки будет добавлена позже');">
-                                <i class="fa-solid fa-shopping-cart"></i> Купить
+                            <button class="btn" style="flex:1;background:linear-gradient(135deg, #34C759 0%, #30D158 100%);" onclick="addToCart(${productId}, 1);closeM('m-product-details');">
+                                <i class="fa-solid fa-cart-plus"></i> В корзину
+                            </button>
+                            <button class="btn" style="flex:1;background:rgba(0,122,255,0.1);color:var(--blue);border:1px solid var(--blue);" onclick="toggleWishlist(${productId})">
+                                <i class="fa-regular fa-heart"></i> В избранное
                             </button>
                         </div>
                     </div>
@@ -2934,6 +2995,261 @@
                 console.error('Join pool error:', e);
                 tg.showAlert('Ошибка присоединения к сбору');
             }
+        }
+        
+        /* ================= MARKETPLACE (Корзина, Заказы, Избранное) ================= */
+        
+        // Добавить в корзину
+        async function addToCart(productId, quantity = 1) {
+            try {
+                const res = await safeFetch(`${API}/api/marketplace/cart/add`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        user_id: uid,
+                        product_id: productId,
+                        quantity: quantity
+                    })
+                });
+                
+                if (res.status === 'ok') {
+                    tg.showAlert('✅ Товар добавлен в корзину!');
+                    updateCartBadge();
+                } else {
+                    tg.showAlert(res.detail || 'Ошибка добавления в корзину');
+                }
+            } catch (e) {
+                console.error('Error adding to cart:', e);
+                tg.showAlert('Ошибка добавления в корзину');
+            }
+        }
+        
+        // Переключить избранное
+        async function toggleWishlist(productId) {
+            try {
+                // Сначала проверяем, есть ли уже в избранном
+                const wishlistRes = await safeFetch(`${API}/api/marketplace/wishlist/${uid}`);
+                const existing = wishlistRes.items?.find(item => item.product_id === productId);
+                
+                if (existing) {
+                    // Удаляем из избранного
+                    const res = await safeFetch(`${API}/api/marketplace/wishlist/${existing.id}`, {
+                        method: 'DELETE'
+                    });
+                    if (res.status === 'ok') {
+                        tg.showAlert('Удалено из избранного');
+                    }
+                } else {
+                    // Добавляем в избранное
+                    const res = await safeFetch(`${API}/api/marketplace/wishlist/add?user_id=${uid}&product_id=${productId}`, {
+                        method: 'POST'
+                    });
+                    if (res.status === 'ok') {
+                        tg.showAlert('✅ Добавлено в избранное!');
+                    }
+                }
+            } catch (e) {
+                console.error('Error toggling wishlist:', e);
+                tg.showAlert('Ошибка');
+            }
+        }
+        
+        // Обновить бейдж корзины
+        async function updateCartBadge() {
+            try {
+                const cartRes = await safeFetch(`${API}/api/marketplace/cart/${uid}`);
+                const cartBadge = document.getElementById('cart-badge');
+                if (cartBadge && cartRes.count > 0) {
+                    cartBadge.textContent = cartRes.count;
+                    cartBadge.style.display = 'flex';
+                } else if (cartBadge) {
+                    cartBadge.style.display = 'none';
+                }
+            } catch (e) {
+                console.error('Error updating cart badge:', e);
+            }
+        }
+        
+        // Загрузить корзину
+        async function loadCart() {
+            safe('cart-content', async c => {
+                c.innerHTML = '<div style="text-align:center;padding:40px;">Загрузка...</div>';
+                try {
+                    const res = await safeFetch(`${API}/api/marketplace/cart/${uid}`);
+                    if (res.status !== 'ok' || !res.items || res.items.length === 0) {
+                        c.innerHTML = '<div style="text-align:center;padding:60px;"><i class="fa-solid fa-cart-shopping" style="font-size:48px;color:var(--sec);opacity:0.5;margin-bottom:16px;"></i><div style="color:var(--sec);font-size:16px;">Корзина пуста</div></div>';
+                        const totalEl = document.getElementById('cart-total');
+                        const btnEl = document.getElementById('cart-checkout-btn');
+                        if (totalEl) totalEl.textContent = '0 TJS';
+                        if (btnEl) btnEl.style.display = 'none';
+                        return;
+                    }
+                    
+                    let html = '';
+                    res.items.forEach(item => {
+                        html += `
+                            <div class="card" style="padding:16px;margin-bottom:12px;">
+                                <div style="display:flex;gap:12px;">
+                                    <img src="${item.product_image || 'https://ui-avatars.com/api/?name=PROD&size=100'}" 
+                                         style="width:80px;height:80px;object-fit:cover;border-radius:12px;background:#f0f0f0;">
+                                    <div style="flex:1;">
+                                        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${(item.product_title || 'Товар').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                                        <div style="font-size:18px;font-weight:800;color:var(--blue);margin-bottom:8px;">${item.price} TJS</div>
+                                        <div style="display:flex;align-items:center;gap:12px;">
+                                            <button onclick="updateCartItem(${item.id}, ${item.quantity - 1})" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--bg);font-size:18px;cursor:pointer;">-</button>
+                                            <span style="font-weight:700;min-width:30px;text-align:center;">${item.quantity}</span>
+                                            <button onclick="updateCartItem(${item.id}, ${item.quantity + 1})" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--bg);font-size:18px;cursor:pointer;">+</button>
+                                            <button onclick="removeFromCart(${item.id})" style="margin-left:auto;color:#FF3B30;background:none;border:none;font-size:20px;cursor:pointer;">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    c.innerHTML = html;
+                    const totalEl = document.getElementById('cart-total');
+                    const btnEl = document.getElementById('cart-checkout-btn');
+                    if (totalEl) totalEl.textContent = `${res.total} TJS`;
+                    if (btnEl) btnEl.style.display = 'block';
+                } catch (e) {
+                    console.error('Error loading cart:', e);
+                    c.innerHTML = '<div style="text-align:center;padding:40px;color:var(--sec);">Ошибка загрузки корзины</div>';
+                }
+            });
+        }
+        
+        // Обновить количество товара в корзине
+        async function updateCartItem(cartItemId, newQuantity) {
+            if (newQuantity <= 0) {
+                removeFromCart(cartItemId);
+                return;
+            }
+            try {
+                const res = await safeFetch(`${API}/api/marketplace/cart/update`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        cart_item_id: cartItemId,
+                        quantity: newQuantity
+                    })
+                });
+                if (res.status === 'ok') {
+                    loadCart();
+                    updateCartBadge();
+                }
+            } catch (e) {
+                console.error('Error updating cart:', e);
+            }
+        }
+        
+        // Удалить из корзины
+        async function removeFromCart(cartItemId) {
+            try {
+                const res = await safeFetch(`${API}/api/marketplace/cart/${cartItemId}`, {
+                    method: 'DELETE'
+                });
+                if (res.status === 'ok') {
+                    loadCart();
+                    updateCartBadge();
+                    tg.showAlert('Товар удален из корзины');
+                }
+            } catch (e) {
+                console.error('Error removing from cart:', e);
+            }
+        }
+        
+        // Оформить заказ
+        async function checkoutCart() {
+            if (!confirm('Оформить заказ из корзины?')) return;
+            try {
+                const res = await safeFetch(`${API}/api/marketplace/orders/create`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        user_id: uid,
+                        payment_method: 'WALLET'
+                    })
+                });
+                if (res.status === 'ok') {
+                    tg.showAlert(`✅ Заказ создан! Номер: ${res.order_number}`);
+                    loadCart();
+                    updateCartBadge();
+                    nav('orders');
+                } else {
+                    tg.showAlert(res.detail || 'Ошибка создания заказа');
+                }
+            } catch (e) {
+                console.error('Error checkout:', e);
+                tg.showAlert('Ошибка оформления заказа');
+            }
+        }
+        
+        // Загрузить заказы
+        async function loadOrders() {
+            safe('orders-content', async c => {
+                c.innerHTML = '<div style="text-align:center;padding:40px;">Загрузка...</div>';
+                try {
+                    const res = await safeFetch(`${API}/api/marketplace/orders/${uid}`);
+                    if (res.status !== 'ok' || !res.orders || res.orders.length === 0) {
+                        c.innerHTML = '<div style="text-align:center;padding:60px;"><i class="fa-solid fa-box" style="font-size:48px;color:var(--sec);opacity:0.5;margin-bottom:16px;"></i><div style="color:var(--sec);font-size:16px;">Заказов пока нет</div></div>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    res.orders.forEach(order => {
+                        const statusColors = {
+                            'PENDING': '#FF9500',
+                            'PAID': '#007AFF',
+                            'PROCESSING': '#5856D6',
+                            'SHIPPED': '#34C759',
+                            'DELIVERED': '#34C759',
+                            'CANCELLED': '#FF3B30'
+                        };
+                        const statusText = {
+                            'PENDING': 'Ожидает оплаты',
+                            'PAID': 'Оплачен',
+                            'PROCESSING': 'В обработке',
+                            'SHIPPED': 'Отправлен',
+                            'DELIVERED': 'Доставлен',
+                            'CANCELLED': 'Отменен'
+                        };
+                        
+                        html += `
+                            <div class="card" style="padding:16px;margin-bottom:12px;">
+                                <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">
+                                    <div>
+                                        <div style="font-weight:700;font-size:16px;margin-bottom:4px;">Заказ ${order.order_number}</div>
+                                        <div style="font-size:12px;color:var(--sec);">${new Date(order.created_at).toLocaleString('ru-RU')}</div>
+                                    </div>
+                                    <div style="background:${statusColors[order.status] || '#8E8E93'}20;color:${statusColors[order.status] || '#8E8E93'};padding:6px 12px;border-radius:12px;font-size:12px;font-weight:600;">
+                                        ${statusText[order.status] || order.status}
+                                    </div>
+                                </div>
+                                <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:12px;">
+                                    ${order.items.map(item => `
+                                        <div style="display:flex;gap:12px;margin-bottom:8px;">
+                                            <img src="${item.product_image || 'https://ui-avatars.com/api/?name=PROD&size=60'}" 
+                                                 style="width:50px;height:50px;object-fit:cover;border-radius:8px;">
+                                            <div style="flex:1;">
+                                                <div style="font-size:14px;font-weight:600;">${(item.product_title || 'Товар').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                                                <div style="font-size:12px;color:var(--sec);">${item.quantity} шт. × ${item.price} TJS</div>
+                                            </div>
+                                            <div style="font-weight:700;color:var(--blue);">${item.total} TJS</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+                                    <div style="font-size:12px;color:var(--sec);">Итого</div>
+                                    <div style="font-size:20px;font-weight:800;color:var(--blue);">${order.total_amount} TJS</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    c.innerHTML = html;
+                } catch (e) {
+                    console.error('Error loading orders:', e);
+                    c.innerHTML = '<div style="text-align:center;padding:40px;color:var(--sec);">Ошибка загрузки заказов</div>';
+                }
+            });
         }
 
         /* ================= WALLET ================= */
