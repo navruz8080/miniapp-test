@@ -1402,15 +1402,33 @@
             }
             
             // Делаем запрос без показа ошибок (silent mode)
-            console.log(`[Cache MISS] ${cacheKey}, fetching...`);
+            console.log(`[Cache MISS] ${cacheKey}, fetching from ${url}...`);
             try {
                 const response = await safeFetchSilent(url, options);
+                console.log(`[Cache] Response for ${cacheKey}:`, {
+                    status: response?.status,
+                    hasData: !!response,
+                    hasUserInfo: !!response?.user_info,
+                    hasAppConfig: !!response?.app_config,
+                    userInfoKeys: response?.user_info ? Object.keys(response.user_info) : []
+                });
+                
+                // Проверяем, что ответ валидный
+                if (!response) {
+                    console.warn(`[Cache] Empty response for ${cacheKey}, using cache if available`);
+                    if (cache[cacheKey]) {
+                        return cache[cacheKey].data;
+                    }
+                    throw new Error('Empty response');
+                }
+                
                 cache[cacheKey] = {
                     data: response,
                     timestamp: now
                 };
                 return response;
             } catch (error) {
+                console.error(`[Cache] Error fetching ${cacheKey}:`, error);
                 // В случае ошибки возвращаем старые данные из кэша, если есть
                 if (cache[cacheKey]) {
                     console.log(`[Cache FALLBACK] ${cacheKey}, using stale data`);
@@ -1964,8 +1982,20 @@
                 
                 // Проверяем, что dashboard загрузился успешно
                 if (!dashboardData || dashboardData.status !== 'ok') {
+                    console.warn('[INIT] Dashboard data invalid:', {
+                        hasData: !!dashboardData,
+                        status: dashboardData?.status,
+                        error: dashboardData?.detail || dashboardData?.error
+                    });
+                    
+                    // Очищаем кэш если данные невалидные
+                    if (dashboardData && dashboardData.status !== 'ok') {
+                        console.log('[INIT] Invalidating dashboard cache');
+                        cache.dashboard = null;
+                    }
+                    
                     // Пытаемся использовать кэшированные данные (даже устаревшие)
-                    if (cache.dashboard && cache.dashboard.data) {
+                    if (cache.dashboard && cache.dashboard.data && cache.dashboard.data.status === 'ok') {
                         console.log('[INIT] Using cached dashboard data (status check)');
                         dashboardData = cache.dashboard.data;
                     } else {
@@ -2015,6 +2045,16 @@
                 const data = dashboardData;
                 config = data.app_config || {};
                 user = data.user_info || {};
+                
+                // Логируем загруженные данные для отладки
+                console.log('[INIT] Dashboard data loaded:', {
+                    status: data.status,
+                    hasUserInfo: !!user,
+                    userName: user?.name,
+                    markingCode: user?.marking_code,
+                    level: user?.level,
+                    bonusKg: user?.bonus_kg
+                });
                 
                 // Проверяем статус продавца и показываем кнопку добавления товара
                 checkSellerStatus();
@@ -2110,27 +2150,68 @@
                     }
                 });
 
-                safe('u-name', el => el.innerText = user.name || firstName);
-                safe('u-lvl', el => el.innerText = user.level || 'Новичок');
-                safe('u-bonus', el => el.innerText = user.bonus_kg || 0);
+                // Обновляем данные пользователя с проверкой и логированием
+                console.log('[INIT] Updating UI with user data:', {
+                    name: user.name || firstName,
+                    level: user.level || 'Новичок',
+                    bonus_kg: user.bonus_kg || 0,
+                    marking_code: user.marking_code || 'Загрузка...',
+                    user_id: user.user_id
+                });
+                
+                safe('u-name', el => {
+                    if (el) {
+                        const name = user.name || firstName || 'Гость';
+                        el.innerText = name;
+                        console.log('[INIT] Set u-name to:', name);
+                    }
+                });
+                safe('u-lvl', el => {
+                    if (el) {
+                        const level = user.level || 'Новичок';
+                        el.innerText = level;
+                        console.log('[INIT] Set u-lvl to:', level);
+                    }
+                });
+                safe('u-bonus', el => {
+                    if (el) {
+                        const bonus = (user.bonus_kg || 0).toFixed(2);
+                        el.innerText = bonus;
+                        console.log('[INIT] Set u-bonus to:', bonus);
+                    }
+                });
                 safe('txt-code', el => {
-                    const code = user.marking_code || 'Загрузка...';
-                    el.innerText = code;
-                    if (code === 'Загрузка...') {
-                        el.style.color = '#8E8E93';
-                    } else {
-                        el.style.color = '#F57F17';
+                    if (el) {
+                        const code = user.marking_code || 'Загрузка...';
+                        el.innerText = code;
+                        console.log('[INIT] Set txt-code to:', code);
+                        if (code === 'Загрузка...') {
+                            el.style.color = '#8E8E93';
+                        } else {
+                            el.style.color = '#F57F17';
+                        }
                     }
                 });
 
-                safe('p-name', el => el.innerText = user.name || firstName);
-                safe('p-id', el => el.innerText = user.user_id);
-                safe('p-bonus', el => el.innerText = user.bonus_kg || 0);
-                safe('p-lvl-tag', el => el.innerText = user.level || 'Новичок');
-                safe('p-status-name', el => el.innerText = user.level || 'Новичок');
+                // Обновляем данные профиля
+                safe('p-name', el => {
+                    if (el) el.innerText = user.name || firstName || 'Гость';
+                });
+                safe('p-id', el => {
+                    if (el) el.innerText = user.user_id || String(uid);
+                });
+                safe('p-bonus', el => {
+                    if (el) el.innerText = (user.bonus_kg || 0).toFixed(2);
+                });
+                safe('p-lvl-tag', el => {
+                    if (el) el.innerText = user.level || 'Новичок';
+                });
+                safe('p-status-name', el => {
+                    if (el) el.innerText = user.level || 'Новичок';
+                });
 
-                renderPvzOptions(config.pvz_list, user.pvz_id);
-                renderPackageList(d.packages);
+                renderPvzOptions(config.pvz_list || [], user.pvz_id);
+                renderPackageList(data.packages || []);
 
                 // Загружаем маршруты
                 if (config.routes && config.routes.length > 0) {
