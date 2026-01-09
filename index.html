@@ -478,7 +478,6 @@
                 <div class="grid-item" onclick="nav('china')"><div class="icon-box" style="color: #FF2D55;"><i class="fa-solid fa-warehouse"></i></div><span class="grid-lbl">Мой Китай</span></div>
                 <div class="grid-item" onclick="nav('trucks')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-truck-fast"></i></div><span class="grid-lbl">Биржа</span></div>
                 <div class="grid-item" onclick="nav('market')"><div class="icon-box" style="color: #FF9500;"><i class="fa-solid fa-bag-shopping"></i></div><span class="grid-lbl">Маркет</span></div>
-                <div class="grid-item" onclick="nav('calc')"><div class="icon-box" style="color: #007AFF;"><i class="fa-solid fa-calculator"></i></div><span class="grid-lbl">Расчет</span></div>
                 <div class="grid-item" onclick="nav('orders')"><div class="icon-box" style="color: #34C759;"><i class="fa-solid fa-box"></i></div><span class="grid-lbl">Заказы</span></div>
             </div>
 
@@ -2106,10 +2105,14 @@
 
         /* ================= MODE ================= */
         function toggleMode() {
+            // Проверяем, в каком экране мы находимся
+            const calcCalculatorActive = gid('screen-calc-calculator')?.classList.contains('active');
             const calcActive = gid('screen-calc')?.classList.contains('active');
-            const src = calcActive ? gid('tg-calc') : gid('tg-opt');
+            const src = calcCalculatorActive ? gid('tg-calc') : (calcActive ? null : gid('tg-opt'));
 
-            isOpt = src ? src.checked : isOpt;
+            if (src) {
+                isOpt = src.checked;
+            }
             updMode();
 
             fetch(`${API}/api/update_settings`, {
@@ -2119,22 +2122,52 @@
                     user_id: uid,
                     category: isOpt ? 'more_100' : 'less_100'
                 })
-            });
+            }).catch(e => console.error('Error updating settings:', e));
         }
 
         function updMode() {
-            safe('tg-opt', el => el.checked = isOpt);
-            safe('tg-calc', el => el.checked = isOpt);
-            safe('sel-city', el => el.style.display = isOpt ? 'block' : 'none');
-            safe('box-code', el => el.style.display = isOpt ? 'none' : 'block');
-            safe('box-calc-opt', el => el.style.display = isOpt ? 'block' : 'none');
+            // Обновляем переключатель в калькуляторе
+            safe('tg-calc', el => {
+                if (el) {
+                    el.checked = isOpt;
+                }
+            });
+            
+            // Обновляем переключатель в других местах (если есть)
+            safe('tg-opt', el => {
+                if (el) {
+                    el.checked = isOpt;
+                }
+            });
+            
+            // Показываем/скрываем оптовые поля в калькуляторе
+            safe('box-calc-opt', el => {
+                if (el) {
+                    el.style.display = isOpt ? 'block' : 'none';
+                }
+            });
+            
+            // Обновляем другие элементы (если они есть)
+            safe('sel-city', el => {
+                if (el) {
+                    el.style.display = isOpt ? 'block' : 'none';
+                }
+            });
+            
+            safe('box-code', el => {
+                if (el) {
+                    el.style.display = isOpt ? 'none' : 'block';
+                }
+            });
 
             // Загружаем маршруты при переключении на оптовый режим
-            if (isOpt && config.routes) {
-                renderRoutes(config.routes);
-            } else if (isOpt && !config.routes) {
-                // Если маршруты еще не загружены, загружаем их
-                loadRoutes();
+            if (isOpt) {
+                if (config.routes && config.routes.length > 0) {
+                    renderRoutes(config.routes);
+                } else {
+                    // Если маршруты еще не загружены, загружаем их
+                    loadRoutes();
+                }
             }
 
             if (gid('screen-addresses')?.classList.contains('active')) {
@@ -2605,11 +2638,15 @@
             if(id === 'calc') {
                 // Главное меню расчетов - ничего не загружаем
             } else if(id === 'calc-calculator') {
+                // Применяем текущий режим при открытии калькулятора
+                updMode();
                 // Загружаем маршруты при переходе на калькулятор, если они еще не загружены
-                if (isOpt && (!config.routes || config.routes.length === 0)) {
-                    loadRoutes();
-                } else if (isOpt && config.routes) {
-                    renderRoutes(config.routes);
+                if (isOpt) {
+                    if (config.routes && config.routes.length > 0) {
+                        renderRoutes(config.routes);
+                    } else {
+                        loadRoutes();
+                    }
                 }
             } else if(id === 'calc-history') {
                 loadCalcHistory(); // Загружаем историю расчетов
