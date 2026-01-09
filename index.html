@@ -1278,14 +1278,26 @@
             if (reason.includes('laikalabs') || reason.includes('security') || reason.includes('dapp-security') ||
                 url.includes('laikalabs') || url.includes('dapp-security')) {
                 console.warn('Ignored external security service rejection:', reason || url);
-                event.preventDefault(); // Предотвращаем вывод ошибки в консоль
+                event.preventDefault();
+                return;
+            }
+            
+            // Игнорируем ошибки, которые уже обработаны
+            if (event.reason?.handled) {
+                event.preventDefault();
+                return;
+            }
+            
+            // Игнорируем ошибки из updateCartBadge и других фоновых операций
+            if (reason.includes('cart') || reason.includes('wishlist') || reason.includes('marketplace')) {
+                console.warn('Ignored marketplace background error:', reason);
+                event.preventDefault();
                 return;
             }
             
             console.error('Unhandled promise rejection:', event.reason);
-            if (event.reason && !event.reason.handled) {
-                showErrorPopup('Произошла ошибка при выполнении операции. Попробуйте еще раз.');
-            }
+            // Не показываем ошибку автоматически - только логируем
+            // Пользователь увидит ошибку только если она критична
         });
         
         // Перехватчик fetch запросов для блокировки внешних сервисов безопасности
@@ -1682,13 +1694,13 @@
                 
                 // Скрываем индикатор загрузки
                 hideLoadingIndicator();
-                // Обновляем бейдж корзины после инициализации
-                updateCartBadge();
+                // Обновляем бейдж корзины после инициализации (тихо, без ошибок)
+                updateCartBadge().catch(() => {});
             } catch (e) {
                 console.error('[INIT] Error during initialization:', e);
                 hideLoadingIndicator();
-                // Обновляем бейдж корзины даже при ошибке
-                updateCartBadge();
+                // Обновляем бейдж корзины даже при ошибке (тихо)
+                updateCartBadge().catch(() => {});
                 
                 // Не показываем ошибку пользователю - используем кэш или минимальные данные
                 // Пытаемся использовать кэшированные данные
@@ -2236,9 +2248,9 @@
         }
 
         function nav(id) {
-            // Обновляем бейдж корзины при навигации
+            // Обновляем бейдж корзины при навигации (тихо, без ошибок)
             if (id !== 'cart') {
-                updateCartBadge();
+                updateCartBadge().catch(() => {});
             }
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
             safe('screen-' + id, el => el.classList.add('active'));
@@ -3013,12 +3025,13 @@
                 
                 if (res.status === 'ok') {
                     tg.showAlert('✅ Товар добавлен в корзину!');
-                    updateCartBadge();
+                    updateCartBadge().catch(() => {}); // Игнорируем ошибки обновления бейджа
                 } else {
                     tg.showAlert(res.detail || 'Ошибка добавления в корзину');
                 }
             } catch (e) {
                 console.error('Error adding to cart:', e);
+                e.handled = true; // Помечаем как обработанную
                 tg.showAlert('Ошибка добавления в корзину');
             }
         }
@@ -3053,19 +3066,48 @@
             }
         }
         
-        // Обновить бейдж корзины
+        // Обновить бейдж корзины (безопасная версия, не выбрасывает ошибки)
         async function updateCartBadge() {
             try {
-                const cartRes = await safeFetch(`${API}/api/marketplace/cart/${uid}`);
+                if (!uid) return; // Если uid еще не определен
+                
+                const cartRes = await safeFetchSilent(`${API}/api/marketplace/cart/${uid}`);
+                if (!cartRes || cartRes.status !== 'ok') return;
+                
                 const cartBadge = document.getElementById('cart-badge');
-                if (cartBadge && cartRes.count > 0) {
-                    cartBadge.textContent = cartRes.count;
-                    cartBadge.style.display = 'flex';
-                } else if (cartBadge) {
-                    cartBadge.style.display = 'none';
+                if (cartBadge) {
+                    if (cartRes.count > 0) {
+                        cartBadge.textContent = cartRes.count;
+                        cartBadge.style.display = 'flex';
+                    } else {
+                        cartBadge.style.display = 'none';
+                    }
                 }
             } catch (e) {
-                console.error('Error updating cart badge:', e);
+                // Тихая ошибка - не логируем, чтобы не засорять консоль
+                // Это нормально, если API еще не готов или таблицы не созданы
+            }
+        }
+        
+        // Тихая версия safeFetch (не показывает ошибки пользователю)
+        async function safeFetchSilent(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                if (!response.ok) {
+                    return { status: 'error', detail: `HTTP ${response.status}` };
+                }
+                
+                return await response.json();
+            } catch (e) {
+                return { status: 'error', detail: e.message };
             }
         }
         
@@ -3135,10 +3177,11 @@
                 });
                 if (res.status === 'ok') {
                     loadCart();
-                    updateCartBadge();
+                    updateCartBadge().catch(() => {}); // Игнорируем ошибки обновления бейджа
                 }
             } catch (e) {
                 console.error('Error updating cart:', e);
+                e.handled = true;
             }
         }
         
@@ -3150,11 +3193,12 @@
                 });
                 if (res.status === 'ok') {
                     loadCart();
-                    updateCartBadge();
+                    updateCartBadge().catch(() => {}); // Игнорируем ошибки обновления бейджа
                     tg.showAlert('Товар удален из корзины');
                 }
             } catch (e) {
                 console.error('Error removing from cart:', e);
+                e.handled = true;
             }
         }
         
@@ -3172,13 +3216,14 @@
                 if (res.status === 'ok') {
                     tg.showAlert(`✅ Заказ создан! Номер: ${res.order_number}`);
                     loadCart();
-                    updateCartBadge();
+                    updateCartBadge().catch(() => {}); // Игнорируем ошибки обновления бейджа
                     nav('orders');
                 } else {
                     tg.showAlert(res.detail || 'Ошибка создания заказа');
                 }
             } catch (e) {
                 console.error('Error checkout:', e);
+                e.handled = true;
                 tg.showAlert('Ошибка оформления заказа');
             }
         }
