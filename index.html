@@ -706,8 +706,24 @@
         </div>
     </div>
 
+    <!-- Меню Расчетов -->
     <div id="screen-calc" class="screen">
-        <div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Расчет стоимости</div></div>
+        <div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Расчет</div></div>
+        <div class="container">
+            <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                <div class="grid-item" onclick="nav('calc-calculator')"><div class="icon-box" style="color: #007AFF;"><i class="fa-solid fa-calculator"></i></div><span class="grid-lbl">Калькулятор</span></div>
+                <div class="grid-item" onclick="nav('calc-history')"><div class="icon-box" style="color: #8E8E93;"><i class="fa-solid fa-clock-rotate-left"></i></div><span class="grid-lbl">История</span></div>
+                <div class="grid-item" onclick="nav('calc-rates')"><div class="icon-box" style="color: #FFD60A;"><i class="fa-solid fa-tags"></i></div><span class="grid-lbl">Тарифы</span></div>
+                
+                <div class="grid-item" onclick="nav('calc-compare')"><div class="icon-box" style="color: #34C759;"><i class="fa-solid fa-chart-line"></i></div><span class="grid-lbl">Сравнение</span></div>
+                <div class="grid-item" onclick="nav('calc-help')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-question-circle"></i></div><span class="grid-lbl">Помощь</span></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Экран калькулятора -->
+    <div id="screen-calc-calculator" class="screen">
+        <div class="nav-head"><div onclick="nav('calc')"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Калькулятор стоимости</div></div>
         <div class="container">
             <div class="card">
                 <div class="switch-row" style="margin-bottom:15px;"><b>Оптовый тариф</b><label class="switch"><input type="checkbox" id="tg-calc" name="tg-calc" onchange="toggleMode()"><span class="slider"></span></label></div>
@@ -732,23 +748,238 @@
             </div>
         </div>
     </div>
+    
+    <!-- Экран истории расчетов -->
+    <div id="screen-calc-history" class="screen">
+        <div class="nav-head">
+            <div onclick="nav('calc')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">История расчетов</div>
+        </div>
+        <div class="container">
+            <div id="list-calc-history"></div>
+        </div>
+    </div>
+    
+    <!-- Экран тарифов расчетов -->
+    <div id="screen-calc-rates" class="screen">
+        <div class="nav-head">
+            <div onclick="nav('calc')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Тарифы доставки</div>
+        </div>
+        <div class="container">
+            <div class="card">
+                <h3 style="margin-bottom:16px;">Розничные тарифы</h3>
+                <div style="padding:12px;background:#f8f9fa;border-radius:8px;margin-bottom:8px;">
+                    <div style="font-weight:600;margin-bottom:4px;">До 1 кг</div>
+                    <div style="color:var(--sec);font-size:14px;">15 TJS за кг</div>
+                </div>
+                <div style="padding:12px;background:#f8f9fa;border-radius:8px;margin-bottom:8px;">
+                    <div style="font-weight:600;margin-bottom:4px;">1-5 кг</div>
+                    <div style="color:var(--sec);font-size:14px;">12 TJS за кг</div>
+                </div>
+                <div style="padding:12px;background:#f8f9fa;border-radius:8px;">
+                    <div style="font-weight:600;margin-bottom:4px;">От 5 кг</div>
+                    <div style="color:var(--sec);font-size:14px;">10 TJS за кг</div>
+                </div>
+            </div>
+            <div class="card" style="margin-top:16px;">
+                <h3 style="margin-bottom:16px;">Оптовые тарифы</h3>
+                <p style="color:var(--sec);font-size:14px;">Зависят от маршрута и объема. Рассчитываются индивидуально.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Экран сравнения тарифов -->
+    <div id="screen-calc-compare" class="screen">
+        <div class="nav-head">
+            <div onclick="nav('calc')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Сравнение тарифов</div>
+        </div>
+        <div class="container">
+            <div class="card">
+                <h3 style="margin-bottom:16px;">Сравнение режимов</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div style="padding:12px;background:#f8f9fa;border-radius:8px;">
+                        <div style="font-weight:600;margin-bottom:4px;">Розница</div>
+                        <div style="color:var(--sec);font-size:12px;margin-bottom:8px;">Для малых партий</div>
+                        <div style="color:var(--blue);font-weight:700;">От 10 TJS/кг</div>
+                    </div>
+                    <div style="padding:12px;background:#f8f9fa;border-radius:8px;">
+                        <div style="font-weight:600;margin-bottom:4px;">Опт</div>
+                        <div style="color:var(--sec);font-size:12px;margin-bottom:8px;">Для больших объемов</div>
+                        <div style="color:var(--green);font-weight:700;">От 5 TJS/кг</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Экран помощи расчетов -->
+    <div id="screen-calc-help" class="screen">
+        <div class="nav-head">
+            <div onclick="nav('calc')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Помощь по расчетам</div>
+        </div>
+        <div class="container">
+            <div class="card">
+                <h3 style="margin-bottom:16px;">Как рассчитать стоимость?</h3>
+                <p style="color:var(--sec);line-height:1.6;margin-bottom:16px;">
+                    Введите параметры груза и получите точную стоимость доставки.
+                </p>
+                <div style="padding:12px;background:#f8f9fa;border-radius:8px;margin-bottom:12px;">
+                    <div style="font-weight:600;margin-bottom:4px;">1. Выберите режим</div>
+                    <div style="color:var(--sec);font-size:14px;">Розница или опт</div>
+                </div>
+                <div style="padding:12px;background:#f8f9fa;border-radius:8px;margin-bottom:12px;">
+                    <div style="font-weight:600;margin-bottom:4px;">2. Укажите параметры</div>
+                    <div style="color:var(--sec);font-size:14px;">Вес, габариты, количество</div>
+                </div>
+                <div style="padding:12px;background:#f8f9fa;border-radius:8px;">
+                    <div style="font-weight:600;margin-bottom:4px;">3. Получите расчет</div>
+                    <div style="color:var(--sec);font-size:14px;">Стоимость отобразится автоматически</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div id="screen-settings" class="screen"><div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Настройки</div></div><div class="container"><div class="card"><input id="s-name" name="s-name" placeholder="Ваше имя"><input id="s-phone" name="s-phone" placeholder="Телефон"><select id="s-pvz" name="s-pvz"></select><button class="btn btn-blue" onclick="saveSet()">Сохранить</button></div></div></div>
+    <!-- Меню Биржи -->
     <div id="screen-trucks" class="screen">
+        <div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Биржа</div></div>
+        <div class="container">
+            <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                <div class="grid-item" onclick="nav('trucks-orders')"><div class="icon-box" style="color: #FF9500;"><i class="fa-solid fa-handshake"></i></div><span class="grid-lbl">Сделки</span></div>
+                <div class="grid-item" onclick="nav('trucks-trips')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-truck-fast"></i></div><span class="grid-lbl">Машины</span></div>
+                <div class="grid-item" onclick="nav('trucks-cargo')"><div class="icon-box" style="color: #34C759;"><i class="fa-solid fa-boxes-stacked"></i></div><span class="grid-lbl">Грузы</span></div>
+                
+                <div class="grid-item" onclick="nav('trucks-create')"><div class="icon-box" style="color: #007AFF;"><i class="fa-solid fa-plus-circle"></i></div><span class="grid-lbl">Создать заказ</span></div>
+                <div class="grid-item" onclick="nav('trucks-history')"><div class="icon-box" style="color: #8E8E93;"><i class="fa-solid fa-clock-rotate-left"></i></div><span class="grid-lbl">История</span></div>
+                <div class="grid-item" onclick="nav('trucks-rates')"><div class="icon-box" style="color: #FFD60A;"><i class="fa-solid fa-dollar-sign"></i></div><span class="grid-lbl">Тарифы</span></div>
+                
+                <div class="grid-item" onclick="nav('trucks-help')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-question-circle"></i></div><span class="grid-lbl">Помощь</span></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Экран сделок биржи -->
+    <div id="screen-trucks-orders" class="screen">
         <div class="nav-head">
-            <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
-            <div class="pg-title">Биржа</div>
+            <div onclick="nav('trucks')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Сделки</div>
         </div>
         <div class="container">
             <div class="tabs">
-                <div class="tab active" onclick="swTr('orders', this)">Сделки</div>
-                <div class="tab" onclick="swTr('trips', this)">Машины</div>
-                <div class="tab" onclick="swTr('cargo', this)">Грузы</div>
+                <div class="tab active" onclick="swTr('orders', this)">Активные</div>
+                <div class="tab" onclick="swTr('history', this)">Завершенные</div>
             </div>
             <button class="btn btn-blue" onclick="openM('m-create-order')" style="margin-bottom:15px;">
                 <i class="fa-solid fa-plus"></i> Создать заказ
             </button>
             <div id="list-trucks"></div>
+        </div>
+    </div>
+    
+    <!-- Экран машин биржи -->
+    <div id="screen-trucks-trips" class="screen">
+        <div class="nav-head">
+            <div onclick="nav('trucks')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Машины</div>
+        </div>
+        <div class="container">
+            <div id="list-trucks-trips"></div>
+        </div>
+    </div>
+    
+    <!-- Экран грузов биржи -->
+    <div id="screen-trucks-cargo" class="screen">
+        <div class="nav-head">
+            <div onclick="nav('trucks')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Грузы</div>
+        </div>
+        <div class="container">
+            <div id="list-trucks-cargo"></div>
+        </div>
+    </div>
+    
+    <!-- Экран создания заказа биржи -->
+    <div id="screen-trucks-create" class="screen">
+        <div class="nav-head">
+            <div onclick="nav('trucks')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Создать заказ</div>
+        </div>
+        <div class="container">
+            <div class="card">
+                <input id="eo-route" name="eo-route" placeholder="Маршрут (например: Иу → Худжанд)">
+                <input id="eo-weight" name="eo-weight" type="number" placeholder="Вес (кг)" step="0.01">
+                <input id="eo-price" name="eo-price" type="number" placeholder="Цена за кг" step="0.01">
+                <select id="eo-currency" name="eo-currency">
+                    <option value="USD">USD</option>
+                    <option value="TJS">TJS</option>
+                </select>
+                <input id="eo-desc" name="eo-desc" placeholder="Описание (необязательно)">
+                <button class="btn btn-blue" onclick="createExchangeOrder()">Создать заказ</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Экран истории биржи -->
+    <div id="screen-trucks-history" class="screen">
+        <div class="nav-head">
+            <div onclick="nav('trucks')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">История сделок</div>
+        </div>
+        <div class="container">
+            <div id="list-trucks-history"></div>
+        </div>
+    </div>
+    
+    <!-- Экран тарифов биржи -->
+    <div id="screen-trucks-rates" class="screen">
+        <div class="nav-head">
+            <div onclick="nav('trucks')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Тарифы биржи</div>
+        </div>
+        <div class="container">
+            <div class="card">
+                <h3 style="margin-bottom:16px;">Тарифы для P2P-логистики</h3>
+                <p style="color:var(--sec);margin-bottom:12px;">Цены устанавливаются участниками сделки</p>
+                <div style="padding:12px;background:#f8f9fa;border-radius:8px;margin-bottom:8px;">
+                    <div style="font-weight:600;margin-bottom:4px;">Минимальная комиссия</div>
+                    <div style="color:var(--sec);font-size:14px;">5% от суммы сделки</div>
+                </div>
+                <div style="padding:12px;background:#f8f9fa;border-radius:8px;">
+                    <div style="font-weight:600;margin-bottom:4px;">Escrow защита</div>
+                    <div style="color:var(--sec);font-size:14px;">Бесплатно для всех сделок</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Экран помощи биржи -->
+    <div id="screen-trucks-help" class="screen">
+        <div class="nav-head">
+            <div onclick="nav('trucks')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Помощь по бирже</div>
+        </div>
+        <div class="container">
+            <div class="card">
+                <h3 style="margin-bottom:16px;">Как работает биржа?</h3>
+                <p style="color:var(--sec);line-height:1.6;margin-bottom:16px;">
+                    Биржа - это платформа для поиска грузоперевозок. Клиенты создают заказы, водители откликаются на них.
+                </p>
+                <div style="padding:12px;background:#f8f9fa;border-radius:8px;margin-bottom:12px;">
+                    <div style="font-weight:600;margin-bottom:4px;">1. Создайте заказ</div>
+                    <div style="color:var(--sec);font-size:14px;">Укажите маршрут, вес и цену</div>
+                </div>
+                <div style="padding:12px;background:#f8f9fa;border-radius:8px;margin-bottom:12px;">
+                    <div style="font-weight:600;margin-bottom:4px;">2. Дождитесь отклика</div>
+                    <div style="color:var(--sec);font-size:14px;">Водитель примет ваш заказ</div>
+                </div>
+                <div style="padding:12px;background:#f8f9fa;border-radius:8px;">
+                    <div style="font-weight:600;margin-bottom:4px;">3. Оплата через Escrow</div>
+                    <div style="color:var(--sec);font-size:14px;">Деньги замораживаются до доставки</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -764,7 +995,7 @@
             </select>
             <input id="eo-desc" name="eo-desc" placeholder="Описание (необязательно)">
             <button class="btn btn-blue" onclick="createExchangeOrder()">Создать заказ</button>
-            <div style="text-align:center;padding:15px;color:var(--sec);" onclick="closeM('m-create-order')">Отмена</div>
+            <div style="text-align:center;padding:15px;color:var(--sec);cursor:pointer;" onclick="closeM('m-create-order')">Отмена</div>
         </div>
     </div>
     <div id="screen-cart" class="screen">
@@ -798,26 +1029,114 @@
         </div>
     </div>
     
+    <!-- Меню Маркета -->
     <div id="screen-market" class="screen">
+        <div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Маркет</div></div>
+        <div class="container">
+            <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                <div class="grid-item" onclick="nav('market-products')"><div class="icon-box" style="color: #FF9500;"><i class="fa-solid fa-bag-shopping"></i></div><span class="grid-lbl">Товары</span></div>
+                <div class="grid-item" onclick="nav('market-pools')"><div class="icon-box" style="color: #34C759;"><i class="fa-solid fa-users"></i></div><span class="grid-lbl">Сборы</span></div>
+                <div class="grid-item" onclick="nav('cart')"><div class="icon-box" style="color: #007AFF;"><i class="fa-solid fa-cart-shopping"></i></div><span class="grid-lbl">Корзина</span></div>
+                
+                <div class="grid-item" onclick="nav('orders')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-box"></i></div><span class="grid-lbl">Заказы</span></div>
+                <div class="grid-item" onclick="nav('market-wishlist')"><div class="icon-box" style="color: #FF2D55;"><i class="fa-solid fa-heart"></i></div><span class="grid-lbl">Избранное</span></div>
+                <div class="grid-item" onclick="nav('market-categories')"><div class="icon-box" style="color: #FFD60A;"><i class="fa-solid fa-tags"></i></div><span class="grid-lbl">Категории</span></div>
+                
+                <div class="grid-item" onclick="nav('market-sellers')"><div class="icon-box" style="color: #8E8E93;"><i class="fa-solid fa-store"></i></div><span class="grid-lbl">Продавцы</span></div>
+                <div class="grid-item" onclick="nav('market-help')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-question-circle"></i></div><span class="grid-lbl">Помощь</span></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Экран товаров маркета -->
+    <div id="screen-market-products" class="screen">
         <div class="nav-head">
-            <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
-            <div class="pg-title">Маркет</div>
+            <div onclick="nav('market')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Товары</div>
             <div style="position:relative;cursor:pointer;" onclick="nav('cart')">
                 <i class="fa-solid fa-shopping-cart" style="font-size:20px;"></i>
                 <span id="cart-badge" style="position:absolute;top:-8px;right:-8px;background:#FF3B30;color:#fff;border-radius:50%;width:20px;height:20px;display:none;align-items:center;justify-content:center;font-size:11px;font-weight:700;">0</span>
             </div>
         </div>
         <div class="container">
-            <div class="tabs">
-                <div class="tab active" onclick="swMk('item', this)">Товары</div>
-                <div class="tab" onclick="swMk('joint', this)">Сборы</div>
-            </div>
             <div id="market-search-wrap" style="margin:12px 0;">
                 <input type="text" id="market-search" name="market-search" placeholder="🔍 Поиск товаров..." 
                        style="width:100%;padding:12px 16px;border-radius:12px;border:1px solid var(--border);background:var(--bg);font-size:15px;"
                        oninput="filterMarketProducts()">
             </div>
             <div id="list-market"></div>
+        </div>
+    </div>
+    
+    <!-- Экран сборов маркета -->
+    <div id="screen-market-pools" class="screen">
+        <div class="nav-head">
+            <div onclick="nav('market')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Групповые сборы</div>
+        </div>
+        <div class="container">
+            <div id="list-market-pools"></div>
+        </div>
+    </div>
+    
+    <!-- Экран избранного маркета -->
+    <div id="screen-market-wishlist" class="screen">
+        <div class="nav-head">
+            <div onclick="nav('market')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Избранное</div>
+        </div>
+        <div class="container">
+            <div id="list-market-wishlist"></div>
+        </div>
+    </div>
+    
+    <!-- Экран категорий маркета -->
+    <div id="screen-market-categories" class="screen">
+        <div class="nav-head">
+            <div onclick="nav('market')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Категории</div>
+        </div>
+        <div class="container">
+            <div id="list-market-categories"></div>
+        </div>
+    </div>
+    
+    <!-- Экран продавцов маркета -->
+    <div id="screen-market-sellers" class="screen">
+        <div class="nav-head">
+            <div onclick="nav('market')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Продавцы</div>
+        </div>
+        <div class="container">
+            <div id="list-market-sellers"></div>
+        </div>
+    </div>
+    
+    <!-- Экран помощи маркета -->
+    <div id="screen-market-help" class="screen">
+        <div class="nav-head">
+            <div onclick="nav('market')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Помощь по маркету</div>
+        </div>
+        <div class="container">
+            <div class="card">
+                <h3 style="margin-bottom:16px;">Как работает маркет?</h3>
+                <p style="color:var(--sec);line-height:1.6;margin-bottom:16px;">
+                    Маркет - это площадка для покупки товаров из Китая с доставкой в Таджикистан.
+                </p>
+                <div style="padding:12px;background:#f8f9fa;border-radius:8px;margin-bottom:12px;">
+                    <div style="font-weight:600;margin-bottom:4px;">1. Выберите товар</div>
+                    <div style="color:var(--sec);font-size:14px;">Просмотрите каталог и добавьте в корзину</div>
+                </div>
+                <div style="padding:12px;background:#f8f9fa;border-radius:8px;margin-bottom:12px;">
+                    <div style="font-weight:600;margin-bottom:4px;">2. Групповые сборы</div>
+                    <div style="color:var(--sec);font-size:14px;">Присоединяйтесь к сборам для экономии</div>
+                </div>
+                <div style="padding:12px;background:#f8f9fa;border-radius:8px;">
+                    <div style="font-weight:600;margin-bottom:4px;">3. Оплата и доставка</div>
+                    <div style="color:var(--sec);font-size:14px;">Оплатите заказ и получите товар</div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -2254,8 +2573,49 @@
             }
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
             safe('screen-' + id, el => el.classList.add('active'));
-            if(id === 'trucks') ldTr();
-            if(id === 'market') ldMk();
+            // Биржа
+            if(id === 'trucks') {
+                // Главное меню биржи - ничего не загружаем
+            } else if(id === 'trucks-orders') {
+                ldTr(); // Загружаем сделки
+            } else if(id === 'trucks-trips') {
+                ldTrTrips(); // Загружаем машины
+            } else if(id === 'trucks-cargo') {
+                ldTrCargo(); // Загружаем грузы
+            } else if(id === 'trucks-history') {
+                ldTrHistory(); // Загружаем историю
+            }
+            
+            // Маркет
+            if(id === 'market') {
+                // Главное меню маркета - ничего не загружаем
+            } else if(id === 'market-products') {
+                ldMk(); // Загружаем товары
+            } else if(id === 'market-pools') {
+                loadPools(); // Загружаем сборы
+            } else if(id === 'market-wishlist') {
+                loadWishlist(); // Загружаем избранное
+            } else if(id === 'market-categories') {
+                loadCategories(); // Загружаем категории
+            } else if(id === 'market-sellers') {
+                loadSellers(); // Загружаем продавцов
+            }
+            
+            // Расчет
+            if(id === 'calc') {
+                // Главное меню расчетов - ничего не загружаем
+            } else if(id === 'calc-calculator') {
+                // Загружаем маршруты при переходе на калькулятор, если они еще не загружены
+                if (isOpt && (!config.routes || config.routes.length === 0)) {
+                    loadRoutes();
+                } else if (isOpt && config.routes) {
+                    renderRoutes(config.routes);
+                }
+            } else if(id === 'calc-history') {
+                loadCalcHistory(); // Загружаем историю расчетов
+            }
+            
+            // Общие экраны
             if(id === 'rewards') ldRew();
             if(id === 'addresses') renderAddr(); // Обновляем адрес при переходе на экран
             if(id === 'wallet') {
@@ -2267,14 +2627,6 @@
             }
             if(id === 'packages') {
                 loadPackages(); // Загружаем посылки при переходе на экран
-            }
-            if(id === 'calc') {
-                // Загружаем маршруты при переходе на калькулятор, если они еще не загружены
-                if (isOpt && (!config.routes || config.routes.length === 0)) {
-                    loadRoutes();
-                } else if (isOpt && config.routes) {
-                    renderRoutes(config.routes);
-                }
             }
             if(id === 'cart') {
                 loadCart();
@@ -2325,15 +2677,22 @@
             safe('list-trucks', async c => {
                 c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
                 try {
-                    if (tabTr === 'orders') {
-                        // Загружаем P2P-сделки
-                        let d = await safeFetch(`${API}/api/exchange/list?user_id=${uid}`);
-                        c.innerHTML = '';
-                        if(!d.orders || d.orders.length === 0) {
-                            c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">У вас пока нет сделок</div>';
-                            return;
-                        }
-                        d.orders.forEach(o => {
+                    // Загружаем P2P-сделки (активные)
+                    let d = await safeFetch(`${API}/api/exchange/list?user_id=${uid}`);
+                    c.innerHTML = '';
+                    if(!d.orders || d.orders.length === 0) {
+                        c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">У вас пока нет сделок</div>';
+                        return;
+                    }
+                    
+                    // Фильтруем только активные сделки
+                    const activeOrders = d.orders.filter(o => o.status !== 'COMPLETED' && o.status !== 'CANCELLED');
+                    if (activeOrders.length === 0) {
+                        c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Активных сделок нет</div>';
+                        return;
+                    }
+                    
+                    activeOrders.forEach(o => {
                             const statusColors = {
                                 'PENDING': '#FF9500',
                                 'ACCEPTED': '#007AFF',
@@ -2383,18 +2742,175 @@
                                     ${actions}
                                 </div>
                             `;
-                        });
-                    } else {
-                        // Старый код для trips и cargo
-                        let d = await safeFetch(`${API}/api/trucking/list?type=${tabTr}`); c.innerHTML = '';
-                    if(!d.items || d.items.length === 0) { c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Объявлений нет</div>'; return; }
-                    d.items.forEach(i => { c.innerHTML += `<div class="card"><div style="font-weight:700;">${i.title}</div><div style="font-size:13px;color:#8e8e93;">${i.subtitle}</div><div style="color:var(--blue); font-weight:800; margin-top:8px;">${i.details}</div></div>`; });
-                    }
+                    });
                 } catch(e) {
                     console.error('Load error:', e);
-                    c.innerHTML = 'Ошибка загрузки';
+                    c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Ошибка загрузки</div>';
                 }
             });
+        }
+        
+        // Загрузить машины биржи
+        async function ldTrTrips() {
+            safe('list-trucks-trips', async c => {
+                c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
+                try {
+                    // Здесь можно загрузить список машин/рейсов
+                    c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Функция в разработке</div>';
+                } catch(e) {
+                    console.error('Load trips error:', e);
+                    c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Ошибка загрузки</div>';
+                }
+            });
+        }
+        
+        // Загрузить грузы биржи
+        async function ldTrCargo() {
+            safe('list-trucks-cargo', async c => {
+                c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
+                try {
+                    // Здесь можно загрузить список грузов
+                    c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Функция в разработке</div>';
+                } catch(e) {
+                    console.error('Load cargo error:', e);
+                    c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Ошибка загрузки</div>';
+                }
+            });
+        }
+        
+        // Загрузить историю биржи
+        async function ldTrHistory() {
+            safe('list-trucks-history', async c => {
+                c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
+                try {
+                    let d = await safeFetch(`${API}/api/exchange/list?user_id=${uid}&status=COMPLETED`);
+                    c.innerHTML = '';
+                    if(!d.orders || d.orders.length === 0) {
+                        c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Завершенных сделок пока нет</div>';
+                        return;
+                    }
+                    // Отображаем завершенные сделки
+                    let h = '';
+                    d.orders.forEach(o => {
+                        h += `<div class="card" style="padding:16px;margin-bottom:12px;">
+                            <div style="font-weight:700;margin-bottom:8px;">${o.route || 'Маршрут'}</div>
+                            <div style="font-size:14px;color:var(--sec);margin-bottom:4px;">Вес: ${o.weight} кг</div>
+                            <div style="font-size:14px;color:var(--sec);">Цена: ${o.price_per_kg} ${o.currency}/кг</div>
+                        </div>`;
+                    });
+                    c.innerHTML = h;
+                } catch(e) {
+                    console.error('Load history error:', e);
+                    c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Ошибка загрузки</div>';
+                }
+            });
+        }
+        
+        // Загрузить избранное маркета
+        async function loadWishlist() {
+            safe('list-market-wishlist', async c => {
+                c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
+                try {
+                    const res = await safeFetch(`${API}/api/marketplace/wishlist/${uid}`);
+                    if (!res || res.status !== 'ok' || !res.items || res.items.length === 0) {
+                        c.innerHTML = '<div style="text-align:center;padding:60px;"><i class="fa-solid fa-heart" style="font-size:48px;color:var(--sec);opacity:0.5;margin-bottom:16px;"></i><div style="color:var(--sec);font-size:16px;">Избранное пусто</div></div>';
+                        return;
+                    }
+                    // Отображаем товары из избранного
+                    let html = '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">';
+                    res.items.forEach(item => {
+                        html += `<div class="card market-product-card" onclick="showProductDetails(${item.product_id})" style="padding:0;cursor:pointer;">
+                            <img src="${item.product_image || 'https://ui-avatars.com/api/?name=PROD&size=200'}" style="width:100%;height:140px;object-fit:cover;border-radius:12px 12px 0 0;">
+                            <div style="padding:12px;">
+                                <div style="font-weight:700;font-size:14px;margin-bottom:6px;">${(item.product_title || 'Товар').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                                <div style="color:var(--blue);font-weight:800;font-size:16px;">${item.product_price} TJS</div>
+                            </div>
+                        </div>`;
+                    });
+                    html += '</div>';
+                    c.innerHTML = html;
+                } catch(e) {
+                    console.error('Load wishlist error:', e);
+                    c.innerHTML = '<div style="text-align:center;padding:40px;color:var(--sec);">Ошибка загрузки избранного</div>';
+                }
+            });
+        }
+        
+        // Загрузить категории маркета
+        async function loadCategories() {
+            safe('list-market-categories', async c => {
+                c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
+                try {
+                    const categories = ['Электроника', 'Одежда', 'Аксессуары', 'Дом и сад', 'Спорт', 'Красота', 'Игрушки', 'Авто'];
+                    let html = '<div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:12px;">';
+                    categories.forEach((cat, idx) => {
+                        const colors = ['#FF2D55', '#34C759', '#007AFF', '#FF9500', '#5856D6', '#FF3B30', '#FFD60A', '#8E8E93'];
+                        html += `<div class="card" style="padding:20px;text-align:center;cursor:pointer;" onclick="nav('market-products');filterByCategory('${cat}')">
+                            <div class="icon-box" style="color:${colors[idx % colors.length]};font-size:32px;margin-bottom:8px;">
+                                <i class="fa-solid fa-tag"></i>
+                            </div>
+                            <div style="font-weight:600;">${cat}</div>
+                        </div>`;
+                    });
+                    html += '</div>';
+                    c.innerHTML = html;
+                } catch(e) {
+                    console.error('Load categories error:', e);
+                    c.innerHTML = '<div style="text-align:center;padding:40px;color:var(--sec);">Ошибка загрузки категорий</div>';
+                }
+            });
+        }
+        
+        // Загрузить продавцов маркета
+        async function loadSellers() {
+            safe('list-market-sellers', async c => {
+                c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
+                try {
+                    c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Функция в разработке</div>';
+                } catch(e) {
+                    console.error('Load sellers error:', e);
+                    c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Ошибка загрузки</div>';
+                }
+            });
+        }
+        
+        // Загрузить историю расчетов
+        async function loadCalcHistory() {
+            safe('list-calc-history', async c => {
+                c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
+                try {
+                    // Здесь можно загрузить историю расчетов из localStorage или API
+                    const history = JSON.parse(localStorage.getItem('calc_history') || '[]');
+                    if (history.length === 0) {
+                        c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Истории расчетов пока нет</div>';
+                        return;
+                    }
+                    let html = '';
+                    history.slice(0, 20).forEach(h => {
+                        html += `<div class="card" style="padding:16px;margin-bottom:12px;">
+                            <div style="font-weight:700;margin-bottom:8px;">Расчет от ${new Date(h.date).toLocaleDateString('ru-RU')}</div>
+                            <div style="font-size:14px;color:var(--sec);margin-bottom:4px;">Вес: ${h.weight} кг × ${h.quantity} шт.</div>
+                            <div style="font-size:18px;color:var(--blue);font-weight:800;">${h.total} TJS</div>
+                        </div>`;
+                    });
+                    c.innerHTML = html;
+                } catch(e) {
+                    console.error('Load calc history error:', e);
+                    c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Ошибка загрузки</div>';
+                }
+            });
+        }
+        
+        // Фильтр по категории
+        function filterByCategory(category) {
+            // Переключаемся на экран товаров и применяем фильтр
+            setTimeout(() => {
+                const searchInput = document.getElementById('market-search');
+                if (searchInput) {
+                    searchInput.value = category;
+                    filterMarketProducts();
+                }
+            }, 100);
         }
 
         async function ldMk() {
@@ -2824,7 +3340,11 @@
         
         /* ================= ПУЛЫ (ГРУППОВЫЕ ПОКУПКИ) ================= */
         async function loadPools() {
-            safe('list-market', async c => {
+            // Определяем, в каком экране мы находимся
+            const poolsContainer = document.getElementById('list-market-pools') || document.getElementById('list-market');
+            if (!poolsContainer) return;
+            
+            safe(poolsContainer.id, async c => {
                 c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
                 try {
                     const d = await cachedFetch(`${API}/api/pools/list?status=ACTIVE`, 'pools');
