@@ -3053,11 +3053,18 @@
                     }
                 } else {
                     // Добавляем в избранное
-                    const res = await safeFetch(`${API}/api/marketplace/wishlist/add?user_id=${uid}&product_id=${productId}`, {
-                        method: 'POST'
-                    });
-                    if (res.status === 'ok') {
-                        tg.showAlert('✅ Добавлено в избранное!');
+                    try {
+                        const res = await safeFetch(`${API}/api/marketplace/wishlist/add?user_id=${uid}&product_id=${productId}`, {
+                            method: 'POST'
+                        });
+                        if (res.status === 'ok') {
+                            tg.showAlert('✅ Добавлено в избранное!');
+                        } else {
+                            tg.showAlert(res.detail || 'Ошибка добавления в избранное');
+                        }
+                    } catch (err) {
+                        console.error('Wishlist add error:', err);
+                        tg.showAlert('Ошибка добавления в избранное');
                     }
                 }
             } catch (e) {
@@ -3116,8 +3123,13 @@
             safe('cart-content', async c => {
                 c.innerHTML = '<div style="text-align:center;padding:40px;">Загрузка...</div>';
                 try {
+                    if (!uid) {
+                        c.innerHTML = '<div style="text-align:center;padding:40px;color:var(--sec);">Ошибка: пользователь не определен</div>';
+                        return;
+                    }
+                    
                     const res = await safeFetch(`${API}/api/marketplace/cart/${uid}`);
-                    if (res.status !== 'ok' || !res.items || res.items.length === 0) {
+                    if (!res || res.status !== 'ok' || !res.items || res.items.length === 0) {
                         c.innerHTML = '<div style="text-align:center;padding:60px;"><i class="fa-solid fa-cart-shopping" style="font-size:48px;color:var(--sec);opacity:0.5;margin-bottom:16px;"></i><div style="color:var(--sec);font-size:16px;">Корзина пуста</div></div>';
                         const totalEl = document.getElementById('cart-total');
                         const btnEl = document.getElementById('cart-checkout-btn');
@@ -3175,13 +3187,15 @@
                         quantity: newQuantity
                     })
                 });
-                if (res.status === 'ok') {
+                if (res && res.status === 'ok') {
                     loadCart();
                     updateCartBadge().catch(() => {}); // Игнорируем ошибки обновления бейджа
+                } else {
+                    tg.showAlert(res?.detail || 'Ошибка обновления корзины');
                 }
             } catch (e) {
                 console.error('Error updating cart:', e);
-                e.handled = true;
+                tg.showAlert('Ошибка обновления корзины. Попробуйте еще раз.');
             }
         }
         
@@ -3191,14 +3205,16 @@
                 const res = await safeFetch(`${API}/api/marketplace/cart/${cartItemId}`, {
                     method: 'DELETE'
                 });
-                if (res.status === 'ok') {
+                if (res && res.status === 'ok') {
                     loadCart();
                     updateCartBadge().catch(() => {}); // Игнорируем ошибки обновления бейджа
                     tg.showAlert('Товар удален из корзины');
+                } else {
+                    tg.showAlert(res?.detail || 'Ошибка удаления товара');
                 }
             } catch (e) {
                 console.error('Error removing from cart:', e);
-                e.handled = true;
+                tg.showAlert('Ошибка удаления товара. Попробуйте еще раз.');
             }
         }
         
@@ -3206,25 +3222,32 @@
         async function checkoutCart() {
             if (!confirm('Оформить заказ из корзины?')) return;
             try {
+                if (!uid) {
+                    tg.showAlert('Ошибка: пользователь не определен');
+                    return;
+                }
+                
                 const res = await safeFetch(`${API}/api/marketplace/orders/create`, {
                     method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({
                         user_id: uid,
                         payment_method: 'WALLET'
                     })
                 });
-                if (res.status === 'ok') {
+                if (res && res.status === 'ok') {
                     tg.showAlert(`✅ Заказ создан! Номер: ${res.order_number}`);
                     loadCart();
                     updateCartBadge().catch(() => {}); // Игнорируем ошибки обновления бейджа
                     nav('orders');
                 } else {
-                    tg.showAlert(res.detail || 'Ошибка создания заказа');
+                    tg.showAlert(res?.detail || 'Ошибка создания заказа');
                 }
             } catch (e) {
                 console.error('Error checkout:', e);
-                e.handled = true;
-                tg.showAlert('Ошибка оформления заказа');
+                tg.showAlert('Ошибка оформления заказа. Попробуйте еще раз.');
             }
         }
         
