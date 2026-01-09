@@ -747,7 +747,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Экран истории расчетов -->
     <div id="screen-calc-history" class="screen">
         <div class="nav-head">
@@ -1365,8 +1365,8 @@
                     ...options.headers
                 },
                 ...options,
-                // Увеличиваем таймаут для медленных соединений
-                signal: AbortSignal.timeout(15000) // 15 секунд
+                // Уменьшаем таймаут для быстрого отклика при ошибках
+                signal: AbortSignal.timeout(8000) // 8 секунд
             };
 
             for (let attempt = 1; attempt <= retries; attempt++) {
@@ -1866,10 +1866,18 @@
                 
                 try {
                     // Пытаемся загрузить данные, но не показываем ошибки - используем кэш
+                    // Добавляем таймауты для каждого запроса
+                    const timeoutPromise = (promise, timeout = 8000) => {
+                        return Promise.race([
+                            promise,
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), timeout))
+                        ]).catch(() => null);
+                    };
+                    
                     [dashboardData, walletData, routesData] = await Promise.all([
-                        cachedFetch(`${API}/api/dashboard/${uid}`, 'dashboard').catch(() => null),
-                        cachedFetch(`${API}/api/wallet/${uid}`, 'wallet').catch(() => null),
-                        cachedFetch(`${API}/api/get_routes`, 'routes').catch(() => null)
+                        timeoutPromise(cachedFetch(`${API}/api/dashboard/${uid}`, 'dashboard').catch(() => null)),
+                        timeoutPromise(cachedFetch(`${API}/api/wallet/${uid}`, 'wallet').catch(() => null)),
+                        timeoutPromise(cachedFetch(`${API}/api/get_routes`, 'routes').catch(() => null))
                     ]);
                 } catch (error) {
                     console.error('Error loading initial data:', error);
@@ -2178,13 +2186,27 @@
         async function loadRoutes() {
             // Используем кэшированные данные, если доступны
             try {
-                const routesData = await cachedFetch(`${API}/api/get_routes`, 'routes');
+                const routesData = await Promise.race([
+                    cachedFetch(`${API}/api/get_routes`, 'routes'),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+                ]).catch(() => {
+                    // Если запрос завис, используем кэш или дефолтные маршруты
+                    if (cache.routes && cache.routes.data) {
+                        return cache.routes.data;
+                    }
+                    return { routes: [] };
+                });
+                
                 if (routesData && routesData.routes) {
                     config.routes = routesData.routes;
                     renderRoutes(routesData.routes);
                 }
             } catch (e) {
                 console.error('Load routes error:', e);
+                // Используем дефолтные маршруты при ошибке
+                if (config.routes && config.routes.length > 0) {
+                    renderRoutes(config.routes);
+                }
             }
         }
 
@@ -2678,13 +2700,20 @@
             safe('full-pkg-list', el => el.innerHTML = '<div style="text-align:center;padding:20px;color:#8e8e93;">Загрузка...</div>');
             try {
                 // Используем кэшированные данные, если доступны
-                const data = await cachedFetch(`${API}/api/dashboard/${uid}`, 'dashboard');
-                console.log('Dashboard data:', data); // Отладка
-                if (data.status === 'ok' && data.packages) {
-                    console.log('Packages found:', data.packages.length); // Отладка
+                const data = await Promise.race([
+                    cachedFetch(`${API}/api/dashboard/${uid}`, 'dashboard'),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+                ]).catch(() => {
+                    // Если запрос завис, используем кэш
+                    if (cache.dashboard && cache.dashboard.data) {
+                        return cache.dashboard.data;
+                    }
+                    throw new Error('No data available');
+                });
+                
+                if (data && data.status === 'ok' && data.packages) {
                     renderPackageList(data.packages);
                 } else {
-                    console.log('No packages in response or error status'); // Отладка
                     safe('full-pkg-list', el => el.innerHTML = `<div style="text-align:center;padding:20px;color:#8e8e93;">${t('no_packages', 'Посылок пока нет')}</div>`);
                 }
             } catch(e) {
@@ -2896,7 +2925,10 @@
             safe('list-market-wishlist', async c => {
                 c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
                 try {
-                    const res = await safeFetch(`${API}/api/marketplace/wishlist/${uid}`);
+                    const res = await Promise.race([
+                        safeFetch(`${API}/api/marketplace/wishlist/${uid}`),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+                    ]).catch(() => null);
                     if (!res || res.status !== 'ok' || !res.items || res.items.length === 0) {
                         c.innerHTML = '<div style="text-align:center;padding:60px;"><i class="fa-solid fa-heart" style="font-size:48px;color:var(--sec);opacity:0.5;margin-bottom:16px;"></i><div style="color:var(--sec);font-size:16px;">Избранное пусто</div></div>';
                         return;
@@ -2926,7 +2958,10 @@
             safe('list-market-categories', async c => {
                 c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
                 try {
-                    const res = await safeFetch(`${API}/api/marketplace/categories`);
+                    const res = await Promise.race([
+                        safeFetch(`${API}/api/marketplace/categories`),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+                    ]).catch(() => null);
                     const categories = (res && res.status === 'ok' && res.categories) ? res.categories : 
                         ['Электроника', 'Одежда', 'Аксессуары', 'Дом и сад', 'Спорт', 'Красота', 'Игрушки', 'Авто'];
                     
@@ -2967,7 +3002,10 @@
             safe('list-market-sellers', async c => {
                 c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
                 try {
-                    const res = await safeFetch(`${API}/api/marketplace/sellers`);
+                    const res = await Promise.race([
+                        safeFetch(`${API}/api/marketplace/sellers`),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+                    ]).catch(() => null);
                     if (!res || res.status !== 'ok' || !res.sellers || res.sellers.length === 0) {
                         c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Продавцов пока нет</div>';
                         return;
@@ -3546,10 +3584,16 @@
             safe(poolsContainer.id, async c => {
                 c.innerHTML = '<div style="text-align:center;padding:20px;">Загрузка...</div>';
                 try {
-                    const d = await cachedFetch(`${API}/api/pools/list?status=ACTIVE`, 'pools');
-                    c.innerHTML = '';
+                    const d = await Promise.race([
+                        cachedFetch(`${API}/api/pools/list?status=ACTIVE`, 'pools'),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+                    ]).catch(() => {
+                        // Если запрос завис, показываем ошибку
+                        c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Ошибка загрузки сборов</div>';
+                        throw new Error('Timeout');
+                    });
                     
-                    if(!d.pools || d.pools.length === 0) {
+                    if (!d || !d.pools || d.pools.length === 0) {
                         c.innerHTML = '<div style="text-align:center;padding:40px;color:#8e8e93;">Активных сборов пока нет</div>';
                         return;
                     }
@@ -3847,7 +3891,13 @@
                         return;
                     }
                     
-                    const res = await safeFetch(`${API}/api/marketplace/cart/${uid}`);
+                    const res = await Promise.race([
+                        safeFetch(`${API}/api/marketplace/cart/${uid}`),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+                    ]).catch(() => {
+                        c.innerHTML = '<div style="text-align:center;padding:40px;color:var(--sec);">Ошибка загрузки корзины</div>';
+                        throw new Error('Timeout');
+                    });
                     if (!res || res.status !== 'ok' || !res.items || res.items.length === 0) {
                         c.innerHTML = '<div style="text-align:center;padding:60px;"><i class="fa-solid fa-cart-shopping" style="font-size:48px;color:var(--sec);opacity:0.5;margin-bottom:16px;"></i><div style="color:var(--sec);font-size:16px;">Корзина пуста</div></div>';
                         const totalEl = document.getElementById('cart-total');
@@ -3975,7 +4025,13 @@
             safe('orders-content', async c => {
                 c.innerHTML = '<div style="text-align:center;padding:40px;">Загрузка...</div>';
                 try {
-                    const res = await safeFetch(`${API}/api/marketplace/orders/${uid}`);
+                    const res = await Promise.race([
+                        safeFetch(`${API}/api/marketplace/orders/${uid}`),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+                    ]).catch(() => {
+                        c.innerHTML = '<div style="text-align:center;padding:40px;color:var(--sec);">Ошибка загрузки заказов</div>';
+                        throw new Error('Timeout');
+                    });
                     if (res.status !== 'ok' || !res.orders || res.orders.length === 0) {
                         c.innerHTML = '<div style="text-align:center;padding:60px;"><i class="fa-solid fa-box" style="font-size:48px;color:var(--sec);opacity:0.5;margin-bottom:16px;"></i><div style="color:var(--sec);font-size:16px;">Заказов пока нет</div></div>';
                         return;
@@ -4042,7 +4098,17 @@
         /* ================= WALLET ================= */
         async function loadWallet() {
             try {
-                const d = await cachedFetch(`${API}/api/wallet/${uid}`, 'wallet');
+                const d = await Promise.race([
+                    cachedFetch(`${API}/api/wallet/${uid}`, 'wallet'),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+                ]).catch(() => {
+                    // Если запрос завис, используем кэш
+                    if (cache.wallet && cache.wallet.data) {
+                        return cache.wallet.data;
+                    }
+                    return { status: 'error', balances: { tjs: 0, usd: 0, bonus_kg: 0 } };
+                });
+                
                 if (d.status !== 'ok' || !d.balances) return;
 
                 const b = d.balances;
@@ -4075,7 +4141,13 @@
         async function loadWalletHistory() {
             safe('wallet-tx-list', el => el.innerHTML = 'Загрузка...');
             try {
-                const d = await safeFetch(`${API}/api/wallet/${uid}/transactions?limit=20`);
+                const d = await Promise.race([
+                    safeFetch(`${API}/api/wallet/${uid}/transactions?limit=20`),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+                ]).catch(() => {
+                    safe('wallet-tx-list', el => el.innerHTML = '<div style="text-align:center; padding:10px; color:#8e8e93;">Ошибка загрузки транзакций</div>');
+                    throw new Error('Timeout');
+                });
                 if (d.status !== 'ok' || !d.transactions || d.transactions.length === 0) {
                     safe('wallet-tx-list', el => el.innerHTML = '<div style="text-align:center; padding:10px; color:#8e8e93;">Транзакций пока нет</div>');
                     return;
