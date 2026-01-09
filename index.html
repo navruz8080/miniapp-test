@@ -2053,7 +2053,10 @@
                     userName: user?.name,
                     markingCode: user?.marking_code,
                     level: user?.level,
-                    bonusKg: user?.bonus_kg
+                    bonusKg: user?.bonus_kg,
+                    isSeller: user?.is_seller,
+                    sellerStatus: user?.seller_status,
+                    sellerVerified: user?.seller_verified
                 });
                 
                 // Проверяем статус продавца и показываем кнопку добавления товара
@@ -2704,6 +2707,63 @@
 
         let isAdmin = false;
         let currentAdminPackage = null;
+        
+        async function checkSellerStatus() {
+            try {
+                // Проверяем статус продавца из данных dashboard или делаем отдельный запрос
+                if (user && user.is_seller !== undefined) {
+                    // Данные уже загружены из dashboard
+                    const isSeller = user.is_seller || false;
+                    const sellerVerified = user.seller_verified || false;
+                    
+                    console.log('[checkSellerStatus] From dashboard:', {
+                        is_seller: isSeller,
+                        seller_verified: sellerVerified,
+                        seller_status: user.seller_status
+                    });
+                    
+                    // Показываем кнопку добавления товара только если продавец верифицирован
+                    const addBtn = document.getElementById('add-product-btn');
+                    if (addBtn) {
+                        if (isSeller && sellerVerified) {
+                            addBtn.style.display = 'flex';
+                            console.log('[checkSellerStatus] Showing add product button');
+                        } else {
+                            addBtn.style.display = 'none';
+                            console.log('[checkSellerStatus] Hiding add product button');
+                        }
+                    }
+                } else {
+                    // Если данных нет в dashboard, делаем отдельный запрос
+                    console.log('[checkSellerStatus] Fetching seller status from API');
+                    const d = await safeFetchSilent(`${API}/api/seller/status/${uid}`);
+                    if (d && d.status === 'ok') {
+                        const isSeller = d.is_seller || false;
+                        const sellerVerified = d.seller_verified || false;
+                        
+                        // Обновляем объект user
+                        user.is_seller = isSeller;
+                        user.seller_status = d.seller_status;
+                        user.seller_verified = sellerVerified;
+                        
+                        // Показываем кнопку добавления товара
+                        const addBtn = document.getElementById('add-product-btn');
+                        if (addBtn) {
+                            if (isSeller && sellerVerified) {
+                                addBtn.style.display = 'flex';
+                            } else {
+                                addBtn.style.display = 'none';
+                            }
+                        }
+                    }
+                }
+            } catch(e) {
+                console.error('[checkSellerStatus] Error:', e);
+                // Скрываем кнопку при ошибке
+                const addBtn = document.getElementById('add-product-btn');
+                if (addBtn) addBtn.style.display = 'none';
+            }
+        }
         
         async function checkAdmin() {
             try {
