@@ -1920,7 +1920,27 @@
                             },
                             packages: [],
                             app_config: {
-                                warehouses: [],
+                                warehouses: {
+                                    retail: {
+                                        city: "Yiwu",
+                                        name: "Склад Розница (Иу)",
+                                        address: "阿吉买买提·买买提\n18967433111\n浙江省金华市义乌市福田街道长春七街52号1楼"
+                                    },
+                                    wholesale: {
+                                        yiwu: {
+                                            name: "Иу (Yiwu)",
+                                            address: "浙江省义乌市廿三里街道惠民路708号 988库С-87/TJ-2221\n18066232225"
+                                        },
+                                        urumqi: {
+                                            name: "Урумчи (Urumqi)",
+                                            address: "新疆乌鲁木齐市红雁路257号131库房C-87号/TJ-2221\n13565880006"
+                                        },
+                                        guangzhou: {
+                                            name: "Гуанчжоу (Guangzhou)",
+                                            address: "Адрес в Гуанчжоу уточняется...\nTel: ---"
+                                        }
+                                    }
+                                },
                                 pvz_list: [],
                                 routes: []
                             }
@@ -1932,6 +1952,33 @@
                 config = data.app_config || {};
                 user = data.user_info || {};
                 
+                // Убеждаемся, что warehouses загружены
+                if (!config.warehouses) {
+                    console.warn('[INIT] Warehouses not in response, using fallback');
+                    // Используем дефолтные адреса если их нет в ответе
+                    config.warehouses = {
+                        retail: {
+                            city: "Yiwu",
+                            name: "Склад Розница (Иу)",
+                            address: "阿吉买买提·买买提\n18967433111\n浙江省金华市义乌市福田街道长春七街52号1楼"
+                        },
+                        wholesale: {
+                            yiwu: {
+                                name: "Иу (Yiwu)",
+                                address: "浙江省义乌市廿三里街道惠民路708号 988库С-87/TJ-2221\n18066232225"
+                            },
+                            urumqi: {
+                                name: "Урумчи (Urumqi)",
+                                address: "新疆乌鲁木齐市红雁路257号131库房C-87号/TJ-2221\n13565880006"
+                            },
+                            guangzhou: {
+                                name: "Гуанчжоу (Guangzhou)",
+                                address: "Адрес в Гуанчжоу уточняется...\nTel: ---"
+                            }
+                        }
+                    };
+                }
+                
                 // Если маршруты не пришли в dashboard, используем отдельный запрос
                 if (!config.routes && routesData && routesData.routes) {
                     config.routes = routesData.routes;
@@ -1939,6 +1986,11 @@
                 
                 // Используем сохраненный аватар, если есть, иначе Telegram фото, иначе дефолтное
                 const ava = user.avatar_url || telegramPhoto || defaultAva;
+                
+                // Логируем для отладки
+                console.log('[INIT] Avatar URL:', ava);
+                console.log('[INIT] Warehouses loaded:', !!config.warehouses);
+                console.log('[INIT] Retail address:', config.warehouses?.retail?.address);
                 
                 // Функция для безопасной установки изображения с обработкой ошибок
                 const setImageWithFallback = (imgEl, src, fallback) => {
@@ -1962,11 +2014,33 @@
                     }
                 };
                 
-                safe('u-ava', el => setImageWithFallback(el, ava, defaultAva));
+                // Устанавливаем аватар с принудительной загрузкой
+                safe('u-ava', el => {
+                    if (el) {
+                        // Очищаем предыдущий src для принудительной перезагрузки
+                        el.src = '';
+                        setImageWithFallback(el, ava, defaultAva);
+                        // Если аватар не загрузился через 2 секунды, используем fallback
+                        setTimeout(() => {
+                            if (!el.complete || el.naturalHeight === 0) {
+                                console.warn('[INIT] Avatar failed to load, using fallback');
+                                el.src = defaultAva;
+                            }
+                        }, 2000);
+                    }
+                });
                 safe('p-ava', el => {
-                    setImageWithFallback(el, ava, defaultAva);
-                    el.style.cursor = 'pointer';
-                    el.onclick = () => editAvatar();
+                    if (el) {
+                        el.src = '';
+                        setImageWithFallback(el, ava, defaultAva);
+                        el.style.cursor = 'pointer';
+                        el.onclick = () => editAvatar();
+                        setTimeout(() => {
+                            if (!el.complete || el.naturalHeight === 0) {
+                                el.src = defaultAva;
+                            }
+                        }, 2000);
+                    }
                 });
 
                 safe('u-name', el => el.innerText = user.name || firstName);
@@ -2213,21 +2287,36 @@
         /* ================= ADDRESSES ================= */
         function renderAddr() {
             safe('txt-addr', el => {
+                console.log('[renderAddr] Config:', config);
+                console.log('[renderAddr] Warehouses:', config?.warehouses);
+                console.log('[renderAddr] isOpt:', isOpt);
+                
                 if (!config || !config.warehouses) {
+                    console.warn('[renderAddr] Config or warehouses missing');
                     el.innerText = 'Загрузка данных...';
-                    return;
+                    // Пытаемся загрузить адреса из кэша или использовать дефолтные
+                    if (cache.dashboard && cache.dashboard.data && cache.dashboard.data.app_config) {
+                        config.warehouses = cache.dashboard.data.app_config.warehouses;
+                        console.log('[renderAddr] Using cached warehouses');
+                    }
+                    if (!config.warehouses) {
+                        el.innerText = 'Адрес не загружен. Обновите страницу.';
+                        return;
+                    }
                 }
 
                 if (isOpt) {
                     const city = gid('sel-city')?.value || 'yiwu';
                     const addr = config.warehouses?.wholesale?.[city]?.address;
+                    console.log('[renderAddr] Wholesale city:', city, 'Address:', addr);
                     el.innerText = addr || 'Выберите город';
                 } else {
                     const addr = config.warehouses?.retail?.address;
+                    console.log('[renderAddr] Retail address:', addr);
                     if (addr) {
                         el.innerText = addr;
                     } else {
-                        console.error('Retail address not found:', config.warehouses);
+                        console.error('[renderAddr] Retail address not found:', config.warehouses);
                         el.innerText = 'Адрес не найден. Обратитесь в поддержку.';
                     }
                 }
