@@ -1035,6 +1035,28 @@
                 </div>
             </div>
         </div>
+        <div id="hub-nav-calc" class="hub-nav-bar">
+            <div class="hub-nav-item" onclick="hubNav('calc', 'home')">
+                <i class="fa-solid fa-house"></i>
+                <span>Главная</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('calc', 'calculator')">
+                <i class="fa-solid fa-calculator"></i>
+                <span>Калькулятор</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('calc', 'history')">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>История</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('calc', 'rates')">
+                <i class="fa-solid fa-tags"></i>
+                <span>Тарифы</span>
+            </div>
+            <div class="hub-nav-item active" onclick="hubNav('calc', 'compare')">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Сравнение</span>
+            </div>
+        </div>
     </div>
     
     <!-- Экран помощи расчетов -->
@@ -1138,6 +1160,28 @@
             </button>
             <div id="list-trucks"></div>
         </div>
+        <div id="hub-nav-trucks" class="hub-nav-bar">
+            <div class="hub-nav-item" onclick="hubNav('trucks', 'home')">
+                <i class="fa-solid fa-house"></i>
+                <span>Главная</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('trucks', 'trips')">
+                <i class="fa-solid fa-truck-fast"></i>
+                <span>Поездки</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('trucks', 'cargo')">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <span>Грузы</span>
+            </div>
+            <div class="hub-nav-item active" onclick="hubNav('trucks', 'orders')">
+                <i class="fa-solid fa-handshake"></i>
+                <span>Заказы</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('trucks', 'history')">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>История</span>
+            </div>
+        </div>
     </div>
     
     <!-- Экран машин биржи -->
@@ -1191,6 +1235,28 @@
         </div>
         <div class="container">
             <div id="list-trucks-history"></div>
+        </div>
+        <div id="hub-nav-trucks" class="hub-nav-bar">
+            <div class="hub-nav-item" onclick="hubNav('trucks', 'home')">
+                <i class="fa-solid fa-house"></i>
+                <span>Главная</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('trucks', 'trips')">
+                <i class="fa-solid fa-truck-fast"></i>
+                <span>Поездки</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('trucks', 'cargo')">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <span>Грузы</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('trucks', 'orders')">
+                <i class="fa-solid fa-handshake"></i>
+                <span>Заказы</span>
+            </div>
+            <div class="hub-nav-item active" onclick="hubNav('trucks', 'history')">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>История</span>
+            </div>
         </div>
     </div>
     
@@ -1444,16 +1510,16 @@
     </div>
     
     <!-- Экран товаров маркета -->
-    <div id="screen-market-products" class="screen">
+    <div id="screen-market-products" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="nav('market')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="hubNav('market', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Товары</div>
             <div style="display:flex;gap:12px;align-items:center;">
                 <div id="add-product-btn" style="display:none;width:40px;height:40px;background:linear-gradient(135deg, #34C759 0%, #30D158 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(52,199,89,0.3);" 
                      onclick="openAddProductModal()" title="Добавить товар">
                     <i class="fa-solid fa-plus"></i>
                 </div>
-                <div style="position:relative;cursor:pointer;" onclick="nav('cart')">
+                <div style="position:relative;cursor:pointer;" onclick="hubNav('market', 'cart')">
                     <i class="fa-solid fa-shopping-cart" style="font-size:20px;"></i>
                     <span id="cart-badge" style="position:absolute;top:-8px;right:-8px;background:#FF3B30;color:#fff;border-radius:50%;width:20px;height:20px;display:none;align-items:center;justify-content:center;font-size:11px;font-weight:700;">0</span>
                 </div>
@@ -1466,6 +1532,29 @@
                        oninput="filterMarketProducts()">
             </div>
             <div id="list-market"></div>
+        </div>
+        <div id="hub-nav-market" class="hub-nav-bar">
+            <div class="hub-nav-item" onclick="hubNav('market', 'home')">
+                <i class="fa-solid fa-house"></i>
+                <span>Главная</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'categories')">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Категории</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'wishlist')">
+                <i class="fa-regular fa-heart"></i>
+                <span>Избранное</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'cart')">
+                <i class="fa-solid fa-shopping-cart"></i>
+                <span>Корзина</span>
+                <span id="hub-nav-cart-badge" class="hub-nav-badge" style="display:none;">0</span>
+            </div>
+            <div class="hub-nav-item active" onclick="hubNav('market', 'products')">
+                <i class="fa-solid fa-box"></i>
+                <span>Товары</span>
+            </div>
         </div>
     </div>
     
@@ -1528,35 +1617,104 @@
     </div>
     
     <!-- Экран сборов маркета -->
-    <div id="screen-market-pools" class="screen">
+    <div id="screen-market-pools" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="nav('market')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="hubNav('market', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Групповые сборы</div>
         </div>
         <div class="container">
             <div id="list-market-pools"></div>
         </div>
+        <div id="hub-nav-market" class="hub-nav-bar">
+            <div class="hub-nav-item" onclick="hubNav('market', 'home')">
+                <i class="fa-solid fa-house"></i>
+                <span>Главная</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'categories')">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Категории</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'wishlist')">
+                <i class="fa-regular fa-heart"></i>
+                <span>Избранное</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'cart')">
+                <i class="fa-solid fa-shopping-cart"></i>
+                <span>Корзина</span>
+                <span id="hub-nav-cart-badge" class="hub-nav-badge" style="display:none;">0</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'orders')">
+                <i class="fa-solid fa-box"></i>
+                <span>Заказы</span>
+            </div>
+        </div>
     </div>
     
     <!-- Экран избранного маркета -->
-    <div id="screen-market-wishlist" class="screen">
+    <div id="screen-market-wishlist" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="nav('market')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="hubNav('market', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Избранное</div>
         </div>
         <div class="container">
             <div id="list-market-wishlist"></div>
         </div>
+        <div id="hub-nav-market" class="hub-nav-bar">
+            <div class="hub-nav-item" onclick="hubNav('market', 'home')">
+                <i class="fa-solid fa-house"></i>
+                <span>Главная</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'categories')">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Категории</span>
+            </div>
+            <div class="hub-nav-item active" onclick="hubNav('market', 'wishlist')">
+                <i class="fa-regular fa-heart"></i>
+                <span>Избранное</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'cart')">
+                <i class="fa-solid fa-shopping-cart"></i>
+                <span>Корзина</span>
+                <span id="hub-nav-cart-badge" class="hub-nav-badge" style="display:none;">0</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'orders')">
+                <i class="fa-solid fa-box"></i>
+                <span>Заказы</span>
+            </div>
+        </div>
     </div>
     
     <!-- Экран категорий маркета -->
-    <div id="screen-market-categories" class="screen">
+    <div id="screen-market-categories" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="nav('market')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="hubNav('market', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Категории</div>
         </div>
         <div class="container">
             <div id="list-market-categories"></div>
+        </div>
+        <div id="hub-nav-market" class="hub-nav-bar">
+            <div class="hub-nav-item" onclick="hubNav('market', 'home')">
+                <i class="fa-solid fa-house"></i>
+                <span>Главная</span>
+            </div>
+            <div class="hub-nav-item active" onclick="hubNav('market', 'categories')">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Категории</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'wishlist')">
+                <i class="fa-regular fa-heart"></i>
+                <span>Избранное</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'cart')">
+                <i class="fa-solid fa-shopping-cart"></i>
+                <span>Корзина</span>
+                <span id="hub-nav-cart-badge" class="hub-nav-badge" style="display:none;">0</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'orders')">
+                <i class="fa-solid fa-box"></i>
+                <span>Заказы</span>
+            </div>
         </div>
     </div>
     
@@ -3356,8 +3514,7 @@
                     'trips': 'screen-trucks-trips',
                     'cargo': 'screen-trucks-cargo',
                     'orders': 'screen-trucks-orders',
-                    'history': 'screen-trucks-history',
-                    'profile': 'screen-trucks-driver-profile'
+                    'history': 'screen-trucks-history'
                 },
                 navBar: 'hub-nav-trucks'
             },
@@ -3376,8 +3533,7 @@
                     'home': 'screen-profile',
                     'wallet': 'screen-wallet',
                     'rewards': 'screen-rewards',
-                    'settings': 'screen-settings',
-                    'referrals': 'screen-referrals'
+                    'settings': 'screen-settings'
                 },
                 navBar: 'hub-nav-profile'
             }
@@ -3502,7 +3658,9 @@
             }
             // Биржа
             else if (hubName === 'trucks') {
-                if (screenName === 'trips') {
+                if (screenName === 'home') {
+                    loadTrucksHome();
+                } else if (screenName === 'trips') {
                     ldTrTrips();
                 } else if (screenName === 'cargo') {
                     ldTrCargo();
@@ -3538,21 +3696,15 @@
                     ldRew();
                 }
             }
-            // Биржа
-            else if (hubName === 'trucks') {
-                if (screenName === 'home') {
-                    loadTrucksHome();
-                }
-            }
         }
         
         // Загрузка главной страницы маркета
         async function loadMarketHome() {
             // Загружаем рекомендации
             try {
-                const data = await cachedFetch(`${API}/api/marketplace/products?limit=4`, 'market_featured');
-                if (data && data.status === 'ok' && data.products) {
-                    renderMarketFeatured(data.products.slice(0, 4));
+                const data = await cachedFetch(`${API}/api/market/list?type=item`, 'market_featured');
+                if (data && data.status === 'ok' && data.items) {
+                    renderMarketFeatured(data.items.slice(0, 4));
                 }
             } catch(e) {
                 console.error('Error loading market featured:', e);
@@ -3570,9 +3722,9 @@
             
             // Загружаем популярные товары
             try {
-                const popularData = await cachedFetch(`${API}/api/marketplace/products?limit=6`, 'market_popular');
-                if (popularData && popularData.status === 'ok' && popularData.products) {
-                    renderMarketPopular(popularData.products);
+                const popularData = await cachedFetch(`${API}/api/market/list?type=item`, 'market_popular');
+                if (popularData && popularData.status === 'ok' && popularData.items) {
+                    renderMarketPopular(popularData.items.slice(0, 6));
                 }
             } catch(e) {
                 console.error('Error loading popular products:', e);
@@ -3586,13 +3738,15 @@
             
             let html = '';
             products.forEach(product => {
+                const imgUrl = product.img || product.image_url || 'https://ui-avatars.com/api/?name=PROD&size=200';
+                const price = product.price || '0 TJS';
                 html += `
                     <div class="card" style="padding:0;overflow:hidden;cursor:pointer;" onclick="showProductDetails(${product.id})">
-                        <img src="${product.image_url || 'https://ui-avatars.com/api/?name=PROD&size=200'}" 
+                        <img src="${imgUrl}" 
                              style="width:100%;height:120px;object-fit:cover;">
                         <div style="padding:12px;">
                             <div style="font-weight:700;font-size:14px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${(product.title || 'Товар').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
-                            <div style="font-size:18px;font-weight:800;color:var(--blue);">${product.price} TJS</div>
+                            <div style="font-size:18px;font-weight:800;color:var(--blue);">${price}</div>
                         </div>
                     </div>
                 `;
@@ -3624,18 +3778,235 @@
             
             let html = '';
             products.forEach(product => {
+                const imgUrl = product.img || product.image_url || 'https://ui-avatars.com/api/?name=PROD&size=100';
+                const price = product.price || '0 TJS';
                 html += `
                     <div class="card" style="display:flex;gap:12px;padding:12px;cursor:pointer;" onclick="showProductDetails(${product.id})">
-                        <img src="${product.image_url || 'https://ui-avatars.com/api/?name=PROD&size=100'}" 
+                        <img src="${imgUrl}" 
                              style="width:80px;height:80px;object-fit:cover;border-radius:12px;">
                         <div style="flex:1;">
                             <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${(product.title || 'Товар').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
-                            <div style="font-size:18px;font-weight:800;color:var(--blue);">${product.price} TJS</div>
+                            <div style="font-size:18px;font-weight:800;color:var(--blue);">${price}</div>
                         </div>
                     </div>
                 `;
             });
             container.innerHTML = html || '<div style="text-align:center;padding:40px;color:var(--sec);">Нет товаров</div>';
+        }
+        
+        // Обновление быстрого расчета
+        function updateQuickCalc() {
+            try {
+                const weightEl = document.getElementById('quick-weight');
+                const qtyEl = document.getElementById('quick-qty');
+                const optEl = document.getElementById('quick-opt');
+                const resultEl = document.getElementById('quick-result');
+                
+                if (!weightEl || !qtyEl || !optEl || !resultEl) return;
+                
+                const weight = parseFloat(weightEl.value || 0);
+                const qty = parseInt(qtyEl.value || 1);
+                const isOpt = optEl.checked || false;
+                
+                if (weight <= 0) {
+                    resultEl.textContent = '0.00';
+                    return;
+                }
+                
+                // Простой расчет (можно улучшить)
+                let price = 0;
+                if (isOpt) {
+                    price = weight * 5; // Примерная оптовая цена
+                } else {
+                    if (weight < 1) price = weight * 15;
+                    else if (weight < 5) price = weight * 12;
+                    else price = weight * 10;
+                }
+                
+                resultEl.textContent = (price * qty).toFixed(2);
+            } catch(e) {
+                console.error('updateQuickCalc error:', e);
+            }
+        }
+        
+        // Загрузка главной страницы расчета
+        async function loadCalcHome() {
+            // Загружаем последние расчеты из localStorage или показываем пустое состояние
+            try {
+                const savedHistory = localStorage.getItem('calc_history');
+                if (savedHistory) {
+                    try {
+                        const history = JSON.parse(savedHistory);
+                        if (Array.isArray(history) && history.length > 0) {
+                            renderCalcRecent(history.slice(0, 3));
+                            return;
+                        }
+                    } catch(e) {
+                        console.error('Error parsing calc history:', e);
+                    }
+                }
+                const container = document.getElementById('calc-recent-history');
+                if (container) {
+                    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--sec);">Нет расчетов</div>';
+                }
+            } catch(e) {
+                console.error('Error loading calc recent:', e);
+                const container = document.getElementById('calc-recent-history');
+                if (container) {
+                    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--sec);">Ошибка загрузки</div>';
+                }
+            }
+        }
+        
+        // Рендеринг последних расчетов
+        function renderCalcRecent(calculations) {
+            const container = document.getElementById('calc-recent-history');
+            if (!container) return;
+            
+            let html = '';
+            calculations.forEach(calc => {
+                html += `
+                    <div class="card" style="padding:12px;margin-bottom:12px;cursor:pointer;" onclick="hubNav('calc', 'history')">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${calc.route || 'Розница'}</div>
+                                <div style="font-size:12px;color:var(--sec);">${calc.weight || 0} кг × ${calc.quantity || 1}</div>
+                            </div>
+                            <div style="font-size:18px;font-weight:800;color:var(--blue);">${calc.price || 0} TJS</div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html || '<div style="text-align:center;padding:40px;color:var(--sec);">Нет расчетов</div>';
+        }
+        
+        // Загрузка главной страницы профиля
+        async function loadProfileHome() {
+            // Обновляем финансовую сводку
+            try {
+                const walletData = await cachedFetch(`${API}/api/wallet/${uid}`, 'wallet');
+                if (walletData && walletData.status === 'ok') {
+                    safe('profile-balance-tjs', el => el.textContent = (walletData.balance_tjs || 0).toFixed(2));
+                    safe('profile-balance-usd', el => el.textContent = (walletData.balance_usd || 0).toFixed(2));
+                    safe('profile-bonus-kg', el => el.textContent = `${walletData.bonus_kg || 0} кг`);
+                }
+            } catch(e) {
+                console.error('Error loading profile wallet:', e);
+            }
+        }
+        
+        // Загрузка главной страницы биржи
+        async function loadTrucksHome() {
+            // Загружаем активные заказы из exchange API
+            try {
+                const ordersData = await cachedFetch(`${API}/api/exchange/list?user_id=${uid}`, 'trucks_active');
+                if (ordersData && ordersData.status === 'ok' && ordersData.orders) {
+                    // Фильтруем только активные заказы
+                    const activeOrders = ordersData.orders.filter(o => o.status !== 'COMPLETED' && o.status !== 'CANCELLED').slice(0, 3);
+                    if (activeOrders.length > 0) {
+                        renderTrucksActive(activeOrders);
+                    } else {
+                        const container = document.getElementById('trucks-active-orders');
+                        if (container) {
+                            container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--sec);">Нет активных заказов</div>';
+                        }
+                    }
+                } else {
+                    const container = document.getElementById('trucks-active-orders');
+                    if (container) {
+                        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--sec);">Нет активных заказов</div>';
+                    }
+                }
+            } catch(e) {
+                console.error('Error loading trucks active:', e);
+                const container = document.getElementById('trucks-active-orders');
+                if (container) {
+                    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--sec);">Ошибка загрузки</div>';
+                }
+            }
+        }
+        
+        // Рендеринг активных заказов биржи
+        function renderTrucksActive(orders) {
+            const container = document.getElementById('trucks-active-orders');
+            if (!container) return;
+            
+            let html = '';
+            orders.forEach(order => {
+                const route = order.route || `${order.city_from || ''} → ${order.city_to || ''}` || 'Маршрут';
+                const weight = order.weight || order.weight_kg || 0;
+                const price = order.price || order.total_price || 0;
+                const currency = order.currency || 'TJS';
+                html += `
+                    <div class="card" style="padding:12px;margin-bottom:12px;cursor:pointer;" onclick="hubNav('trucks', 'orders')">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${route}</div>
+                                <div style="font-size:12px;color:var(--sec);">${weight} кг</div>
+                            </div>
+                            <div style="font-size:18px;font-weight:800;color:var(--blue);">${price} ${currency}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html || '<div style="text-align:center;padding:40px;color:var(--sec);">Нет активных заказов</div>';
+        }
+        
+        // Открыть модальное окно добавления товара
+        function openAddProductModal() {
+            openM('m-add-product');
+        }
+        
+        // Отправить товар
+        async function submitProduct() {
+            try {
+                const title = document.getElementById('product-title')?.value?.trim();
+                const description = document.getElementById('product-description')?.value?.trim() || '';
+                const price = parseFloat(document.getElementById('product-price')?.value || 0);
+                const category = document.getElementById('product-category')?.value || '';
+                const imageUrl = document.getElementById('product-image')?.value?.trim() || '';
+                const stock = parseInt(document.getElementById('product-stock')?.value || 1);
+                
+                if (!title || price <= 0) {
+                    tg.showAlert('Заполните название и цену товара');
+                    return;
+                }
+                
+                const res = await safeFetch(`${API}/api/marketplace/product/create`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        user_id: uid,
+                        title: title,
+                        description: description,
+                        price: price,
+                        category: category,
+                        image_url: imageUrl,
+                        item_type: 'item',
+                        stock: stock
+                    })
+                });
+                
+                if (res.status === 'ok') {
+                    tg.showAlert('✅ Товар успешно добавлен!');
+                    closeM('m-add-product');
+                    // Очищаем форму
+                    document.getElementById('product-title').value = '';
+                    document.getElementById('product-description').value = '';
+                    document.getElementById('product-price').value = '';
+                    document.getElementById('product-category').value = '';
+                    document.getElementById('product-image').value = '';
+                    document.getElementById('product-stock').value = '1';
+                    // Обновляем список товаров
+                    if (currentHub === 'market') {
+                        hubNav('market', 'products');
+                    }
+                } else {
+                    tg.showAlert(res.detail || 'Ошибка создания товара');
+                }
+            } catch(e) {
+                console.error('Error submitting product:', e);
+                tg.showAlert('Ошибка создания товара');
+            }
         }
         
         function nav(id) {
