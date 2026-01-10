@@ -247,6 +247,95 @@
         .nav-head i {
             font-size: 22px;
             color: var(--blue);
+        }
+        
+        /* ==================== HUB NAVIGATION BARS ==================== */
+        .hub-nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card);
+            border-top: 1px solid rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+            z-index: 100;
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.04);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        .hub-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            max-width: 100px;
+            position: relative;
+        }
+        
+        .hub-nav-item:active {
+            transform: scale(0.95);
+        }
+        
+        .hub-nav-item.active {
+            color: var(--blue);
+        }
+        
+        .hub-nav-item i {
+            font-size: 22px;
+            transition: all 0.2s;
+        }
+        
+        .hub-nav-item.active i {
+            transform: scale(1.1);
+        }
+        
+        .hub-nav-item span {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+        }
+        
+        .hub-nav-item.active span {
+            font-weight: 700;
+        }
+        
+        .hub-nav-badge {
+            position: absolute;
+            top: 4px;
+            right: 8px;
+            background: var(--red);
+            color: white;
+            border-radius: 10px;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 0 5px;
+            border: 2px solid var(--card);
+        }
+        
+        /* Отступ для контента, когда активен hub navigation bar */
+        .screen.hub-active .container {
+            padding-bottom: 80px;
+        }
+        
+        /* Скрытие navigation bar при необходимости */
+        .hub-nav-bar.hidden {
+            display: none;
+        }
+        
+        .nav-head i {
             cursor: pointer;
             padding: 8px;
             border-radius: 50%;
@@ -469,7 +558,7 @@
                 <div style="font-size:13px; opacity:0.9; margin-top:8px; font-weight:500; position:relative; z-index:1;">
                     <span id="u-balance-tjs">0.00</span> TJS · <span id="u-balance-usd">0.00</span> USD
                 </div>
-                <button class="b-btn" onclick="event.stopPropagation(); nav('rewards')" style="position:relative; z-index:1;">
+                <button class="b-btn" onclick="event.stopPropagation(); enterHub('profile'); setTimeout(() => hubNav('profile', 'rewards'), 100);" style="position:relative; z-index:1;">
                     <i class="fa-solid fa-star"></i> Задания
                 </button>
             </div>
@@ -481,7 +570,7 @@
                 <div class="grid-item" onclick="nav('calc')"><div class="icon-box" style="color: #007AFF;"><i class="fa-solid fa-calculator"></i></div><span class="grid-lbl">Расчет</span></div>
             </div>
 
-            <div class="card" style="background: linear-gradient(135deg, rgba(0,122,255,0.08) 0%, rgba(88,86,214,0.08) 100%); border: 1px solid rgba(0,122,255,0.15); display:flex; align-items:center; gap:16px; padding:20px; cursor:pointer;" onclick="nav('rewards')">
+            <div class="card" style="background: linear-gradient(135deg, rgba(0,122,255,0.08) 0%, rgba(88,86,214,0.08) 100%); border: 1px solid rgba(0,122,255,0.15); display:flex; align-items:center; gap:16px; padding:20px; cursor:pointer;" onclick="enterHub('profile'); setTimeout(() => hubNav('profile', 'rewards'), 100);">
                 <div style="width:48px; height:48px; background:linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%); border-radius:14px; display:flex; align-items:center; justify-content:center; color:white; font-size:22px; box-shadow:0 4px 12px rgba(0,122,255,0.25);">
                     <i class="fa-solid fa-gift"></i>
                 </div>
@@ -497,7 +586,7 @@
             <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 15px;">
                 <div class="grid-item" onclick="nav('packages')"><div class="icon-box" style="color: #FF2D55;"><i class="fa-solid fa-box-open"></i></div><span class="grid-lbl">Посылки</span></div>
                 <div class="grid-item" onclick="nav('addresses')"><div class="icon-box" style="color: #34C759;"><i class="fa-solid fa-map-location-dot"></i></div><span class="grid-lbl">Адреса</span></div>
-                <div class="grid-item" onclick="nav('rewards')"><div class="icon-box" style="color: #FF9500;"><i class="fa-solid fa-users"></i></div><span class="grid-lbl">Рефералы</span></div>
+                <div class="grid-item" onclick="enterHub('profile'); setTimeout(() => hubNav('profile', 'rewards'), 100);"><div class="icon-box" style="color: #FF9500;"><i class="fa-solid fa-users"></i></div><span class="grid-lbl">Рефералы</span></div>
                 
                 <div class="grid-item" onclick="nav('prohibited')"><div class="icon-box" style="color: #FF3B30;"><i class="fa-solid fa-hand"></i></div><span class="grid-lbl">Запрещено</span></div>
                 <div class="grid-item" onclick="nav('rates')"><div class="icon-box" style="color: #007AFF;"><i class="fa-solid fa-tags"></i></div><span class="grid-lbl">Тарифы</span></div>
@@ -586,16 +675,18 @@
         </div>
     </div>
 
-    <div id="screen-profile" class="screen">
+    <!-- ==================== ПРОФИЛЬ HUB (Финансовый) ==================== -->
+    <div id="screen-profile" class="screen hub-active">
         <div class="nav-head">
             <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
-            <div class="pg-title" data-i18n="profile">Личный кабинет</div>
+            <div class="pg-title" data-i18n="profile">Профиль</div>
             <div onclick="toggleLanguage()" style="padding:8px; cursor:pointer; font-size:14px; font-weight:600; color:var(--blue);">
                 <span id="lang-indicator">RU</span>
             </div>
         </div>
         <div class="container">
-            <div class="card" style="text-align: center; padding: 30px 20px;">
+            <!-- Профиль пользователя -->
+            <div class="card" style="text-align: center; padding: 30px 20px; margin-bottom: 20px;">
                 <div style="position: relative; display: inline-block;">
                     <img id="p-ava" src="" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: opacity 0.2s;" title="Нажмите для изменения фото">
                     <div id="p-lvl-tag" class="lvl-badge" style="position: absolute; bottom: 0; right: 0; padding: 4px 10px; font-size: 12px; border: 2px solid #fff;">...</div>
@@ -606,27 +697,93 @@
                 <h2 id="p-name" style="margin: 15px 0 5px 0;">...</h2>
                 <div style="font-size:12px; color:var(--sec);">ID: <span id="p-id">...</span></div>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
-                <div class="card" style="margin-bottom: 0; text-align: center;">
-                    <div style="font-size: 12px; color: var(--sec);">Бонусы</div>
-                    <div style="font-size: 20px; font-weight: 800; color: var(--green);"><span id="p-bonus">0</span> кг</div>
-                </div>
-                <div class="card" style="margin-bottom: 0; text-align: center;">
-                    <div style="font-size: 12px; color: var(--sec);">Статус</div>
-                    <div style="font-size: 14px; font-weight: 700;" id="p-status-name">...</div>
+            
+            <!-- Финансовая сводка -->
+            <div style="margin-bottom:20px;">
+                <h2 style="font-size:20px;font-weight:800;margin-bottom:12px;">Финансы</h2>
+                <div class="card" style="background:linear-gradient(135deg, rgba(52,199,89,0.1) 0%, rgba(48,209,88,0.1) 100%); border: 1px solid rgba(52,199,89,0.2);">
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center;">
+                        <div>
+                            <div style="font-size:11px;color:var(--sec);margin-bottom:4px;">TJS</div>
+                            <div id="profile-balance-tjs" style="font-size:18px;font-weight:800;">0.00</div>
+                        </div>
+                        <div>
+                            <div style="font-size:11px;color:var(--sec);margin-bottom:4px;">USD</div>
+                            <div id="profile-balance-usd" style="font-size:18px;font-weight:800;">0.00</div>
+                        </div>
+                        <div>
+                            <div style="font-size:11px;color:var(--sec);margin-bottom:4px;">Бонусы</div>
+                            <div id="profile-bonus-kg" style="font-size:18px;font-weight:800;color:var(--green);">0 кг</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-blue" onclick="hubNav('profile', 'wallet')" style="width:100%;margin-top:16px;">
+                        <i class="fa-solid fa-wallet"></i> Открыть кошелек
+                    </button>
                 </div>
             </div>
-            <div class="card" style="padding: 0;">
-                <div class="pkg-item" style="padding: 16px;" onclick="nav('settings')">
-                    <div style="display:flex; align-items:center; gap:12px;"><i class="fa-solid fa-user-pen" style="color:var(--blue);"></i><b>Настройки данных</b></div>
+            
+            <!-- Быстрые действия -->
+            <div style="margin-bottom:20px;">
+                <h2 style="font-size:20px;font-weight:800;margin-bottom:12px;">Действия</h2>
+                <div class="card" style="padding:0;">
+                    <div class="pkg-item" style="padding:16px;cursor:pointer;" onclick="hubNav('profile', 'wallet')">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <i class="fa-solid fa-wallet" style="color:var(--blue);font-size:20px;"></i>
+                            <div>
+                                <b>Кошелек</b>
+                                <div style="font-size:12px;color:var(--sec);">Баланс и транзакции</div>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right" style="color:var(--sec);"></i>
+                    </div>
+                    <div class="pkg-item" style="padding:16px;cursor:pointer;" onclick="hubNav('profile', 'rewards')">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <i class="fa-solid fa-gift" style="color:var(--orange);font-size:20px;"></i>
+                            <div>
+                                <b>Награды</b>
+                                <div style="font-size:12px;color:var(--sec);">Бонусы и уровни</div>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right" style="color:var(--sec);"></i>
+                    </div>
+                    <div class="pkg-item" style="padding:16px;cursor:pointer;" onclick="hubNav('profile', 'settings')">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <i class="fa-solid fa-gear" style="color:var(--sec);font-size:20px;"></i>
+                            <div>
+                                <b>Настройки</b>
+                                <div style="font-size:12px;color:var(--sec);">Профиль и данные</div>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right" style="color:var(--sec);"></i>
+                    </div>
                 </div>
+            </div>
+        </div>
+        
+        <!-- Нижний navigation bar для Профиля -->
+        <div id="hub-nav-profile" class="hub-nav-bar">
+            <div class="hub-nav-item active" onclick="hubNav('profile', 'home')">
+                <i class="fa-solid fa-house"></i>
+                <span>Главная</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('profile', 'wallet')">
+                <i class="fa-solid fa-wallet"></i>
+                <span>Кошелек</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('profile', 'rewards')">
+                <i class="fa-solid fa-gift"></i>
+                <span>Награды</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('profile', 'settings')">
+                <i class="fa-solid fa-gear"></i>
+                <span>Настройки</span>
             </div>
         </div>
     </div>
 
-    <div id="screen-wallet" class="screen">
+    <div id="screen-wallet" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="hubNav('profile', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Кошелек</div>
         </div>
         <div class="container">
@@ -705,17 +862,84 @@
         </div>
     </div>
 
-    <!-- Меню Расчетов -->
-    <div id="screen-calc" class="screen">
+    <!-- ==================== РАСЧЕТ HUB ==================== -->
+    <!-- Главный экран расчета -->
+    <div id="screen-calc" class="screen hub-active">
         <div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Расчет</div></div>
         <div class="container">
-            <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 15px;">
-                <div class="grid-item" onclick="nav('calc-calculator')"><div class="icon-box" style="color: #007AFF;"><i class="fa-solid fa-calculator"></i></div><span class="grid-lbl">Калькулятор</span></div>
-                <div class="grid-item" onclick="nav('calc-history')"><div class="icon-box" style="color: #8E8E93;"><i class="fa-solid fa-clock-rotate-left"></i></div><span class="grid-lbl">История</span></div>
-                <div class="grid-item" onclick="nav('calc-rates')"><div class="icon-box" style="color: #FFD60A;"><i class="fa-solid fa-tags"></i></div><span class="grid-lbl">Тарифы</span></div>
-                
-                <div class="grid-item" onclick="nav('calc-compare')"><div class="icon-box" style="color: #34C759;"><i class="fa-solid fa-chart-line"></i></div><span class="grid-lbl">Сравнение</span></div>
-                <div class="grid-item" onclick="nav('calc-help')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-question-circle"></i></div><span class="grid-lbl">Помощь</span></div>
+            <!-- Быстрый калькулятор -->
+            <div style="margin-bottom:20px;">
+                <h2 style="font-size:20px;font-weight:800;margin-bottom:12px;">Быстрый расчет</h2>
+                <div class="card" style="background:linear-gradient(135deg, rgba(0,122,255,0.08) 0%, rgba(88,86,214,0.08) 100%); border: 1px solid rgba(0,122,255,0.15);">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                        <input id="quick-weight" type="number" placeholder="Вес (кг)" style="margin-bottom:0;">
+                        <input id="quick-qty" type="number" placeholder="Кол-во" value="1" style="margin-bottom:0;">
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                        <span style="font-weight:600;">Режим:</span>
+                        <label class="switch" style="margin:0;">
+                            <input type="checkbox" id="quick-opt" onchange="updateQuickCalc()">
+                            <span class="slider"></span>
+                        </label>
+                        <span style="font-size:14px;color:var(--sec);">Опт</span>
+                    </div>
+                    <div style="text-align:center;padding:16px;background:var(--card);border-radius:12px;margin-bottom:12px;">
+                        <div id="quick-result" style="font-size:32px;font-weight:800;color:var(--blue);">0.00</div>
+                        <div style="font-size:14px;color:var(--sec);">TJS</div>
+                    </div>
+                    <button class="btn btn-blue" onclick="hubNav('calc', 'calculator')" style="width:100%;">
+                        <i class="fa-solid fa-calculator"></i> Подробный расчет
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Последние расчеты -->
+            <div style="margin-bottom:20px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <h2 style="font-size:20px;font-weight:800;">Последние расчеты</h2>
+                    <span onclick="hubNav('calc', 'history')" style="color:var(--blue);font-size:14px;font-weight:600;cursor:pointer;">Все</span>
+                </div>
+                <div id="calc-recent-history">
+                    <!-- Загружается динамически -->
+                </div>
+            </div>
+            
+            <!-- Быстрые ссылки -->
+            <div>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+                    <div class="card" style="padding:16px;text-align:center;cursor:pointer;" onclick="hubNav('calc', 'rates')">
+                        <i class="fa-solid fa-tags" style="font-size:24px;color:var(--blue);margin-bottom:8px;"></i>
+                        <div style="font-weight:600;font-size:14px;">Тарифы</div>
+                    </div>
+                    <div class="card" style="padding:16px;text-align:center;cursor:pointer;" onclick="hubNav('calc', 'compare')">
+                        <i class="fa-solid fa-chart-line" style="font-size:24px;color:var(--green);margin-bottom:8px;"></i>
+                        <div style="font-weight:600;font-size:14px;">Сравнение</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Нижний navigation bar для Расчета -->
+        <div id="hub-nav-calc" class="hub-nav-bar">
+            <div class="hub-nav-item active" onclick="hubNav('calc', 'home')">
+                <i class="fa-solid fa-house"></i>
+                <span>Главная</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('calc', 'calculator')">
+                <i class="fa-solid fa-calculator"></i>
+                <span>Калькулятор</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('calc', 'history')">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>История</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('calc', 'rates')">
+                <i class="fa-solid fa-tags"></i>
+                <span>Тарифы</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('calc', 'compare')">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Сравнение</span>
             </div>
         </div>
     </div>
@@ -749,9 +973,9 @@
     </div>
 
     <!-- Экран истории расчетов -->
-    <div id="screen-calc-history" class="screen">
+    <div id="screen-calc-history" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="nav('calc')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="hubNav('calc', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">История расчетов</div>
         </div>
         <div class="container">
@@ -760,9 +984,9 @@
     </div>
     
     <!-- Экран тарифов расчетов -->
-    <div id="screen-calc-rates" class="screen">
+    <div id="screen-calc-rates" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="nav('calc')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="hubNav('calc', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Тарифы доставки</div>
         </div>
         <div class="container">
@@ -789,9 +1013,9 @@
     </div>
     
     <!-- Экран сравнения тарифов -->
-    <div id="screen-calc-compare" class="screen">
+    <div id="screen-calc-compare" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="nav('calc')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="hubNav('calc', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Сравнение тарифов</div>
         </div>
         <div class="container">
@@ -842,28 +1066,66 @@
     </div>
 
     <div id="screen-settings" class="screen"><div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Настройки</div></div><div class="container"><div class="card"><input id="s-name" name="s-name" placeholder="Ваше имя"><input id="s-phone" name="s-phone" placeholder="Телефон"><select id="s-pvz" name="s-pvz"></select><button class="btn btn-blue" onclick="saveSet()">Сохранить</button></div></div></div>
-    <!-- Меню Биржи -->
-    <div id="screen-trucks" class="screen">
+    <!-- ==================== БИРЖА HUB ==================== -->
+    <!-- ==================== БИРЖА HUB ==================== -->
+    <!-- Главный экран биржи -->
+    <div id="screen-trucks" class="screen hub-active">
         <div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Биржа</div></div>
         <div class="container">
-            <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 15px;">
-                <div class="grid-item" onclick="nav('trucks-orders')"><div class="icon-box" style="color: #FF9500;"><i class="fa-solid fa-handshake"></i></div><span class="grid-lbl">Сделки</span></div>
-                <div class="grid-item" onclick="nav('trucks-trips')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-truck-fast"></i></div><span class="grid-lbl">Машины</span></div>
-                <div class="grid-item" onclick="nav('trucks-cargo')"><div class="icon-box" style="color: #34C759;"><i class="fa-solid fa-boxes-stacked"></i></div><span class="grid-lbl">Грузы</span></div>
-                
-                <div class="grid-item" onclick="nav('trucks-create')"><div class="icon-box" style="color: #007AFF;"><i class="fa-solid fa-plus-circle"></i></div><span class="grid-lbl">Создать заказ</span></div>
-                <div class="grid-item" onclick="nav('trucks-history')"><div class="icon-box" style="color: #8E8E93;"><i class="fa-solid fa-clock-rotate-left"></i></div><span class="grid-lbl">История</span></div>
-                <div class="grid-item" onclick="nav('trucks-rates')"><div class="icon-box" style="color: #FFD60A;"><i class="fa-solid fa-dollar-sign"></i></div><span class="grid-lbl">Тарифы</span></div>
-                
-                <div class="grid-item" onclick="nav('trucks-help')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-question-circle"></i></div><span class="grid-lbl">Помощь</span></div>
+            <!-- Витрина биржи с быстрыми действиями -->
+            <div style="margin-bottom:20px;">
+                <h2 style="font-size:20px;font-weight:800;margin-bottom:12px;">Быстрые действия</h2>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+                    <button class="btn btn-blue" onclick="hubNav('trucks', 'cargo')" style="background:linear-gradient(135deg, #34C759 0%, #30D158 100%);">
+                        <i class="fa-solid fa-boxes-stacked"></i> Разместить груз
+                    </button>
+                    <button class="btn" onclick="hubNav('trucks', 'trips')" style="background:linear-gradient(135deg, #5856D6 0%, #5E5CE6 100%);">
+                        <i class="fa-solid fa-truck-fast"></i> Найти поездку
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Активные заказы -->
+            <div style="margin-bottom:20px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <h2 style="font-size:20px;font-weight:800;">Активные заказы</h2>
+                    <span onclick="hubNav('trucks', 'orders')" style="color:var(--blue);font-size:14px;font-weight:600;cursor:pointer;">Все</span>
+                </div>
+                <div id="trucks-active-orders">
+                    <!-- Загружается динамически -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Нижний navigation bar для Биржи -->
+        <div id="hub-nav-trucks" class="hub-nav-bar">
+            <div class="hub-nav-item active" onclick="hubNav('trucks', 'home')">
+                <i class="fa-solid fa-house"></i>
+                <span>Главная</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('trucks', 'trips')">
+                <i class="fa-solid fa-truck-fast"></i>
+                <span>Поездки</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('trucks', 'cargo')">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <span>Грузы</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('trucks', 'orders')">
+                <i class="fa-solid fa-handshake"></i>
+                <span>Заказы</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('trucks', 'history')">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>История</span>
             </div>
         </div>
     </div>
     
     <!-- Экран сделок биржи -->
-    <div id="screen-trucks-orders" class="screen">
+    <div id="screen-trucks-orders" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="nav('trucks')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="hubNav('trucks', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Сделки</div>
         </div>
         <div class="container">
@@ -879,10 +1141,10 @@
     </div>
     
     <!-- Экран машин биржи -->
-    <div id="screen-trucks-trips" class="screen">
+    <div id="screen-trucks-trips" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="nav('trucks')"><i class="fa-solid fa-arrow-left"></i></div>
-            <div class="pg-title">Машины</div>
+            <div onclick="hubNav('trucks', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Поездки</div>
         </div>
         <div class="container">
             <div id="list-trucks-trips"></div>
@@ -890,9 +1152,9 @@
     </div>
     
     <!-- Экран грузов биржи -->
-    <div id="screen-trucks-cargo" class="screen">
+    <div id="screen-trucks-cargo" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="nav('trucks')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="hubNav('trucks', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Грузы</div>
         </div>
         <div class="container">
@@ -901,9 +1163,9 @@
     </div>
     
     <!-- Экран создания заказа биржи -->
-    <div id="screen-trucks-create" class="screen">
+    <div id="screen-trucks-create" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="nav('trucks')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="hubNav('trucks', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Создать заказ</div>
         </div>
         <div class="container">
@@ -922,9 +1184,9 @@
     </div>
     
     <!-- Экран истории биржи -->
-    <div id="screen-trucks-history" class="screen">
+    <div id="screen-trucks-history" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="nav('trucks')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="hubNav('trucks', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">История сделок</div>
         </div>
         <div class="container">
@@ -997,9 +1259,10 @@
             <div style="text-align:center;padding:15px;color:var(--sec);cursor:pointer;" onclick="closeM('m-create-order')">Отмена</div>
         </div>
     </div>
+    <!-- Корзина (универсальная, работает и внутри хаба, и отдельно) -->
     <div id="screen-cart" class="screen">
         <div class="nav-head">
-            <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="currentHub ? hubNav(currentHub, 'home') : goHome()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Корзина</div>
         </div>
         <div class="container" style="padding-bottom:120px;">
@@ -1018,9 +1281,55 @@
         </div>
     </div>
     
+    <!-- Корзина маркета (внутри хаба) -->
+    <div id="screen-market-cart" class="screen hub-active">
+        <div class="nav-head">
+            <div onclick="hubNav('market', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Корзина</div>
+        </div>
+        <div class="container">
+            <div id="market-cart-content"></div>
+            <div style="position:sticky;bottom:0;background:var(--card);padding:16px;border-top:1px solid rgba(0,0,0,0.06);margin-top:20px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <div>
+                        <div style="font-size:12px;color:var(--sec);">Итого</div>
+                        <div id="market-cart-total" style="font-size:24px;font-weight:800;color:var(--blue);">0 TJS</div>
+                    </div>
+                    <button class="btn btn-blue" id="market-cart-checkout-btn" onclick="checkoutCart()" style="flex:1;max-width:200px;">
+                        Оформить заказ
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="hub-nav-market" class="hub-nav-bar">
+            <div class="hub-nav-item" onclick="hubNav('market', 'home')">
+                <i class="fa-solid fa-house"></i>
+                <span>Главная</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'categories')">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Категории</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'wishlist')">
+                <i class="fa-regular fa-heart"></i>
+                <span>Избранное</span>
+            </div>
+            <div class="hub-nav-item active" onclick="hubNav('market', 'cart')">
+                <i class="fa-solid fa-shopping-cart"></i>
+                <span>Корзина</span>
+                <span id="hub-nav-cart-badge" class="hub-nav-badge" style="display:none;">0</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'orders')">
+                <i class="fa-solid fa-box"></i>
+                <span>Заказы</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Заказы (универсальные) -->
     <div id="screen-orders" class="screen">
         <div class="nav-head">
-            <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="currentHub ? hubNav(currentHub, 'home') : goHome()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Мои заказы</div>
         </div>
         <div class="container">
@@ -1028,21 +1337,108 @@
         </div>
     </div>
     
-    <!-- Меню Маркета -->
-    <div id="screen-market" class="screen">
-        <div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Маркет</div></div>
+    <!-- Заказы маркета (внутри хаба) -->
+    <div id="screen-market-orders" class="screen hub-active">
+        <div class="nav-head">
+            <div onclick="hubNav('market', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Мои заказы</div>
+        </div>
         <div class="container">
-            <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 15px;">
-                <div class="grid-item" onclick="nav('market-products')"><div class="icon-box" style="color: #FF9500;"><i class="fa-solid fa-bag-shopping"></i></div><span class="grid-lbl">Товары</span></div>
-                <div class="grid-item" onclick="nav('market-pools')"><div class="icon-box" style="color: #34C759;"><i class="fa-solid fa-users"></i></div><span class="grid-lbl">Сборы</span></div>
-                <div class="grid-item" onclick="nav('cart')"><div class="icon-box" style="color: #007AFF;"><i class="fa-solid fa-cart-shopping"></i></div><span class="grid-lbl">Корзина</span></div>
-                
-                <div class="grid-item" onclick="nav('orders')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-box"></i></div><span class="grid-lbl">Заказы</span></div>
-                <div class="grid-item" onclick="nav('market-wishlist')"><div class="icon-box" style="color: #FF2D55;"><i class="fa-solid fa-heart"></i></div><span class="grid-lbl">Избранное</span></div>
-                <div class="grid-item" onclick="nav('market-categories')"><div class="icon-box" style="color: #FFD60A;"><i class="fa-solid fa-tags"></i></div><span class="grid-lbl">Категории</span></div>
-                
-                <div class="grid-item" onclick="nav('market-sellers')"><div class="icon-box" style="color: #8E8E93;"><i class="fa-solid fa-store"></i></div><span class="grid-lbl">Продавцы</span></div>
-                <div class="grid-item" onclick="nav('market-help')"><div class="icon-box" style="color: #5856D6;"><i class="fa-solid fa-question-circle"></i></div><span class="grid-lbl">Помощь</span></div>
+            <div id="market-orders-content"></div>
+        </div>
+        <div id="hub-nav-market" class="hub-nav-bar">
+            <div class="hub-nav-item" onclick="hubNav('market', 'home')">
+                <i class="fa-solid fa-house"></i>
+                <span>Главная</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'categories')">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Категории</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'wishlist')">
+                <i class="fa-regular fa-heart"></i>
+                <span>Избранное</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'cart')">
+                <i class="fa-solid fa-shopping-cart"></i>
+                <span>Корзина</span>
+                <span id="hub-nav-cart-badge" class="hub-nav-badge" style="display:none;">0</span>
+            </div>
+            <div class="hub-nav-item active" onclick="hubNav('market', 'orders')">
+                <i class="fa-solid fa-box"></i>
+                <span>Заказы</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Меню Маркета -->
+    <!-- ==================== МАРКЕТ HUB ==================== -->
+    <!-- Главный экран маркета с витриной -->
+    <div id="screen-market" class="screen hub-active">
+        <div class="nav-head">
+            <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
+            <div class="pg-title">Маркет</div>
+            <div style="display:flex;gap:12px;align-items:center;">
+                <div id="market-cart-icon" style="position:relative;cursor:pointer;" onclick="hubNav('market', 'cart')">
+                    <i class="fa-solid fa-shopping-cart" style="font-size:20px;"></i>
+                    <span id="market-cart-badge" class="hub-nav-badge" style="display:none;">0</span>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <!-- Витрина с рекомендациями -->
+            <div style="margin-bottom:20px;">
+                <h2 style="font-size:20px;font-weight:800;margin-bottom:12px;">Рекомендации</h2>
+                <div id="market-featured" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+                    <!-- Загружается динамически -->
+                </div>
+            </div>
+            
+            <!-- Категории -->
+            <div style="margin-bottom:20px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <h2 style="font-size:20px;font-weight:800;">Категории</h2>
+                    <span onclick="hubNav('market', 'categories')" style="color:var(--blue);font-size:14px;font-weight:600;cursor:pointer;">Все</span>
+                </div>
+                <div id="market-categories-preview" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+                    <!-- Загружается динамически -->
+                </div>
+            </div>
+            
+            <!-- Популярные товары -->
+            <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <h2 style="font-size:20px;font-weight:800;">Популярное</h2>
+                    <span onclick="hubNav('market', 'products')" style="color:var(--blue);font-size:14px;font-weight:600;cursor:pointer;">Все</span>
+                </div>
+                <div id="market-popular-products">
+                    <!-- Загружается динамически -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Нижний navigation bar для Маркета -->
+        <div id="hub-nav-market" class="hub-nav-bar">
+            <div class="hub-nav-item active" onclick="hubNav('market', 'home')">
+                <i class="fa-solid fa-house"></i>
+                <span>Главная</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'categories')">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Категории</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'wishlist')">
+                <i class="fa-regular fa-heart"></i>
+                <span>Избранное</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'cart')">
+                <i class="fa-solid fa-shopping-cart"></i>
+                <span>Корзина</span>
+                <span id="hub-nav-cart-badge" class="hub-nav-badge" style="display:none;">0</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('market', 'orders')">
+                <i class="fa-solid fa-box"></i>
+                <span>Заказы</span>
             </div>
         </div>
     </div>
@@ -1212,8 +1608,8 @@
             <div style="text-align:center;padding:15px;color:var(--sec);cursor:pointer;" onclick="closeM('m-product-details')">Закрыть</div>
         </div>
     </div>
-    <div id="screen-rewards" class="screen">
-        <div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Задания</div></div>
+    <div id="screen-rewards" class="screen hub-active">
+        <div class="nav-head"><div onclick="hubNav('profile', 'home')"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Награды</div></div>
         <div class="container">
             <div class="tabs" style="margin-bottom:15px;">
                 <div class="tab active" onclick="swRew('tasks', this)">Задания</div>
@@ -1221,6 +1617,24 @@
             </div>
             <div id="list-rewards"></div>
             <div id="list-referrals" style="display:none;"></div>
+        </div>
+        <div id="hub-nav-profile" class="hub-nav-bar">
+            <div class="hub-nav-item" onclick="hubNav('profile', 'home')">
+                <i class="fa-solid fa-house"></i>
+                <span>Главная</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('profile', 'wallet')">
+                <i class="fa-solid fa-wallet"></i>
+                <span>Кошелек</span>
+            </div>
+            <div class="hub-nav-item active" onclick="hubNav('profile', 'rewards')">
+                <i class="fa-solid fa-gift"></i>
+                <span>Награды</span>
+            </div>
+            <div class="hub-nav-item" onclick="hubNav('profile', 'settings')">
+                <i class="fa-solid fa-gear"></i>
+                <span>Настройки</span>
+            </div>
         </div>
     </div>
 
@@ -2918,13 +3332,358 @@
             }
         }
 
+        // ==================== HUB ROUTING SYSTEM ====================
+        let currentHub = null; // Текущий активный хаб
+        let currentHubScreen = null; // Текущий экран внутри хаба
+        
+        // Определение хабов и их экранов
+        const hubConfig = {
+            'market': {
+                screens: {
+                    'home': 'screen-market',
+                    'categories': 'screen-market-categories',
+                    'wishlist': 'screen-market-wishlist',
+                    'cart': 'screen-market-cart',
+                    'orders': 'screen-market-orders',
+                    'products': 'screen-market-products',
+                    'pools': 'screen-market-pools'
+                },
+                navBar: 'hub-nav-market'
+            },
+            'trucks': {
+                screens: {
+                    'home': 'screen-trucks',
+                    'trips': 'screen-trucks-trips',
+                    'cargo': 'screen-trucks-cargo',
+                    'orders': 'screen-trucks-orders',
+                    'history': 'screen-trucks-history',
+                    'profile': 'screen-trucks-driver-profile'
+                },
+                navBar: 'hub-nav-trucks'
+            },
+            'calc': {
+                screens: {
+                    'home': 'screen-calc',
+                    'calculator': 'screen-calc-calculator',
+                    'history': 'screen-calc-history',
+                    'rates': 'screen-calc-rates',
+                    'compare': 'screen-calc-compare'
+                },
+                navBar: 'hub-nav-calc'
+            },
+            'profile': {
+                screens: {
+                    'home': 'screen-profile',
+                    'wallet': 'screen-wallet',
+                    'rewards': 'screen-rewards',
+                    'settings': 'screen-settings',
+                    'referrals': 'screen-referrals'
+                },
+                navBar: 'hub-nav-profile'
+            }
+        };
+        
+        // Навигация внутри хаба
+        function hubNav(hubName, screenName) {
+            const hub = hubConfig[hubName];
+            if (!hub) {
+                console.error(`Hub ${hubName} not found`);
+                return;
+            }
+            
+            const screenId = hub.screens[screenName];
+            if (!screenId) {
+                console.error(`Screen ${screenName} not found in hub ${hubName}`);
+                return;
+            }
+            
+            // Устанавливаем текущий хаб
+            currentHub = hubName;
+            currentHubScreen = screenName;
+            
+            // Скрываем все экраны
+            document.querySelectorAll('.screen').forEach(el => {
+                el.classList.remove('active');
+                el.classList.remove('hub-active');
+            });
+            
+            // Показываем нужный экран
+            const targetScreen = document.getElementById(screenId);
+            if (targetScreen) {
+                targetScreen.classList.add('active');
+                targetScreen.classList.add('hub-active');
+            }
+            
+            // Обновляем navigation bar
+            updateHubNavBar(hubName, screenName);
+            
+            // Загружаем данные для экрана
+            loadHubScreenData(hubName, screenName);
+            
+            window.scrollTo(0, 0);
+        }
+        
+        // Вход в хаб (с главного экрана)
+        function enterHub(hubName) {
+            currentHub = hubName;
+            hubNav(hubName, 'home');
+        }
+        
+        // Выход из хаба (возврат на главный экран)
+        function exitHub() {
+            currentHub = null;
+            currentHubScreen = null;
+            
+            // Скрываем все navigation bars
+            document.querySelectorAll('.hub-nav-bar').forEach(bar => {
+                bar.classList.add('hidden');
+            });
+            
+            // Показываем главный экран
+            document.querySelectorAll('.screen').forEach(el => {
+                el.classList.remove('active');
+                el.classList.remove('hub-active');
+            });
+            
+            const homeScreen = document.getElementById('screen-home');
+            if (homeScreen) {
+                homeScreen.classList.add('active');
+            }
+            
+            window.scrollTo(0, 0);
+        }
+        
+        // Обновление navigation bar хаба
+        function updateHubNavBar(hubName, activeScreen) {
+            // Скрываем все navigation bars
+            document.querySelectorAll('.hub-nav-bar').forEach(bar => {
+                bar.classList.add('hidden');
+            });
+            
+            const hub = hubConfig[hubName];
+            if (!hub || !hub.navBar) return;
+            
+            const navBar = document.getElementById(hub.navBar);
+            if (navBar) {
+                navBar.classList.remove('hidden');
+                
+                // Обновляем активный элемент
+                navBar.querySelectorAll('.hub-nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Находим и активируем нужный элемент
+                const activeItem = navBar.querySelector(`[onclick*="'${activeScreen}'"]`);
+                if (activeItem) {
+                    activeItem.classList.add('active');
+                }
+            }
+        }
+        
+        // Загрузка данных для экрана хаба
+        function loadHubScreenData(hubName, screenName) {
+            // Маркет
+            if (hubName === 'market') {
+                if (screenName === 'home') {
+                    loadMarketHome();
+                } else if (screenName === 'categories') {
+                    loadCategories();
+                } else if (screenName === 'wishlist') {
+                    loadWishlist();
+                } else if (screenName === 'cart') {
+                    loadCart();
+                } else if (screenName === 'orders') {
+                    loadOrders();
+                } else if (screenName === 'products') {
+                    ldMk();
+                } else if (screenName === 'pools') {
+                    loadPools();
+                }
+            }
+            // Биржа
+            else if (hubName === 'trucks') {
+                if (screenName === 'trips') {
+                    ldTrTrips();
+                } else if (screenName === 'cargo') {
+                    ldTrCargo();
+                } else if (screenName === 'orders') {
+                    ldTr();
+                } else if (screenName === 'history') {
+                    ldTrHistory();
+                }
+            }
+            // Расчет
+            else if (hubName === 'calc') {
+                if (screenName === 'home') {
+                    loadCalcHome();
+                } else if (screenName === 'calculator') {
+                    updMode();
+                    if (isOpt && config.routes && config.routes.length > 0) {
+                        renderRoutes(config.routes);
+                    } else if (isOpt) {
+                        loadRoutes();
+                    }
+                } else if (screenName === 'history') {
+                    loadCalcHistory();
+                }
+            }
+            // Профиль
+            else if (hubName === 'profile') {
+                if (screenName === 'home') {
+                    loadProfileHome();
+                } else if (screenName === 'wallet') {
+                    loadWallet();
+                    loadWalletHistory();
+                } else if (screenName === 'rewards') {
+                    ldRew();
+                }
+            }
+            // Биржа
+            else if (hubName === 'trucks') {
+                if (screenName === 'home') {
+                    loadTrucksHome();
+                }
+            }
+        }
+        
+        // Загрузка главной страницы маркета
+        async function loadMarketHome() {
+            // Загружаем рекомендации
+            try {
+                const data = await cachedFetch(`${API}/api/marketplace/products?limit=4`, 'market_featured');
+                if (data && data.status === 'ok' && data.products) {
+                    renderMarketFeatured(data.products.slice(0, 4));
+                }
+            } catch(e) {
+                console.error('Error loading market featured:', e);
+            }
+            
+            // Загружаем категории для превью
+            try {
+                const catsData = await cachedFetch(`${API}/api/marketplace/categories`, 'market_categories');
+                if (catsData && catsData.status === 'ok' && catsData.categories) {
+                    renderMarketCategoriesPreview(catsData.categories.slice(0, 8));
+                }
+            } catch(e) {
+                console.error('Error loading categories preview:', e);
+            }
+            
+            // Загружаем популярные товары
+            try {
+                const popularData = await cachedFetch(`${API}/api/marketplace/products?limit=6`, 'market_popular');
+                if (popularData && popularData.status === 'ok' && popularData.products) {
+                    renderMarketPopular(popularData.products);
+                }
+            } catch(e) {
+                console.error('Error loading popular products:', e);
+            }
+        }
+        
+        // Рендеринг рекомендаций маркета
+        function renderMarketFeatured(products) {
+            const container = document.getElementById('market-featured');
+            if (!container) return;
+            
+            let html = '';
+            products.forEach(product => {
+                html += `
+                    <div class="card" style="padding:0;overflow:hidden;cursor:pointer;" onclick="showProductDetails(${product.id})">
+                        <img src="${product.image_url || 'https://ui-avatars.com/api/?name=PROD&size=200'}" 
+                             style="width:100%;height:120px;object-fit:cover;">
+                        <div style="padding:12px;">
+                            <div style="font-weight:700;font-size:14px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${(product.title || 'Товар').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                            <div style="font-size:18px;font-weight:800;color:var(--blue);">${product.price} TJS</div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html || '<div style="text-align:center;padding:40px;color:var(--sec);">Нет рекомендаций</div>';
+        }
+        
+        // Рендеринг превью категорий
+        function renderMarketCategoriesPreview(categories) {
+            const container = document.getElementById('market-categories-preview');
+            if (!container) return;
+            
+            let html = '';
+            categories.forEach(cat => {
+                html += `
+                    <div class="card" style="padding:12px;text-align:center;cursor:pointer;" onclick="hubNav('market', 'categories')">
+                        <i class="fa-solid fa-tag" style="font-size:24px;color:var(--blue);margin-bottom:8px;"></i>
+                        <div style="font-size:12px;font-weight:600;">${(cat.name || 'Категория').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html || '<div style="text-align:center;padding:20px;color:var(--sec);">Нет категорий</div>';
+        }
+        
+        // Рендеринг популярных товаров
+        function renderMarketPopular(products) {
+            const container = document.getElementById('market-popular-products');
+            if (!container) return;
+            
+            let html = '';
+            products.forEach(product => {
+                html += `
+                    <div class="card" style="display:flex;gap:12px;padding:12px;cursor:pointer;" onclick="showProductDetails(${product.id})">
+                        <img src="${product.image_url || 'https://ui-avatars.com/api/?name=PROD&size=100'}" 
+                             style="width:80px;height:80px;object-fit:cover;border-radius:12px;">
+                        <div style="flex:1;">
+                            <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${(product.title || 'Товар').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                            <div style="font-size:18px;font-weight:800;color:var(--blue);">${product.price} TJS</div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html || '<div style="text-align:center;padding:40px;color:var(--sec);">Нет товаров</div>';
+        }
+        
         function nav(id) {
+            // Если это вход в хаб, используем enterHub
+            if (id === 'market' || id === 'trucks' || id === 'calc') {
+                enterHub(id);
+                return;
+            }
+            
+            // Если это профиль, переходим на экран профиля
+            if (id === 'profile') {
+                enterHub('profile');
+                return;
+            }
+            
             // Обновляем бейдж корзины при навигации (тихо, без ошибок)
             if (id !== 'cart') {
                 updateCartBadge().catch(() => {});
             }
-            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-            safe('screen-' + id, el => el.classList.add('active'));
+            
+            // Если мы внутри хаба, используем hubNav
+            if (currentHub) {
+                const hub = hubConfig[currentHub];
+                if (hub) {
+                    // Ищем экран в текущем хабе
+                    for (const [screenName, screenId] of Object.entries(hub.screens)) {
+                        if (screenId === `screen-${id}`) {
+                            hubNav(currentHub, screenName);
+                            return;
+                        }
+                    }
+                }
+            }
+            
+            // Обычная навигация (для экранов вне хабов)
+            document.querySelectorAll('.screen').forEach(el => {
+                el.classList.remove('active');
+                el.classList.remove('hub-active');
+            });
+            
+            // Скрываем все navigation bars
+            document.querySelectorAll('.hub-nav-bar').forEach(bar => {
+                bar.classList.add('hidden');
+            });
+            
+            safe('screen-' + id, el => {
+                el.classList.add('active');
+            });
             // Биржа
             if(id === 'trucks') {
                 // Главное меню биржи - ничего не загружаем
@@ -3019,7 +3778,15 @@
             }
         }
 
-        function goHome() { nav('home'); }
+        function goHome() {
+            // Если мы внутри хаба, выходим из него
+            if (currentHub) {
+                exitHub();
+            } else {
+                // Иначе просто переходим на главный экран
+                nav('home');
+            }
+        }
         function openM(id) { safe(id, el => el.style.display = 'flex'); }
         function closeM(id) { safe(id, el => el.style.display = 'none'); }
         function copy(t) { 
