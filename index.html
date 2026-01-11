@@ -515,7 +515,7 @@
 
     <div id="screen-admin" class="screen">
         <div class="nav-head">
-            <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Админ-панель</div>
         </div>
         <div class="container">
@@ -581,7 +581,7 @@
     </div>
 
     <div id="screen-china" class="screen">
-        <div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Мой Китай</div></div>
+        <div class="nav-head"><div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Мой Китай</div></div>
         <div class="container">
             <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 15px;">
                 <div class="grid-item" onclick="nav('packages')"><div class="icon-box" style="color: #FF2D55;"><i class="fa-solid fa-box-open"></i></div><span class="grid-lbl">Посылки</span></div>
@@ -599,7 +599,7 @@
     </div>
 
 <div id="screen-prohibited" class="screen">
-        <div class="nav-head"><div onclick="nav('china')"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Запрещено к ввозу</div></div>
+        <div class="nav-head"><div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Запрещено к ввозу</div></div>
         <div class="container">
             <div class="card" style="border-left: 4px solid #FF3B30; background: #FFF5F5;">
                 <b style="color:#FF3B30; font-size: 16px;">⚠️ Важная информация</b><br>
@@ -639,7 +639,7 @@
     </div>
 
     <div id="screen-rates" class="screen">
-        <div class="nav-head"><div onclick="nav('china')"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Наши тарифы</div></div>
+        <div class="nav-head"><div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Наши тарифы</div></div>
         <div class="container">
             <div class="card">
                 <h3 style="margin:0 0 15px 0; color:var(--blue);">📦 Розничные тарифы</h3>
@@ -659,7 +659,7 @@
         </div>
     </div>
     <div id="screen-about" class="screen">
-        <div class="nav-head"><div onclick="nav('china')"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">О нас</div></div>
+        <div class="nav-head"><div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">О нас</div></div>
         <div class="container">
             <div class="card" style="text-align:center;">
                 <div style="font-size:40px;margin-bottom:10px;">🚀</div>
@@ -678,7 +678,7 @@
     <!-- ==================== ПРОФИЛЬ HUB (Финансовый) ==================== -->
     <div id="screen-profile" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title" data-i18n="profile">Профиль</div>
             <div onclick="toggleLanguage()" style="padding:8px; cursor:pointer; font-size:14px; font-weight:600; color:var(--blue);">
                 <span id="lang-indicator">RU</span>
@@ -783,7 +783,7 @@
 
     <div id="screen-wallet" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="hubNav('profile', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Кошелек</div>
         </div>
         <div class="container">
@@ -814,7 +814,7 @@
     </div>
 
     <div id="screen-packages" class="screen">
-        <div class="nav-head"><div onclick="nav('china')"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Мои посылки</div></div>
+        <div class="nav-head"><div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Мои посылки</div></div>
         <div class="container">
             <button class="btn btn-blue" onclick="openM('m-add')" style="margin-bottom:15px;"><i class="fa-solid fa-plus"></i> Добавить трек</button>
             <div class="card" id="full-pkg-list"></div>
@@ -822,7 +822,7 @@
     </div>
 
     <div id="screen-addresses" class="screen">
-        <div class="nav-head"><div onclick="nav('china')"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Наши адреса</div></div>
+        <div class="nav-head"><div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Наши адреса</div></div>
         <div class="container">
             <div class="card">
                 <div class="switch-row"><b>Оптовый режим (>100 кг)</b><label class="switch"><input type="checkbox" id="tg-opt" name="tg-opt" onchange="toggleMode()"><span class="slider"></span></label></div>
@@ -865,7 +865,7 @@
     <!-- ==================== РАСЧЕТ HUB ==================== -->
     <!-- Главный экран расчета -->
     <div id="screen-calc" class="screen hub-active">
-        <div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Расчет</div></div>
+        <div class="nav-head"><div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Расчет</div></div>
         <div class="container">
             <!-- Быстрый калькулятор -->
             <div style="margin-bottom:20px;">
@@ -946,7 +946,7 @@
     
     <!-- Экран калькулятора -->
     <div id="screen-calc-calculator" class="screen">
-        <div class="nav-head"><div onclick="nav('calc')"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Калькулятор стоимости</div></div>
+        <div class="nav-head"><div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Калькулятор стоимости</div></div>
         <div class="container">
             <div class="card">
                 <div class="switch-row" style="margin-bottom:15px;"><b>Оптовый тариф</b><label class="switch"><input type="checkbox" id="tg-calc" name="tg-calc" onchange="toggleMode()"><span class="slider"></span></label></div>
@@ -975,7 +975,7 @@
     <!-- Экран истории расчетов -->
     <div id="screen-calc-history" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="hubNav('calc', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">История расчетов</div>
         </div>
         <div class="container">
@@ -986,7 +986,7 @@
     <!-- Экран тарифов расчетов -->
     <div id="screen-calc-rates" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="hubNav('calc', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Тарифы доставки</div>
         </div>
         <div class="container">
@@ -1015,7 +1015,7 @@
     <!-- Экран сравнения тарифов -->
     <div id="screen-calc-compare" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="hubNav('calc', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Сравнение тарифов</div>
         </div>
         <div class="container">
@@ -1062,7 +1062,7 @@
     <!-- Экран помощи расчетов -->
     <div id="screen-calc-help" class="screen">
         <div class="nav-head">
-            <div onclick="nav('calc')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Помощь по расчетам</div>
         </div>
         <div class="container">
@@ -1087,12 +1087,12 @@
         </div>
     </div>
 
-    <div id="screen-settings" class="screen"><div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Настройки</div></div><div class="container"><div class="card"><input id="s-name" name="s-name" placeholder="Ваше имя"><input id="s-phone" name="s-phone" placeholder="Телефон"><select id="s-pvz" name="s-pvz"></select><button class="btn btn-blue" onclick="saveSet()">Сохранить</button></div></div></div>
+    <div id="screen-settings" class="screen"><div class="nav-head"><div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Настройки</div></div><div class="container"><div class="card"><input id="s-name" name="s-name" placeholder="Ваше имя"><input id="s-phone" name="s-phone" placeholder="Телефон"><select id="s-pvz" name="s-pvz"></select><button class="btn btn-blue" onclick="saveSet()">Сохранить</button></div></div></div>
     <!-- ==================== БИРЖА HUB ==================== -->
     <!-- ==================== БИРЖА HUB ==================== -->
     <!-- Главный экран биржи -->
     <div id="screen-trucks" class="screen hub-active">
-        <div class="nav-head"><div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Биржа</div></div>
+        <div class="nav-head"><div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Биржа</div></div>
         <div class="container">
             <!-- Витрина биржи с быстрыми действиями -->
             <div style="margin-bottom:20px;">
@@ -1147,7 +1147,7 @@
     <!-- Экран сделок биржи -->
     <div id="screen-trucks-orders" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="hubNav('trucks', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Сделки</div>
         </div>
         <div class="container">
@@ -1187,7 +1187,7 @@
     <!-- Экран машин биржи -->
     <div id="screen-trucks-trips" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="hubNav('trucks', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Поездки</div>
         </div>
         <div class="container">
@@ -1220,7 +1220,7 @@
     <!-- Экран грузов биржи -->
     <div id="screen-trucks-cargo" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="hubNav('trucks', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Грузы</div>
         </div>
         <div class="container">
@@ -1253,7 +1253,7 @@
     <!-- Экран создания заказа биржи -->
     <div id="screen-trucks-create" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="hubNav('trucks', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Создать заказ</div>
         </div>
         <div class="container">
@@ -1274,7 +1274,7 @@
     <!-- Экран истории биржи -->
     <div id="screen-trucks-history" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="hubNav('trucks', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">История сделок</div>
         </div>
         <div class="container">
@@ -1307,7 +1307,7 @@
     <!-- Экран профиля водителя -->
     <div id="screen-trucks-driver-profile" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="hubNav('trucks', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Профиль водителя</div>
         </div>
         <div class="container">
@@ -1345,7 +1345,7 @@
     <!-- Экран тарифов биржи -->
     <div id="screen-trucks-rates" class="screen">
         <div class="nav-head">
-            <div onclick="hubNav('trucks', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Тарифы биржи</div>
         </div>
         <div class="container">
@@ -1367,7 +1367,7 @@
     <!-- Экран помощи биржи -->
     <div id="screen-trucks-help" class="screen">
         <div class="nav-head">
-            <div onclick="nav('trucks')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Помощь по бирже</div>
         </div>
         <div class="container">
@@ -1410,7 +1410,7 @@
     <!-- Корзина (универсальная, работает и внутри хаба, и отдельно) -->
     <div id="screen-cart" class="screen">
         <div class="nav-head">
-            <div onclick="currentHub ? hubNav(currentHub, 'home') : goHome()"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Корзина</div>
         </div>
         <div class="container" style="padding-bottom:120px;">
@@ -1432,7 +1432,7 @@
     <!-- Корзина маркета (внутри хаба) -->
     <div id="screen-market-cart" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="hubNav('market', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Корзина</div>
         </div>
         <div class="container">
@@ -1477,7 +1477,7 @@
     <!-- Заказы (универсальные) -->
     <div id="screen-orders" class="screen">
         <div class="nav-head">
-            <div onclick="currentHub ? hubNav(currentHub, 'home') : goHome()"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Мои заказы</div>
         </div>
         <div class="container">
@@ -1488,7 +1488,7 @@
     <!-- Заказы маркета (внутри хаба) -->
     <div id="screen-market-orders" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="hubNav('market', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Мои заказы</div>
         </div>
         <div class="container">
@@ -1524,7 +1524,7 @@
     <!-- Главный экран маркета с витриной -->
     <div id="screen-market" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Маркет</div>
             <div style="display:flex;gap:12px;align-items:center;">
                 <div id="market-cart-icon" style="position:relative;cursor:pointer;" onclick="hubNav('market', 'cart')">
@@ -1594,7 +1594,7 @@
     <!-- Экран товаров маркета -->
     <div id="screen-market-products" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="hubNav('market', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Товары</div>
             <div style="display:flex;gap:12px;align-items:center;">
                 <div id="add-product-btn" style="display:none;width:40px;height:40px;background:linear-gradient(135deg, #34C759 0%, #30D158 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(52,199,89,0.3);" 
@@ -1739,7 +1739,7 @@
     <!-- Экран сборов маркета -->
     <div id="screen-market-pools" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="hubNav('market', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Групповые сборы</div>
         </div>
         <div class="container">
@@ -1773,7 +1773,7 @@
     <!-- Экран избранного маркета -->
     <div id="screen-market-wishlist" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="hubNav('market', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Избранное</div>
         </div>
         <div class="container">
@@ -1807,7 +1807,7 @@
     <!-- Экран категорий маркета -->
     <div id="screen-market-categories" class="screen hub-active">
         <div class="nav-head">
-            <div onclick="hubNav('market', 'home')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Категории</div>
         </div>
         <div class="container">
@@ -1841,7 +1841,7 @@
     <!-- Экран продавцов маркета -->
     <div id="screen-market-sellers" class="screen">
         <div class="nav-head">
-            <div onclick="nav('market')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Продавцы</div>
         </div>
         <div class="container">
@@ -1852,7 +1852,7 @@
     <!-- Экран помощи маркета -->
     <div id="screen-market-help" class="screen">
         <div class="nav-head">
-            <div onclick="nav('market')"><i class="fa-solid fa-arrow-left"></i></div>
+            <div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
             <div class="pg-title">Помощь по маркету</div>
         </div>
         <div class="container">
@@ -1887,7 +1887,7 @@
         </div>
     </div>
     <div id="screen-rewards" class="screen hub-active">
-        <div class="nav-head"><div onclick="hubNav('profile', 'home')"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Награды</div></div>
+        <div class="nav-head"><div onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div><div class="pg-title">Награды</div></div>
         <div class="container">
             <div class="tabs" style="margin-bottom:15px;">
                 <div class="tab active" onclick="swRew('tasks', this)">Задания</div>
@@ -3613,6 +3613,7 @@
         // ==================== HUB ROUTING SYSTEM ====================
         let currentHub = null; // Текущий активный хаб
         let currentHubScreen = null; // Текущий экран внутри хаба
+        let navigationHistory = []; // История навигации для кнопки "назад"
         
         // Определение хабов и их экранов
         const hubConfig = {
@@ -3661,7 +3662,7 @@
         };
         
         // Навигация внутри хаба
-        function hubNav(hubName, screenName) {
+        function hubNav(hubName, screenName, addToHistory = true) {
             const hub = hubConfig[hubName];
             if (!hub) {
                 console.error(`Hub ${hubName} not found`);
@@ -3672,6 +3673,19 @@
             if (!screenId) {
                 console.error(`Screen ${screenName} not found in hub ${hubName}`);
                 return;
+            }
+            
+            // Добавляем текущее состояние в историю перед переходом
+            if (addToHistory) {
+                navigationHistory.push({
+                    hub: currentHub,
+                    screen: currentHubScreen,
+                    screenId: currentHub ? hubConfig[currentHub]?.screens[currentHubScreen] : null
+                });
+                // Ограничиваем размер истории (последние 50 записей)
+                if (navigationHistory.length > 50) {
+                    navigationHistory.shift();
+                }
             }
             
             // Устанавливаем текущий хаб
@@ -3701,13 +3715,38 @@
         }
         
         // Вход в хаб (с главного экрана)
-        function enterHub(hubName) {
+        function enterHub(hubName, addToHistory = true) {
+            // Добавляем текущее состояние в историю перед входом в хаб
+            if (addToHistory) {
+                const currentScreen = document.querySelector('.screen.active');
+                const currentScreenId = currentScreen ? currentScreen.id : 'screen-home';
+                navigationHistory.push({
+                    hub: currentHub,
+                    screen: currentHubScreen,
+                    screenId: currentScreenId
+                });
+                if (navigationHistory.length > 50) {
+                    navigationHistory.shift();
+                }
+            }
             currentHub = hubName;
-            hubNav(hubName, 'home');
+            hubNav(hubName, 'home', false); // hubNav не должен добавлять в историю, т.к. мы уже добавили
         }
         
         // Выход из хаба (возврат на главный экран)
-        function exitHub() {
+        function exitHub(addToHistory = true) {
+            // Добавляем текущее состояние в историю перед выходом
+            if (addToHistory) {
+                navigationHistory.push({
+                    hub: currentHub,
+                    screen: currentHubScreen,
+                    screenId: currentHub ? hubConfig[currentHub]?.screens[currentHubScreen] : null
+                });
+                if (navigationHistory.length > 50) {
+                    navigationHistory.shift();
+                }
+            }
+            
             currentHub = null;
             currentHubScreen = null;
             
@@ -4233,16 +4272,16 @@
             }
         }
         
-        function nav(id) {
+        function nav(id, addToHistory = true) {
             // Если это вход в хаб, используем enterHub
             if (id === 'market' || id === 'trucks' || id === 'calc') {
-                enterHub(id);
+                enterHub(id, addToHistory);
                 return;
             }
             
             // Если это профиль, переходим на экран профиля
             if (id === 'profile') {
-                enterHub('profile');
+                enterHub('profile', addToHistory);
                 return;
             }
             
@@ -4258,10 +4297,24 @@
                     // Ищем экран в текущем хабе
                     for (const [screenName, screenId] of Object.entries(hub.screens)) {
                         if (screenId === `screen-${id}`) {
-                            hubNav(currentHub, screenName);
+                            hubNav(currentHub, screenName, addToHistory);
                             return;
                         }
                     }
+                }
+            }
+            
+            // Добавляем текущее состояние в историю перед переходом
+            if (addToHistory) {
+                const currentScreen = document.querySelector('.screen.active');
+                const currentScreenId = currentScreen ? currentScreen.id : null;
+                navigationHistory.push({
+                    hub: currentHub,
+                    screen: currentHubScreen,
+                    screenId: currentScreenId
+                });
+                if (navigationHistory.length > 50) {
+                    navigationHistory.shift();
                 }
             }
             
@@ -4373,15 +4426,92 @@
             }
         }
 
-        function goHome() {
-            // Если мы внутри хаба, выходим из него
-            if (currentHub) {
-                exitHub();
+        // Возврат назад по истории навигации
+        function goBack() {
+            if (navigationHistory.length > 0) {
+                // Берем последнее состояние из истории
+                const prevState = navigationHistory.pop();
+                
+                // Восстанавливаем предыдущее состояние
+                if (prevState.hub && prevState.screen) {
+                    // Возвращаемся в хаб
+                    hubNav(prevState.hub, prevState.screen, false);
+                } else if (prevState.screenId) {
+                    // Возвращаемся на обычный экран
+                    const screenId = prevState.screenId;
+                    const screenElement = document.getElementById(screenId);
+                    
+                    if (screenElement) {
+                        // Скрываем все экраны
+                        document.querySelectorAll('.screen').forEach(el => {
+                            el.classList.remove('active');
+                            el.classList.remove('hub-active');
+                        });
+                        
+                        // Скрываем все navigation bars
+                        document.querySelectorAll('.hub-nav-bar').forEach(bar => {
+                            bar.classList.add('hidden');
+                        });
+                        
+                        // Показываем предыдущий экран
+                        screenElement.classList.add('active');
+                        
+                        // Сбрасываем состояние хаба
+                        currentHub = null;
+                        currentHubScreen = null;
+                        
+                        // Загружаем данные для экрана, если нужно
+                        const screenIdParts = screenId.replace('screen-', '').split('-');
+                        if (screenIdParts.length > 0) {
+                            const screenName = screenIdParts.join('-');
+                            if (screenName === 'packages') {
+                                loadPackages();
+                            } else if (screenName === 'addresses') {
+                                renderAddr();
+                            } else if (screenName === 'wallet') {
+                                loadWallet();
+                                loadWalletHistory();
+                            } else if (screenName === 'admin') {
+                                loadAdminPackages();
+                            } else if (screenName === 'orders') {
+                                loadOrders();
+                            }
+                        }
+                        
+                        window.scrollTo(0, 0);
+                    } else {
+                        // Если экран не найден, идем на главный
+                        goHome();
+                    }
+                } else {
+                    // Если нет информации, идем на главный
+                    goHome();
+                }
             } else {
-                // Иначе просто переходим на главный экран
-                nav('home');
+                // Если история пуста, используем стандартное поведение
+                goHome();
             }
         }
+        
+        function goHome() {
+            // Очищаем историю при переходе на главный экран
+            navigationHistory = [];
+            
+            // Если мы внутри хаба, выходим из него
+            if (currentHub) {
+                exitHub(false);
+            } else {
+                // Иначе просто переходим на главный экран
+                nav('home', false);
+            }
+        }
+        
+        // Обработчик кнопки "назад" браузера
+        window.addEventListener('popstate', function(event) {
+            // Используем нашу функцию goBack() для обработки возврата
+            goBack();
+        });
+        
         function openM(id) { safe(id, el => el.style.display = 'flex'); }
         function closeM(id) { safe(id, el => el.style.display = 'none'); }
         function copy(t) { 
